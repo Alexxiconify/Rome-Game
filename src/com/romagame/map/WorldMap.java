@@ -97,8 +97,4 @@ public class WorldMap {
     public List<Country> getAllCountries() {
         return new ArrayList<>(countries.values());
     }
-    
-    public void initializeProvinces() {
-        // Additional initialization logic
-    }
 } 

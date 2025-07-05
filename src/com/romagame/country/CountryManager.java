@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import com.romagame.military.War;
 
 public class CountryManager {
     private WorldMap worldMap;
