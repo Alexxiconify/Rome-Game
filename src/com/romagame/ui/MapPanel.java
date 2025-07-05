@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class MapPanel extends JPanel {
     private GameEngine engine;
@@ -32,6 +34,9 @@ public class MapPanel extends JPanel {
     private Map<Integer, String> colorToProvinceId = new HashMap<>(); // ARGB -> provinceId
     private Point mouseMapPoint = null;
     private String hoveredProvinceId = null;
+    private BufferedImage landShading = null;
+    private float waterAnimPhase = 0f;
+    private javax.swing.Timer waterAnimTimer;
 
     public MapPanel(GameEngine engine) {
         this.engine = engine;
@@ -39,6 +44,7 @@ public class MapPanel extends JPanel {
         loadMapBackground();
         loadProvinceMask();
         setupMouseListeners();
+        setupWaterAnimation();
     }
 
     private void setupPanel() {
@@ -64,7 +70,6 @@ public class MapPanel extends JPanel {
     private void createGradientBackground() {
         mapBackground = new BufferedImage(1200, 700, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = mapBackground.createGraphics();
-        // Deep blue gradient for ocean
         GradientPaint gp = new GradientPaint(0, 0, new Color(24, 38, 66), 0, 700, new Color(10, 18, 36));
         g2d.setPaint(gp);
         g2d.fillRect(0, 0, 1200, 700);
@@ -79,6 +84,29 @@ public class MapPanel extends JPanel {
         }
         g2d.dispose();
         mapLoaded = true;
+        createLandShading();
+    }
+
+    private void createLandShading() {
+        if (provinceMask == null) return;
+        int w = provinceMask.getWidth(), h = provinceMask.getHeight();
+        landShading = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = landShading.createGraphics();
+        // Simple radial gradient for land relief
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int argb = provinceMask.getRGB(x, y);
+                if (argb != 0xFF000000) {
+                    double dx = (x - w/2) / (double)w;
+                    double dy = (y - h/2) / (double)h;
+                    double dist = Math.sqrt(dx*dx + dy*dy);
+                    int shade = (int)(60 * (1.0 - dist));
+                    int c = Math.max(0, Math.min(255, 180 + shade));
+                    landShading.setRGB(x, y, new Color(c, c, c, 40).getRGB());
+                }
+            }
+        }
+        g2.dispose();
     }
 
     private void loadProvinceMask() {
@@ -215,7 +243,7 @@ public class MapPanel extends JPanel {
         });
         addMouseWheelListener(e -> {
             double zoomFactor = e.getWheelRotation() > 0 ? 0.9 : 1.1;
-            zoom = Math.max(0.1, Math.min(5.0, zoom * zoomFactor));
+            zoom = Math.max(0.1, Math.min(40.0, zoom * zoomFactor));
             repaint();
         });
     }
@@ -262,14 +290,37 @@ public class MapPanel extends JPanel {
         JOptionPane.showMessageDialog(this, info, "Province Information", JOptionPane.INFORMATION_MESSAGE);
     }
 
+    private void setupWaterAnimation() {
+        waterAnimTimer = new javax.swing.Timer(40, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                waterAnimPhase += 0.03f;
+                repaint();
+            }
+        });
+        waterAnimTimer.start();
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        // Draw background
+        // Draw animated water background
         if (mapLoaded && mapBackground != null) {
-            g2d.drawImage(mapBackground, 0, 0, getWidth(), getHeight(), null);
+            BufferedImage animBg = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+            Graphics2D gAnim = animBg.createGraphics();
+            gAnim.drawImage(mapBackground, 0, 0, getWidth(), getHeight(), null);
+            // Animated shimmer
+            gAnim.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.10f));
+            for (int y = 0; y < getHeight(); y += 3) {
+                for (int x = 0; x < getWidth(); x += 3) {
+                    int v = (int)(12 * Math.sin((x + y) * 0.02 + waterAnimPhase));
+                    gAnim.setColor(new Color(24+v, 38+v, 66+v));
+                    gAnim.fillRect(x, y, 3, 3);
+                }
+            }
+            gAnim.dispose();
+            g2d.drawImage(animBg, 0, 0, null);
         }
         // Draw provinces (scaled)
         if (provinceColorMap != null) {
@@ -283,6 +334,12 @@ public class MapPanel extends JPanel {
             int x = (panelW - drawW) / 2 + offsetX;
             int y = (panelH - drawH) / 2 + offsetY;
             g2d.drawImage(provinceColorMap, x, y, drawW, drawH, null);
+            // Land shading overlay
+            if (landShading != null) {
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.25f));
+                g2d.drawImage(landShading, x, y, drawW, drawH, null);
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+            }
         }
         // Draw borders overlay (white, strong)
         if (borderOverlay != null) {
@@ -324,7 +381,35 @@ public class MapPanel extends JPanel {
             }
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
         }
-        // Highlight hovered province
+        // Fog of war: dim provinces not owned by player
+        if (provinceColorMap != null && engine.getCountryManager().getPlayerCountry() != null) {
+            String player = engine.getCountryManager().getPlayerCountry().getName();
+            int panelW = getWidth();
+            int panelH = getHeight();
+            int imgW = provinceMask.getWidth();
+            int imgH = provinceMask.getHeight();
+            double scale = Math.min(panelW / (double)imgW, panelH / (double)imgH) * zoom;
+            int drawW = (int)(imgW * scale);
+            int drawH = (int)(imgH * scale);
+            int x0 = (panelW - drawW) / 2 + offsetX;
+            int y0 = (panelH - drawH) / 2 + offsetY;
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.45f));
+            g2d.setColor(new Color(30, 30, 30));
+            for (int y = 0; y < imgH; y++) {
+                for (int x = 0; x < imgW; x++) {
+                    int argb = provinceMask.getRGB(x, y);
+                    String pid = colorToProvinceId.get(argb);
+                    if (pid != null) {
+                        Province p = engine.getWorldMap().getProvince(pid);
+                        if (p != null && !player.equals(p.getOwner())) {
+                            g2d.fillRect(x0 + (int)(x * scale), y0 + (int)(y * scale), (int)Math.ceil(scale), (int)Math.ceil(scale));
+                        }
+                    }
+                }
+            }
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+        }
+        // Highlight hovered province with colored glow
         if (hoveredProvinceId != null && provinceMask != null) {
             Province hovered = engine.getWorldMap().getProvince(hoveredProvinceId);
             if (hovered != null) {
@@ -337,16 +422,20 @@ public class MapPanel extends JPanel {
                 int drawH = (int)(imgH * scale);
                 int x0 = (panelW - drawW) / 2 + offsetX;
                 int y0 = (panelH - drawH) / 2 + offsetY;
-                int highlightColor = 0x66FFFFFF;
-                for (int y = 0; y < imgH; y++) {
-                    for (int x = 0; x < imgW; x++) {
-                        int argb = provinceMask.getRGB(x, y);
-                        if (colorToProvinceId.get(argb) != null && colorToProvinceId.get(argb).equals(hoveredProvinceId)) {
-                            g2d.setColor(new Color(highlightColor, true));
-                            g2d.fillRect(x0 + (int)(x * scale), y0 + (int)(y * scale), (int)Math.ceil(scale), (int)Math.ceil(scale));
+                Color glow = getProvinceColor(hovered);
+                for (int r = 8; r >= 2; r -= 2) {
+                    g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.08f * (10 - r)));
+                    for (int y = 0; y < imgH; y++) {
+                        for (int x = 0; x < imgW; x++) {
+                            int argb = provinceMask.getRGB(x, y);
+                            if (colorToProvinceId.get(argb) != null && colorToProvinceId.get(argb).equals(hoveredProvinceId)) {
+                                g2d.setColor(glow);
+                                g2d.fillOval(x0 + (int)(x * scale) - r, y0 + (int)(y * scale) - r, (int)Math.ceil(scale) + 2*r, (int)Math.ceil(scale) + 2*r);
+                            }
                         }
                     }
                 }
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
                 // Draw tooltip
                 g2d.setFont(new Font("Segoe UI", Font.BOLD, 16));
                 g2d.setColor(new Color(30, 30, 30, 220));
