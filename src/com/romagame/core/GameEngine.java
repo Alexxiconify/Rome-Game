@@ -29,7 +29,7 @@ public class GameEngine {
     }
     
     private void initializeGame() {
-        currentDate = new GameDate(1444, 1, 1); // Start like EU4
+        currentDate = new GameDate(117, 1, 1); // Start in 117 AD
         gameSpeed = GameSpeed.NORMAL;
         isRunning = false;
         
@@ -50,6 +50,10 @@ public class GameEngine {
         countryManager.initializeCountries();
         // worldMap.initializeProvinces();
         economyManager.initializeEconomies();
+    }
+    
+    public void selectPlayerCountry(String countryName) {
+        countryManager.setPlayerCountry(countryName);
     }
     
     public void start() {
