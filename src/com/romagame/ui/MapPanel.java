@@ -64,9 +64,19 @@ public class MapPanel extends JPanel {
     private void createGradientBackground() {
         mapBackground = new BufferedImage(1200, 700, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = mapBackground.createGraphics();
-        GradientPaint gp = new GradientPaint(0, 0, new Color(60, 110, 180), 0, 700, new Color(30, 60, 120));
+        // Deep blue gradient for ocean
+        GradientPaint gp = new GradientPaint(0, 0, new Color(24, 38, 66), 0, 700, new Color(10, 18, 36));
         g2d.setPaint(gp);
         g2d.fillRect(0, 0, 1200, 700);
+        // Optional: add subtle noise/texture overlay for realism
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.04f));
+        for (int y = 0; y < 700; y += 2) {
+            for (int x = 0; x < 1200; x += 2) {
+                int v = (int)(Math.random() * 16);
+                g2d.setColor(new Color(24+v, 38+v, 66+v));
+                g2d.fillRect(x, y, 2, 2);
+            }
+        }
         g2d.dispose();
         mapLoaded = true;
     }
@@ -142,14 +152,26 @@ public class MapPanel extends JPanel {
 
     private void updateBorderOverlay() {
         if (provinceMask == null) return;
-        // Use a simple edge detection kernel to highlight province borders
+        // Use edge detection to highlight province borders (white, strong)
         float[] kernel = {
             -1, -1, -1,
             -1,  8, -1,
             -1, -1, -1
         };
         ConvolveOp edgeOp = new ConvolveOp(new Kernel(3, 3, kernel));
-        borderOverlay = edgeOp.filter(provinceMask, null);
+        BufferedImage edge = edgeOp.filter(provinceMask, null);
+        // Convert all non-black pixels to white for clear borders
+        borderOverlay = new BufferedImage(edge.getWidth(), edge.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < edge.getHeight(); y++) {
+            for (int x = 0; x < edge.getWidth(); x++) {
+                int v = edge.getRGB(x, y) & 0xFFFFFF;
+                if (v != 0) {
+                    borderOverlay.setRGB(x, y, 0xFFFFFFFF); // white
+                } else {
+                    borderOverlay.setRGB(x, y, 0x00000000); // transparent
+                }
+            }
+        }
     }
 
     private void setupMouseListeners() {
@@ -262,7 +284,7 @@ public class MapPanel extends JPanel {
             int y = (panelH - drawH) / 2 + offsetY;
             g2d.drawImage(provinceColorMap, x, y, drawW, drawH, null);
         }
-        // Draw borders overlay
+        // Draw borders overlay (white, strong)
         if (borderOverlay != null) {
             int panelW = getWidth();
             int panelH = getHeight();
@@ -273,8 +295,33 @@ public class MapPanel extends JPanel {
             int drawH = (int)(imgH * scale);
             int x = (panelW - drawW) / 2 + offsetX;
             int y = (panelH - drawH) / 2 + offsetY;
-            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.95f));
             g2d.drawImage(borderOverlay, x, y, drawW, drawH, null);
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+        }
+        // Add subtle coast glow (land/ocean boundary)
+        if (provinceColorMap != null) {
+            int panelW = getWidth();
+            int panelH = getHeight();
+            int imgW = provinceColorMap.getWidth();
+            int imgH = provinceColorMap.getHeight();
+            double scale = Math.min(panelW / (double)imgW, panelH / (double)imgH) * zoom;
+            int drawW = (int)(imgW * scale);
+            int drawH = (int)(imgH * scale);
+            int x0 = (panelW - drawW) / 2 + offsetX;
+            int y0 = (panelH - drawH) / 2 + offsetY;
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.18f));
+            g2d.setColor(new Color(180, 220, 255));
+            for (int y = 1; y < imgH-1; y++) {
+                for (int x = 1; x < imgW-1; x++) {
+                    int argb = provinceColorMap.getRGB(x, y);
+                    if (argb != 0 && (
+                        provinceColorMap.getRGB(x-1, y) == 0 || provinceColorMap.getRGB(x+1, y) == 0 ||
+                        provinceColorMap.getRGB(x, y-1) == 0 || provinceColorMap.getRGB(x, y+1) == 0)) {
+                        g2d.fillRect(x0 + (int)(x * scale), y0 + (int)(y * scale), (int)Math.ceil(scale), (int)Math.ceil(scale));
+                    }
+                }
+            }
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
         }
         // Highlight hovered province
