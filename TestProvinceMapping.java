@@ -29,12 +29,11 @@ public class TestProvinceMapping {
                             continue; // skip header
                         }
                         String[] parts = line.split(",");
-                        if (parts.length == 2) {
+                        if (parts.length >= 3) {
                             try {
-                                // Parse as long first, then convert to int
                                 long longValue = Long.parseLong(parts[0].trim());
                                 int argb = (int) longValue;
-                                String provinceId = parts[1].trim();
+                                String provinceId = parts[2].trim();
                                 colorToProvinceId.put(argb, provinceId);
                                 count++;
                             } catch (NumberFormatException e) {
