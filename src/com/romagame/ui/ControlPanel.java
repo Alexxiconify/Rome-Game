@@ -2,8 +2,10 @@ package com.romagame.ui;
 
 import com.romagame.core.GameEngine;
 import com.romagame.core.GameSpeed;
+import com.romagame.map.Country;
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 public class ControlPanel extends JPanel {
     private GameEngine engine;
@@ -15,6 +17,7 @@ public class ControlPanel extends JPanel {
     private JButton recruitButton;
     private JButton buildButton;
     private JButton diplomacyButton;
+    private JButton colonizeButton;
     
     public ControlPanel(GameEngine engine) {
         this.engine = engine;
@@ -39,6 +42,7 @@ public class ControlPanel extends JPanel {
         recruitButton = new JButton("⚔ Recruit");
         buildButton = new JButton("🏗 Build");
         diplomacyButton = new JButton("🤝 Diplomacy");
+        JButton colonizeButton = new JButton("🏴 Colonize");
         
         // Style buttons
         styleButton(pauseButton, new Color(200, 100, 100));
@@ -49,6 +53,10 @@ public class ControlPanel extends JPanel {
         styleButton(recruitButton, new Color(150, 150, 200));
         styleButton(buildButton, new Color(200, 200, 150));
         styleButton(diplomacyButton, new Color(150, 200, 150));
+        styleButton(colonizeButton, new Color(200, 150, 200));
+        
+        // Store colonize button for later use
+        this.colonizeButton = colonizeButton;
     }
     
     private void styleButton(JButton button, Color backgroundColor) {
@@ -75,6 +83,7 @@ public class ControlPanel extends JPanel {
         add(recruitButton);
         add(buildButton);
         add(diplomacyButton);
+        add(colonizeButton);
     }
     
     private void setupEventHandlers() {
@@ -87,6 +96,7 @@ public class ControlPanel extends JPanel {
         recruitButton.addActionListener(e -> showRecruitDialog());
         buildButton.addActionListener(e -> showBuildDialog());
         diplomacyButton.addActionListener(e -> showDiplomacyDialog());
+        colonizeButton.addActionListener(e -> showColonizationDialog());
     }
     
     private void showRecruitDialog() {
@@ -144,6 +154,67 @@ public class ControlPanel extends JPanel {
         
         if (choice != null) {
             JOptionPane.showMessageDialog(this, "Diplomatic action: " + choice);
+        }
+    }
+    
+    private void showColonizationDialog() {
+        // Get colonizable provinces
+        List<String> colonizableProvinces = engine.getColonizationManager().getColonizableProvinces();
+        
+        if (colonizableProvinces.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No uncolonized provinces available!", "Colonization", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        
+        // Create province selection dialog
+        String[] provinceArray = colonizableProvinces.toArray(new String[0]);
+        String selectedProvince = (String) JOptionPane.showInputDialog(
+            this,
+            "Choose province to colonize:",
+            "Colonization",
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            provinceArray,
+            provinceArray[0]
+        );
+        
+        if (selectedProvince != null) {
+            // Get colonist count
+            String colonistStr = JOptionPane.showInputDialog(this, "How many colonists? (100-1000)", "500");
+            try {
+                int colonists = Integer.parseInt(colonistStr);
+                if (colonists < 100 || colonists > 1000) {
+                    JOptionPane.showMessageDialog(this, "Colonists must be between 100 and 1000!", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+                // Check if player has enough treasury
+                Country playerCountry = engine.getCountryManager().getPlayerCountry();
+                double cost = colonists * 0.1; // Cost per colonist
+                
+                if (playerCountry.getTreasury() < cost) {
+                    JOptionPane.showMessageDialog(this, "Not enough treasury! Cost: " + String.format("%.1f", cost), "Insufficient Funds", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+                // Start colonization
+                boolean success = engine.getColonizationManager().startColonization(
+                    playerCountry.getName(), selectedProvince, colonists
+                );
+                
+                if (success) {
+                    playerCountry.setTreasury(playerCountry.getTreasury() - cost);
+                    JOptionPane.showMessageDialog(this, 
+                        "Colonization started! Sending " + colonists + " colonists to " + selectedProvince + 
+                        "\nCost: " + String.format("%.1f", cost),
+                        "Colonization Started", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Failed to start colonization!", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+                
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Invalid number!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
     

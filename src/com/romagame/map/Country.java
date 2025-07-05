@@ -65,67 +65,94 @@ public class Country {
     
     private String determineGovernmentType() {
         return switch (name) {
-            case "France", "England", "Castile", "Portugal" -> "Monarchy";
-            case "Brandenburg", "Austria", "Sweden", "Denmark" -> "Monarchy";
-            case "Muscovy" -> "Monarchy";
-            case "Ottomans", "Mamluks" -> "Monarchy";
-            case "Ming", "Japan" -> "Monarchy";
-            case "Delhi" -> "Monarchy";
-            case "Persia" -> "Monarchy";
-            case "Aztec", "Inca" -> "Tribal";
+            case "Roman Empire" -> "Imperial";
+            case "Parthia" -> "Monarchy";
+            case "Armenia", "Iberia", "Albania", "Lazica", "Colchis" -> "Monarchy";
+            case "Dacia", "Sarmatia" -> "Tribal";
+            case "Quadi", "Marcomanni", "Suebi", "Alemanni", "Chatti", "Cherusci", "Hermunduri", "Frisians" -> "Tribal";
+            case "Britons", "Caledonians", "Hibernians", "Picts", "Scoti" -> "Tribal";
+            case "Garamantes", "Nubia", "Axum" -> "Monarchy";
+            case "Himyar", "Saba", "Hadramaut", "Oman" -> "Monarchy";
+            case "Kushan", "Indo-Parthian" -> "Monarchy";
             default -> "Tribal";
         };
     }
     
     private String determineReligion() {
         return switch (name) {
-            case "France", "Castile", "Portugal", "England", "Brandenburg", 
-                 "Sweden", "Denmark", "Austria" -> "Catholic";
-            case "Muscovy" -> "Orthodox";
-            case "Ottomans", "Mamluks" -> "Sunni";
-            case "Ming", "Japan" -> "Confucian";
-            case "Delhi" -> "Hindu";
-            case "Persia" -> "Shia";
-            case "Aztec", "Inca" -> "Pagan";
-            default -> "Animist";
+            case "Roman Empire" -> "Roman Paganism";
+            case "Parthia" -> "Zoroastrianism";
+            case "Armenia", "Iberia", "Albania", "Lazica", "Colchis" -> "Christianity";
+            case "Dacia", "Sarmatia" -> "Pagan";
+            case "Quadi", "Marcomanni", "Suebi", "Alemanni", "Chatti", "Cherusci", "Hermunduri", "Frisians" -> "Germanic Paganism";
+            case "Britons", "Caledonians", "Hibernians", "Picts", "Scoti" -> "Celtic Paganism";
+            case "Garamantes", "Nubia", "Axum" -> "Pagan";
+            case "Himyar", "Saba", "Hadramaut", "Oman" -> "Arabian Paganism";
+            case "Kushan", "Indo-Parthian" -> "Buddhism";
+            default -> "Pagan";
         };
     }
     
     private String determineCulture() {
         return switch (name) {
-            case "France", "Castile", "Portugal" -> "Latin";
-            case "England", "Brandenburg", "Sweden", "Denmark" -> "Germanic";
-            case "Muscovy" -> "Slavic";
-            case "Ottomans", "Mamluks" -> "Arabic";
-            case "Ming", "Japan" -> "Chinese";
-            case "Delhi" -> "Indian";
-            case "Persia" -> "Persian";
+            case "Roman Empire" -> "Roman";
+            case "Parthia" -> "Persian";
+            case "Armenia", "Iberia", "Albania", "Lazica", "Colchis" -> "Caucasian";
+            case "Dacia", "Sarmatia" -> "Dacian";
+            case "Quadi", "Marcomanni", "Suebi", "Alemanni", "Chatti", "Cherusci", "Hermunduri", "Frisians" -> "Germanic";
+            case "Britons", "Caledonians", "Hibernians", "Picts", "Scoti" -> "Celtic";
+            case "Garamantes", "Nubia", "Axum" -> "African";
+            case "Himyar", "Saba", "Hadramaut", "Oman" -> "Arabian";
+            case "Kushan", "Indo-Parthian" -> "Indo-Iranian";
             default -> "Tribal";
         };
     }
     
     private void addStartingIdeas() {
-        // Add country-specific starting ideas
+        // Add country-specific starting ideas for 117 AD
         switch (name) {
-            case "France" -> {
-                ideas.add("Elan");
-                ideas.add("Grand Army");
+            case "Roman Empire" -> {
+                ideas.add("Pax Romana");
+                ideas.add("Legionary Discipline");
+                ideas.add("Roman Roads");
+                ideas.add("Imperial Administration");
             }
-            case "England" -> {
-                ideas.add("Rule Britannia");
-                ideas.add("Wooden Wall");
+            case "Parthia" -> {
+                ideas.add("Parthian Shot");
+                ideas.add("Cavalry Tradition");
+                ideas.add("Silk Road Control");
             }
-            case "Brandenburg" -> {
-                ideas.add("Space Marines");
-                ideas.add("Prussian Discipline");
+            case "Armenia" -> {
+                ideas.add("Mountain Defense");
+                ideas.add("Christian Faith");
             }
-            case "Ottomans" -> {
-                ideas.add("Janissaries");
-                ideas.add("Sultan of Rum");
+            case "Dacia" -> {
+                ideas.add("Dacian Warriors");
+                ideas.add("Mountain Strongholds");
             }
-            case "Ming" -> {
-                ideas.add("Celestial Empire");
-                ideas.add("Mandate of Heaven");
+            case "Sarmatia" -> {
+                ideas.add("Sarmatian Cavalry");
+                ideas.add("Steppe Warfare");
+            }
+            case "Quadi", "Marcomanni", "Suebi", "Alemanni", "Chatti", "Cherusci", "Hermunduri", "Frisians" -> {
+                ideas.add("Germanic Warriors");
+                ideas.add("Forest Warfare");
+            }
+            case "Britons", "Caledonians", "Hibernians", "Picts", "Scoti" -> {
+                ideas.add("Celtic Warriors");
+                ideas.add("Island Defense");
+            }
+            case "Garamantes", "Nubia", "Axum" -> {
+                ideas.add("Desert Adaptation");
+                ideas.add("Trade Routes");
+            }
+            case "Himyar", "Saba", "Hadramaut", "Oman" -> {
+                ideas.add("Arabian Trade");
+                ideas.add("Desert Warfare");
+            }
+            case "Kushan", "Indo-Parthian" -> {
+                ideas.add("Silk Road Trade");
+                ideas.add("Buddhist Influence");
             }
         }
     }

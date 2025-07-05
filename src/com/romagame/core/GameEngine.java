@@ -1,15 +1,18 @@
 package com.romagame.core;
 
 import com.romagame.map.WorldMap;
+import com.romagame.map.Country;
 import com.romagame.country.CountryManager;
 import com.romagame.economy.EconomyManager;
 import com.romagame.military.MilitaryManager;
 import com.romagame.diplomacy.DiplomacyManager;
 import com.romagame.technology.TechnologyManager;
+import com.romagame.colonization.ColonizationManager;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.List;
 
 public class GameEngine {
     private WorldMap worldMap;
@@ -18,6 +21,7 @@ public class GameEngine {
     private MilitaryManager militaryManager;
     private DiplomacyManager diplomacyManager;
     private TechnologyManager technologyManager;
+    private ColonizationManager colonizationManager;
     
     private GameDate currentDate;
     private GameSpeed gameSpeed;
@@ -40,6 +44,7 @@ public class GameEngine {
         militaryManager = new MilitaryManager();
         diplomacyManager = new DiplomacyManager();
         technologyManager = new TechnologyManager();
+        colonizationManager = new ColonizationManager(worldMap);
         
         // Setup initial game state
         setupInitialGameState();
@@ -95,6 +100,7 @@ public class GameEngine {
         militaryManager.update();
         diplomacyManager.update();
         technologyManager.update();
+        colonizationManager.update();
         
         // Process events and AI decisions
         processEvents();
@@ -117,7 +123,17 @@ public class GameEngine {
     public MilitaryManager getMilitaryManager() { return militaryManager; }
     public DiplomacyManager getDiplomacyManager() { return diplomacyManager; }
     public TechnologyManager getTechnologyManager() { return technologyManager; }
+    public ColonizationManager getColonizationManager() { return colonizationManager; }
     public GameDate getCurrentDate() { return currentDate; }
     public GameSpeed getGameSpeed() { return gameSpeed; }
     public boolean isRunning() { return isRunning; }
+    
+    // Convenience methods for country access
+    public List<Country> getAllCountries() {
+        return worldMap.getAllCountries();
+    }
+    
+    public Country getCountry(String name) {
+        return worldMap.getCountry(name);
+    }
 } 
