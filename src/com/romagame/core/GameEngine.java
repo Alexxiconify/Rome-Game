@@ -1,0 +1,119 @@
+package com.romagame.core;
+
+import com.romagame.map.WorldMap;
+import com.romagame.country.CountryManager;
+import com.romagame.economy.EconomyManager;
+import com.romagame.military.MilitaryManager;
+import com.romagame.diplomacy.DiplomacyManager;
+import com.romagame.technology.TechnologyManager;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+public class GameEngine {
+    private WorldMap worldMap;
+    private CountryManager countryManager;
+    private EconomyManager economyManager;
+    private MilitaryManager militaryManager;
+    private DiplomacyManager diplomacyManager;
+    private TechnologyManager technologyManager;
+    
+    private GameDate currentDate;
+    private GameSpeed gameSpeed;
+    private boolean isRunning;
+    private ScheduledExecutorService gameLoop;
+    
+    public GameEngine() {
+        initializeGame();
+    }
+    
+    private void initializeGame() {
+        currentDate = new GameDate(1444, 1, 1); // Start like EU4
+        gameSpeed = GameSpeed.NORMAL;
+        isRunning = false;
+        
+        // Initialize all managers
+        worldMap = new WorldMap();
+        countryManager = new CountryManager(worldMap);
+        economyManager = new EconomyManager();
+        militaryManager = new MilitaryManager();
+        diplomacyManager = new DiplomacyManager();
+        technologyManager = new TechnologyManager();
+        
+        // Setup initial game state
+        setupInitialGameState();
+    }
+    
+    private void setupInitialGameState() {
+        // Create initial countries and setup world
+        countryManager.initializeCountries();
+        worldMap.initializeProvinces();
+        economyManager.initializeEconomies();
+    }
+    
+    public void start() {
+        if (!isRunning) {
+            isRunning = true;
+            gameLoop = Executors.newScheduledThreadPool(1);
+            gameLoop.scheduleAtFixedRate(this::update, 0, getUpdateInterval(), TimeUnit.MILLISECONDS);
+        }
+    }
+    
+    public void pause() {
+        isRunning = false;
+        if (gameLoop != null) {
+            gameLoop.shutdown();
+        }
+    }
+    
+    public void setGameSpeed(GameSpeed speed) {
+        this.gameSpeed = speed;
+    }
+    
+    private long getUpdateInterval() {
+        return switch (gameSpeed) {
+            case PAUSED -> Long.MAX_VALUE;
+            case SLOW -> 1000; // 1 second
+            case NORMAL -> 500; // 0.5 seconds
+            case FAST -> 200; // 0.2 seconds
+            case VERY_FAST -> 100; // 0.1 seconds
+        };
+    }
+    
+    private void update() {
+        if (!isRunning) return;
+        
+        // Update all game systems
+        currentDate.advance();
+        countryManager.update();
+        economyManager.update();
+        militaryManager.update();
+        diplomacyManager.update();
+        technologyManager.update();
+        
+        // Process events and AI decisions
+        processEvents();
+        processAI();
+    }
+    
+    private void processEvents() {
+        // Handle random events, decisions, etc.
+    }
+    
+    private void processAI() {
+        // Process AI decisions for non-player countries
+        countryManager.processAI();
+    }
+    
+    // Getters for UI access
+    public WorldMap getWorldMap() { return worldMap; }
+    public CountryManager getCountryManager() { return countryManager; }
+    public EconomyManager getEconomyManager() { return economyManager; }
+    public MilitaryManager getMilitaryManager() { return militaryManager; }
+    public DiplomacyManager getDiplomacyManager() { return diplomacyManager; }
+    public TechnologyManager getTechnologyManager() { return technologyManager; }
+    public GameDate getCurrentDate() { return currentDate; }
+    public GameSpeed getGameSpeed() { return gameSpeed; }
+    public boolean isRunning() { return isRunning; }
+} 
