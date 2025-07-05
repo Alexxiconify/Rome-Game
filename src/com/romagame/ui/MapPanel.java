@@ -14,6 +14,8 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import java.util.HashMap;
 import java.util.Map;
+import java.io.BufferedReader;
+import java.io.FileReader;
 
 public class MapPanel extends JPanel {
     private GameEngine engine;
@@ -71,15 +73,43 @@ public class MapPanel extends JPanel {
 
     private void loadProvinceMask() {
         try {
-            File maskFile = new File("resources/province_mask.png");
+            File maskFile = new File("province_mask.png");
             if (maskFile.exists()) {
                 provinceMask = ImageIO.read(maskFile);
-                // TODO: Populate colorToProvinceId from a data file or hardcoded mapping
+                loadColorToProvinceId();
                 updateProvinceColorMap();
                 updateBorderOverlay();
             }
         } catch (IOException e) {
             System.out.println("Could not load province mask image");
+        }
+    }
+
+    private void loadColorToProvinceId() {
+        try (BufferedReader br = new BufferedReader(new FileReader("resources/province_color_map.csv"))) {
+            String line;
+            boolean firstLine = true;
+            while ((line = br.readLine()) != null) {
+                if (firstLine) {
+                    firstLine = false;
+                    continue; // skip header
+                }
+                String[] parts = line.split(",");
+                if (parts.length == 2) {
+                    try {
+                        // Parse as long first, then convert to int
+                        long longValue = Long.parseLong(parts[0].trim());
+                        int argb = (int) longValue;
+                        String provinceId = parts[1].trim();
+                        colorToProvinceId.put(argb, provinceId);
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid ARGB value in mapping: " + parts[0]);
+                    }
+                }
+            }
+            System.out.println("Loaded " + colorToProvinceId.size() + " province color mappings");
+        } catch (IOException e) {
+            System.out.println("Could not load province color map: " + e.getMessage());
         }
     }
 
