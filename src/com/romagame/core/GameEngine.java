@@ -48,7 +48,7 @@ public class GameEngine {
     private void setupInitialGameState() {
         // Create initial countries and setup world
         countryManager.initializeCountries();
-        worldMap.initializeProvinces();
+        // worldMap.initializeProvinces();
         economyManager.initializeEconomies();
     }
     
