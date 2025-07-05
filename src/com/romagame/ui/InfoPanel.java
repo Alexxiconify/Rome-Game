@@ -95,6 +95,21 @@ public class InfoPanel extends JPanel {
             sb.append("  ").append(idea).append("\n");
         }
         
+        // Add colonization missions info
+        var colonizationManager = engine.getColonizationManager();
+        var activeMissions = colonizationManager.getActiveMissions();
+        
+        if (!activeMissions.isEmpty()) {
+            sb.append("\nActive Colonization Missions:\n");
+            for (var mission : activeMissions) {
+                if (mission.getCountryName().equals(country.getName())) {
+                    sb.append("  ").append(mission.getProvinceId()).append(": ")
+                      .append(String.format("%.1f%%", mission.getProgress() * 100))
+                      .append(" (").append(mission.getColonists()).append(" colonists)\n");
+                }
+            }
+        }
+        
         infoArea.setText(sb.toString());
     }
 } 
