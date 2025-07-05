@@ -7,6 +7,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
@@ -23,8 +25,12 @@ public class MapPanel extends JPanel {
     private BufferedImage mapBackground;
     private boolean mapLoaded = false;
     private BufferedImage provinceMask;
+    private BufferedImage provinceColorMap = null;
+    private BufferedImage borderOverlay = null;
     private Map<Integer, String> colorToProvinceId = new HashMap<>(); // ARGB -> provinceId
-    
+    private Point mouseMapPoint = null;
+    private String hoveredProvinceId = null;
+
     public MapPanel(GameEngine engine) {
         this.engine = engine;
         setupPanel();
@@ -32,74 +38,90 @@ public class MapPanel extends JPanel {
         loadProvinceMask();
         setupMouseListeners();
     }
-    
+
     private void setupPanel() {
-        setPreferredSize(new Dimension(1000, 600));
-        setBackground(new Color(50, 100, 150)); // Ocean blue
+        setPreferredSize(new Dimension(1200, 700));
+        setBackground(new Color(40, 70, 120)); // Deep blue
         setFocusable(true);
     }
-    
+
     private void loadMapBackground() {
         try {
-            // Try to load a map background image
             File mapFile = new File("resources/map_background.png");
             if (mapFile.exists()) {
                 mapBackground = ImageIO.read(mapFile);
                 mapLoaded = true;
             } else {
-                // Create a simple map background if no image is available
-                createSimpleMapBackground();
+                createGradientBackground();
             }
         } catch (IOException e) {
-            System.out.println("Could not load map background, using simple background");
-            createSimpleMapBackground();
+            createGradientBackground();
         }
     }
-    
-    private void createSimpleMapBackground() {
-        // Create a simple world map background
-        mapBackground = new BufferedImage(1000, 600, BufferedImage.TYPE_INT_RGB);
+
+    private void createGradientBackground() {
+        mapBackground = new BufferedImage(1200, 700, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = mapBackground.createGraphics();
-        
-        // Draw ocean
-        g2d.setColor(new Color(50, 100, 150));
-        g2d.fillRect(0, 0, 1000, 600);
-        
-        // Draw continents (simplified)
-        g2d.setColor(new Color(100, 150, 100));
-        
-        // Europe
-        g2d.fillRect(400, 150, 200, 150);
-        
-        // Africa
-        g2d.fillRect(450, 300, 150, 200);
-        
-        // Asia
-        g2d.fillRect(600, 100, 300, 250);
-        
-        // Middle East
-        g2d.fillRect(550, 200, 100, 100);
-        
-        // Add some detail
-        g2d.setColor(new Color(80, 120, 80));
-        g2d.fillRect(420, 170, 160, 110); // More detailed Europe
-        
+        GradientPaint gp = new GradientPaint(0, 0, new Color(60, 110, 180), 0, 700, new Color(30, 60, 120));
+        g2d.setPaint(gp);
+        g2d.fillRect(0, 0, 1200, 700);
         g2d.dispose();
         mapLoaded = true;
     }
-    
+
     private void loadProvinceMask() {
         try {
-            File maskFile = new File("resources/qbam_province_mask.png");
+            File maskFile = new File("resources/province_mask.png");
             if (maskFile.exists()) {
                 provinceMask = ImageIO.read(maskFile);
                 // TODO: Populate colorToProvinceId from a data file or hardcoded mapping
+                updateProvinceColorMap();
+                updateBorderOverlay();
             }
         } catch (IOException e) {
             System.out.println("Could not load province mask image");
         }
     }
-    
+
+    private void updateProvinceColorMap() {
+        if (provinceMask == null) return;
+        provinceColorMap = new BufferedImage(
+            provinceMask.getWidth(), provinceMask.getHeight(), BufferedImage.TYPE_INT_ARGB
+        );
+        Map<Integer, Color> maskColorToOwnerColor = new HashMap<>();
+        for (int y = 0; y < provinceMask.getHeight(); y++) {
+            for (int x = 0; x < provinceMask.getWidth(); x++) {
+                int argb = provinceMask.getRGB(x, y);
+                if (argb == 0xFF000000) continue; // skip black background
+                if (!maskColorToOwnerColor.containsKey(argb)) {
+                    String provinceId = colorToProvinceId.get(argb);
+                    if (provinceId != null) {
+                        Province province = engine.getWorldMap().getProvince(provinceId);
+                        if (province != null) {
+                            maskColorToOwnerColor.put(argb, getProvinceColor(province));
+                        }
+                    }
+                }
+                Color fill = maskColorToOwnerColor.get(argb);
+                if (fill != null) {
+                    provinceColorMap.setRGB(x, y, fill.getRGB());
+                }
+            }
+        }
+    }
+
+    private void updateBorderOverlay() {
+        if (provinceMask == null) return;
+        // Use a simple edge detection kernel to highlight province borders
+        float[] kernel = {
+            -1, -1, -1,
+            -1,  8, -1,
+            -1, -1, -1
+        };
+        ConvolveOp edgeOp = new ConvolveOp(new Kernel(3, 3, kernel));
+        borderOverlay = edgeOp.filter(provinceMask, null);
+    }
+
     private void setupMouseListeners() {
         addMouseListener(new MouseAdapter() {
             @Override
@@ -109,20 +131,17 @@ public class MapPanel extends JPanel {
                     lastMousePos = e.getPoint();
                 }
             }
-            
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON1) {
                     isDragging = false;
                 }
             }
-            
             @Override
             public void mouseClicked(MouseEvent e) {
                 handleProvinceClick(e.getPoint());
             }
         });
-        
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
@@ -135,152 +154,133 @@ public class MapPanel extends JPanel {
                     repaint();
                 }
             }
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                mouseMapPoint = screenToMap(e.getPoint());
+                hoveredProvinceId = getProvinceIdAt(mouseMapPoint);
+                repaint();
+            }
         });
-        
         addMouseWheelListener(e -> {
             double zoomFactor = e.getWheelRotation() > 0 ? 0.9 : 1.1;
             zoom = Math.max(0.1, Math.min(5.0, zoom * zoomFactor));
             repaint();
         });
     }
-    
+
+    private Point screenToMap(Point p) {
+        int panelW = getWidth();
+        int panelH = getHeight();
+        int imgW = provinceMask.getWidth();
+        int imgH = provinceMask.getHeight();
+        double scale = Math.min(panelW / (double)imgW, panelH / (double)imgH) * zoom;
+        int drawW = (int)(imgW * scale);
+        int drawH = (int)(imgH * scale);
+        int x0 = (panelW - drawW) / 2 + offsetX;
+        int y0 = (panelH - drawH) / 2 + offsetY;
+        int mapX = (int)((p.x - x0) / scale);
+        int mapY = (int)((p.y - y0) / scale);
+        return new Point(mapX, mapY);
+    }
+
+    private String getProvinceIdAt(Point mapPoint) {
+        if (provinceMask == null || mapPoint == null) return null;
+        int x = mapPoint.x, y = mapPoint.y;
+        if (x < 0 || y < 0 || x >= provinceMask.getWidth() || y >= provinceMask.getHeight()) return null;
+        int argb = provinceMask.getRGB(x, y);
+        return colorToProvinceId.get(argb);
+    }
+
     private void handleProvinceClick(Point p) {
-        // Convert screen coordinates to map coordinates
-        int mapX = (int)((p.x - offsetX) / zoom);
-        int mapY = (int)((p.y - offsetY) / zoom);
-        
-        // Find province at this location (simplified)
-        Province clickedProvince = findProvinceAt(mapX, mapY);
-        if (clickedProvince != null) {
-            showProvinceInfo(clickedProvince);
-        }
-    }
-    
-    private Province findProvinceAt(int x, int y) {
-        // Use province mask if available
-        if (provinceMask != null && x >= 0 && y >= 0 && x < provinceMask.getWidth() && y < provinceMask.getHeight()) {
-            int argb = provinceMask.getRGB(x, y);
-            String provinceId = colorToProvinceId.get(argb);
-            if (provinceId != null) {
-                return engine.getWorldMap().getProvince(provinceId);
+        Point mapPoint = screenToMap(p);
+        String provinceId = getProvinceIdAt(mapPoint);
+        if (provinceId != null) {
+            Province clickedProvince = engine.getWorldMap().getProvince(provinceId);
+            if (clickedProvince != null) {
+                showProvinceInfo(clickedProvince);
             }
         }
-        // Fallback: old method
-        for (Province province : engine.getWorldMap().getAllProvinces()) {
-            int screenX = (int)((province.getLongitude() + 180) * 2.78);
-            int screenY = (int)((90 - province.getLatitude()) * 3.33);
-            if (Math.abs(screenX - x) < 20 && Math.abs(screenY - y) < 20) {
-                return province;
-            }
-        }
-        return null;
     }
-    
+
     private void showProvinceInfo(Province province) {
-        String info = String.format("Province: %s\nOwner: %s\nPopulation: %d\nDevelopment: %.1f\nTerrain: %s\nTrade Goods: %s",
-                province.getName(), province.getOwner(), province.getPopulation(), 
-                province.getDevelopment(), province.getTerrain(), 
+        String info = String.format("<html><b>Province:</b> %s<br><b>Owner:</b> %s<br><b>Population:</b> %d<br><b>Development:</b> %.1f<br><b>Terrain:</b> %s<br><b>Trade Goods:</b> %s</html>",
+                province.getName(), province.getOwner(), province.getPopulation(),
+                province.getDevelopment(), province.getTerrain(),
                 String.join(", ", province.getTradeGoods()));
         JOptionPane.showMessageDialog(this, info, "Province Information", JOptionPane.INFORMATION_MESSAGE);
     }
-    
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
-        
-        // Enable anti-aliasing
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        
-        // Apply zoom and offset
-        g2d.translate(offsetX, offsetY);
-        g2d.scale(zoom, zoom);
-        
-        drawMap(g2d);
-        drawProvinces(g2d);
-        drawUI(g2d);
-    }
-    
-    private void drawMap(Graphics2D g2d) {
+        // Draw background
         if (mapLoaded && mapBackground != null) {
-            // Draw the map background
             g2d.drawImage(mapBackground, 0, 0, getWidth(), getHeight(), null);
-        } else {
-            // Fallback to simple background
-            g2d.setColor(new Color(50, 100, 150)); // Ocean color
-            g2d.fillRect(0, 0, getWidth(), getHeight());
-            
-            // Draw simple land masses
-            g2d.setColor(new Color(100, 150, 100)); // Land color
-            g2d.fillRect(400, 150, 200, 150); // Europe
-            g2d.fillRect(450, 300, 150, 200); // Africa
-            g2d.fillRect(600, 100, 300, 250); // Asia
-            g2d.fillRect(550, 200, 100, 100); // Middle East
         }
-    }
-    
-    private void drawProvinces(Graphics2D g2d) {
-        for (Province province : engine.getWorldMap().getAllProvinces()) {
-            drawProvince(g2d, province);
+        // Draw provinces (scaled)
+        if (provinceColorMap != null) {
+            int panelW = getWidth();
+            int panelH = getHeight();
+            int imgW = provinceColorMap.getWidth();
+            int imgH = provinceColorMap.getHeight();
+            double scale = Math.min(panelW / (double)imgW, panelH / (double)imgH) * zoom;
+            int drawW = (int)(imgW * scale);
+            int drawH = (int)(imgH * scale);
+            int x = (panelW - drawW) / 2 + offsetX;
+            int y = (panelH - drawH) / 2 + offsetY;
+            g2d.drawImage(provinceColorMap, x, y, drawW, drawH, null);
         }
-    }
-    
-    private void drawProvince(Graphics2D g2d, Province province) {
-        // Convert lat/lon to screen coordinates
-        int x = (int)((province.getLongitude() + 180) * 2.78);
-        int y = (int)((90 - province.getLatitude()) * 3.33);
-        
-        // Draw province as a circle with better styling
-        Color provinceColor = getProvinceColor(province);
-        g2d.setColor(provinceColor);
-        g2d.fillOval(x - 8, y - 8, 16, 16);
-        
-        // Draw border - thicker for better visibility
-        g2d.setColor(Color.BLACK);
-        g2d.setStroke(new BasicStroke(2));
-        g2d.drawOval(x - 8, y - 8, 16, 16);
-        
-        // Draw capital indicator
-        if (province.isCapital()) {
-            g2d.setColor(Color.YELLOW);
-            g2d.fillOval(x - 3, y - 3, 6, 6);
-            g2d.setColor(Color.BLACK);
-            g2d.drawOval(x - 3, y - 3, 6, 6);
+        // Draw borders overlay
+        if (borderOverlay != null) {
+            int panelW = getWidth();
+            int panelH = getHeight();
+            int imgW = borderOverlay.getWidth();
+            int imgH = borderOverlay.getHeight();
+            double scale = Math.min(panelW / (double)imgW, panelH / (double)imgH) * zoom;
+            int drawW = (int)(imgW * scale);
+            int drawH = (int)(imgH * scale);
+            int x = (panelW - drawW) / 2 + offsetX;
+            int y = (panelH - drawH) / 2 + offsetY;
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
+            g2d.drawImage(borderOverlay, x, y, drawW, drawH, null);
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
         }
-        
-        // Draw province name for capitals and major provinces
-        if (province.isCapital() || province.getDevelopment() > 5) {
-            g2d.setColor(Color.WHITE);
-            g2d.setFont(new Font("Arial", Font.BOLD, 10));
-            g2d.drawString(province.getName(), x + 10, y);
-        }
-        
-        // Draw colonization indicator for uncolonized provinces
-        if (province.getOwner().equals("Uninhabited")) {
-            g2d.setColor(Color.RED);
-            g2d.setFont(new Font("Arial", Font.BOLD, 8));
-            g2d.drawString("?", x + 5, y + 5);
-        }
-        
-        // Draw colonization progress for provinces being colonized
-        var colonizationManager = engine.getColonizationManager();
-        for (var mission : colonizationManager.getActiveMissions()) {
-            if (mission.getProvinceId().equals(province.getId())) {
-                // Draw progress ring
-                g2d.setColor(new Color(255, 255, 0, 150)); // Semi-transparent yellow
-                g2d.setStroke(new BasicStroke(3));
-                int progressAngle = (int)(mission.getProgress() * 360);
-                g2d.drawArc(x - 10, y - 10, 20, 20, 90, progressAngle);
-                
-                // Draw progress text
+        // Highlight hovered province
+        if (hoveredProvinceId != null && provinceMask != null) {
+            Province hovered = engine.getWorldMap().getProvince(hoveredProvinceId);
+            if (hovered != null) {
+                int panelW = getWidth();
+                int panelH = getHeight();
+                int imgW = provinceMask.getWidth();
+                int imgH = provinceMask.getHeight();
+                double scale = Math.min(panelW / (double)imgW, panelH / (double)imgH) * zoom;
+                int drawW = (int)(imgW * scale);
+                int drawH = (int)(imgH * scale);
+                int x0 = (panelW - drawW) / 2 + offsetX;
+                int y0 = (panelH - drawH) / 2 + offsetY;
+                int highlightColor = 0x66FFFFFF;
+                for (int y = 0; y < imgH; y++) {
+                    for (int x = 0; x < imgW; x++) {
+                        int argb = provinceMask.getRGB(x, y);
+                        if (colorToProvinceId.get(argb) != null && colorToProvinceId.get(argb).equals(hoveredProvinceId)) {
+                            g2d.setColor(new Color(highlightColor, true));
+                            g2d.fillRect(x0 + (int)(x * scale), y0 + (int)(y * scale), (int)Math.ceil(scale), (int)Math.ceil(scale));
+                        }
+                    }
+                }
+                // Draw tooltip
+                g2d.setFont(new Font("Segoe UI", Font.BOLD, 16));
+                g2d.setColor(new Color(30, 30, 30, 220));
+                g2d.fillRoundRect(20, getHeight() - 60, 320, 40, 12, 12);
                 g2d.setColor(Color.WHITE);
-                g2d.setFont(new Font("Arial", Font.BOLD, 8));
-                g2d.drawString(String.format("%.0f%%", mission.getProgress() * 100), x - 5, y + 20);
-                break;
+                g2d.drawString("Province: " + hovered.getName() + " | Owner: " + hovered.getOwner(), 30, getHeight() - 35);
             }
         }
+        drawUI(g2d);
     }
-    
+
     private Color getProvinceColor(Province province) {
         // Assign colors based on country for 117 AD - matching Q-BAM style
         return switch (province.getOwner()) {
@@ -299,25 +299,21 @@ public class MapPanel extends JPanel {
             default -> new Color(140, 140, 140); // Medium Gray
         };
     }
-    
+
     private void drawUI(Graphics2D g2d) {
         // Reset transform for UI elements
         g2d.setTransform(new AffineTransform());
-        
-        // Draw zoom level
-        g2d.setColor(Color.WHITE);
-        g2d.setFont(new Font("Arial", Font.BOLD, 14));
-        g2d.drawString(String.format("Zoom: %.1fx", zoom), 10, 20);
-        
-        // Draw current date
-        g2d.drawString("Date: " + engine.getCurrentDate().getFormattedDate(), 10, 40);
-        
-        // Draw game speed
-        g2d.drawString("Speed: " + engine.getGameSpeed().getDisplayName(), 10, 60);
-        
-        // Draw selected country
+        g2d.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        g2d.setColor(new Color(255, 255, 255, 220));
+        g2d.fillRoundRect(8, 8, 260, 110, 16, 16);
+        g2d.setColor(Color.DARK_GRAY);
+        g2d.drawRoundRect(8, 8, 260, 110, 16, 16);
+        g2d.setColor(Color.BLACK);
+        g2d.drawString(String.format("Zoom: %.1fx", zoom), 20, 35);
+        g2d.drawString("Date: " + engine.getCurrentDate().getFormattedDate(), 20, 60);
+        g2d.drawString("Speed: " + engine.getGameSpeed().getDisplayName(), 20, 85);
         if (engine.getCountryManager().getPlayerCountry() != null) {
-            g2d.drawString("Playing as: " + engine.getCountryManager().getPlayerCountry().getName(), 10, 80);
+            g2d.drawString("Playing as: " + engine.getCountryManager().getPlayerCountry().getName(), 20, 110);
         }
     }
 } 
