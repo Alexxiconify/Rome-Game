@@ -19,6 +19,7 @@ public class Province {
     private String culture;
     private String religion;
     private List<String> tradeGoods;
+    private List<Location> locations;
     
     public Province(String id, String owner, double lat, double lon, String type) {
         this.id = id;
@@ -36,6 +37,8 @@ public class Province {
         this.culture = determineCulture(owner);
         this.religion = determineReligion(owner);
         this.tradeGoods = determineTradeGoods(lat, lon);
+        this.locations = new ArrayList<>();
+        initializeLocations();
     }
     
     private String determineTerrain(double lat, double lon) {
@@ -100,6 +103,45 @@ public class Province {
             goods.add("Ivory");
         }
         return goods;
+    }
+    
+    private void initializeLocations() {
+        // For now, create 3 generic locations per province (can be improved with map data)
+        for (int i = 1; i <= 3; i++) {
+            locations.add(new Location("Location " + i));
+        }
+    }
+
+    public List<Location> getLocations() {
+        return locations;
+    }
+    public Location getLocationByName(String name) {
+        for (Location loc : locations) {
+            if (loc.getName().equals(name)) return loc;
+        }
+        return null;
+    }
+    public void moveTroops(String from, String to, int amount) {
+        Location src = getLocationByName(from);
+        Location dst = getLocationByName(to);
+        if (src != null && dst != null && src.troops >= amount) {
+            src.troops -= amount;
+            dst.troops += amount;
+        }
+    }
+
+    public static class Location {
+        private String name;
+        private int troops;
+        public Location(String name) {
+            this.name = name;
+            this.troops = 0;
+        }
+        public String getName() { return name; }
+        public int getTroops() { return troops; }
+        public void setTroops(int troops) { this.troops = troops; }
+        public void addTroops(int amount) { this.troops += amount; }
+        public void removeTroops(int amount) { this.troops = Math.max(0, this.troops - amount); }
     }
     
     // Getters and setters

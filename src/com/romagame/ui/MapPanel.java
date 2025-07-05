@@ -10,6 +10,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MapPanel extends JPanel {
     private GameEngine engine;
@@ -20,11 +22,14 @@ public class MapPanel extends JPanel {
     private Point lastMousePos;
     private BufferedImage mapBackground;
     private boolean mapLoaded = false;
+    private BufferedImage provinceMask;
+    private Map<Integer, String> colorToProvinceId = new HashMap<>(); // ARGB -> provinceId
     
     public MapPanel(GameEngine engine) {
         this.engine = engine;
         setupPanel();
         loadMapBackground();
+        loadProvinceMask();
         setupMouseListeners();
     }
     
@@ -81,6 +86,18 @@ public class MapPanel extends JPanel {
         
         g2d.dispose();
         mapLoaded = true;
+    }
+    
+    private void loadProvinceMask() {
+        try {
+            File maskFile = new File("resources/qbam_province_mask.png");
+            if (maskFile.exists()) {
+                provinceMask = ImageIO.read(maskFile);
+                // TODO: Populate colorToProvinceId from a data file or hardcoded mapping
+            }
+        } catch (IOException e) {
+            System.out.println("Could not load province mask image");
+        }
     }
     
     private void setupMouseListeners() {
@@ -140,12 +157,18 @@ public class MapPanel extends JPanel {
     }
     
     private Province findProvinceAt(int x, int y) {
-        // Simplified province finding - in a real game this would use proper map data
+        // Use province mask if available
+        if (provinceMask != null && x >= 0 && y >= 0 && x < provinceMask.getWidth() && y < provinceMask.getHeight()) {
+            int argb = provinceMask.getRGB(x, y);
+            String provinceId = colorToProvinceId.get(argb);
+            if (provinceId != null) {
+                return engine.getWorldMap().getProvince(provinceId);
+            }
+        }
+        // Fallback: old method
         for (Province province : engine.getWorldMap().getAllProvinces()) {
-            // Convert lat/lon to screen coordinates
             int screenX = (int)((province.getLongitude() + 180) * 2.78);
             int screenY = (int)((90 - province.getLatitude()) * 3.33);
-            
             if (Math.abs(screenX - x) < 20 && Math.abs(screenY - y) < 20) {
                 return province;
             }
