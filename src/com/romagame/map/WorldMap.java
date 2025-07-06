@@ -21,7 +21,7 @@ public class WorldMap {
         ProvinceCreationSnippets.createAllProvinces(this);
         initializeSeaZones();
     }
-    }
+    
     private void initializeSeaZones() {
         // Major sea zones based on Q-BAM map
         seaZones.add(new SeaZone("Mediterranean Sea", "Mediterranean"));
@@ -64,7 +64,7 @@ public class WorldMap {
         seaZones.add(new SeaZone("Timor Sea", "Indian Ocean"));
     }
 
-    private void createProvince(String id, String owner, int r, int g, int b) {
+    public void createProvince(String id, String owner, int r, int g, int b) {
         // Use dummy coordinates and type since we're creating from color data
         Province province = new Province(id, owner, 0.0, 0.0, "Auto");
         provinces.put(id, province);
