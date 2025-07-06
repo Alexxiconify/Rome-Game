@@ -5,7 +5,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class BuildingsPanel extends JPanel {
-    private GameEngine engine;
+    public GameEngine engine;
     private JList<String> buildingsList;
     private DefaultListModel<String> buildingsModel;
     private JTextArea buildingDetails;

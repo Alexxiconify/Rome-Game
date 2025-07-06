@@ -5,7 +5,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class FocusTreePanel extends JPanel {
-    private GameEngine engine;
+    public GameEngine engine;
     private JList<String> focusList;
     private DefaultListModel<String> focusModel;
     private JTextArea focusDetails;
