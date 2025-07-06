@@ -86,4 +86,8 @@ public class CountryManager {
             // Transfer province ownership
         }
     }
+    
+    public AIManager getAIManager() {
+        return aiManager;
+    }
 } 
