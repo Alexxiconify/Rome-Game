@@ -41,11 +41,13 @@ public class MapPanel extends JPanel {
     private Map<String, Color> countryColors = new HashMap<>();
     private Random colorRand = new Random(117); // Seed for reproducibility
     private javax.swing.Timer repaintTimer;
+    private Map<String, Color> provinceIdToOwnerColor = new HashMap<>();
 
     public MapPanel(GameEngine engine) {
         this.engine = engine;
         setupPanel();
         loadMapBackground();
+        loadProvinceOwnerColors();
         loadProvinceMask();
         setupMouseListeners();
         setupWaterAnimation();
@@ -158,6 +160,26 @@ public class MapPanel extends JPanel {
         }
     }
 
+    private void loadProvinceOwnerColors() {
+        try (BufferedReader br = new BufferedReader(new FileReader("province_ownership_report.csv"))) {
+            String line;
+            boolean firstLine = true;
+            while ((line = br.readLine()) != null) {
+                if (firstLine) { firstLine = false; continue; }
+                String[] parts = line.split(",");
+                if (parts.length >= 10) {
+                    String provinceId = parts[0].trim();
+                    int r = Integer.parseInt(parts[6].trim());
+                    int g = Integer.parseInt(parts[7].trim());
+                    int b = Integer.parseInt(parts[8].trim());
+                    provinceIdToOwnerColor.put(provinceId, new Color(r, g, b));
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Could not load province owner color map: " + e.getMessage());
+        }
+    }
+
     private void updateProvinceColorMap() {
         if (provinceMask == null) return;
         provinceColorMap = new BufferedImage(
@@ -167,18 +189,16 @@ public class MapPanel extends JPanel {
             for (int x = 0; x < provinceMask.getWidth(); x++) {
                 int argb = provinceMask.getRGB(x, y) | 0xFF000000;
                 if (argb == 0xFF000000) {
-                    // Treat as ocean/background, e.g. transparent or blue
                     provinceColorMap.setRGB(x, y, new Color(0,0,0,0).getRGB());
                     continue;
                 }
                 String provinceId = colorToProvinceId.get(argb);
                 if (provinceId == null) {
-                    System.out.printf("Unmapped color: 0x%08X at (%d,%d)%n", argb, x, y);
                     provinceColorMap.setRGB(x, y, Color.MAGENTA.getRGB());
                 } else {
-                    Province province = engine.getWorldMap().getProvince(provinceId);
-                    if (province != null) {
-                        provinceColorMap.setRGB(x, y, getProvinceColor(province).getRGB());
+                    Color ownerColor = provinceIdToOwnerColor.get(provinceId);
+                    if (ownerColor != null) {
+                        provinceColorMap.setRGB(x, y, ownerColor.getRGB());
                     } else {
                         provinceColorMap.setRGB(x, y, Color.MAGENTA.getRGB());
                     }
