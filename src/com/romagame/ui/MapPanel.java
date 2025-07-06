@@ -25,10 +25,9 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import com.romagame.military.Army;
 import com.romagame.military.MilitaryManager;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.io.StringReader;
 
 public class MapPanel extends JPanel {
     private GameEngine engine;
@@ -984,23 +983,24 @@ public class MapPanel extends JPanel {
     private void loadNationsAndProvinces() {
         try {
             String jsonText = new String(Files.readAllBytes(Paths.get("src/resources/nations_and_provinces.json")));
-            JSONObject root = new JSONObject(jsonText);
+            JsonReader reader = Json.createReader(new StringReader(jsonText));
+            JsonObject root = reader.readObject();
 
             // Nations
-            JSONArray nations = root.getJSONArray("nations");
-            for (int i = 0; i < nations.length(); i++) {
-                JSONObject nation = nations.getJSONObject(i);
+            JsonArray nations = root.getJsonArray("nations");
+            for (int i = 0; i < nations.size(); i++) {
+                JsonObject nation = nations.getJsonObject(i);
                 String name = nation.getString("name");
-                JSONArray colorArr = nation.getJSONArray("color");
+                JsonArray colorArr = nation.getJsonArray("color");
                 String colorStr = String.format("%d,%d,%d", colorArr.getInt(0), colorArr.getInt(1), colorArr.getInt(2));
                 nationToColor.put(name, colorStr);
                 nationList.add(name);
             }
 
             // Provinces
-            JSONArray provinces = root.getJSONArray("provinces");
-            for (int i = 0; i < provinces.length(); i++) {
-                JSONObject province = provinces.getJSONObject(i);
+            JsonArray provinces = root.getJsonArray("provinces");
+            for (int i = 0; i < provinces.size(); i++) {
+                JsonObject province = provinces.getJsonObject(i);
                 String provinceId = province.getString("province_id");
                 String owner = province.getString("owner_name");
                 provinceIdToOwner.put(provinceId, owner);
