@@ -205,7 +205,7 @@ public class War {
     public List<Battle> getBattles() { return new ArrayList<>(battles); }
     public List<String> getOccupiedProvinces() { return new ArrayList<>(occupiedProvinces); }
     
-    private static class Battle {
+    public static class Battle {
         private String attacker;
         private String defender;
         private double result;
