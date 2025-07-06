@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
+import com.romagame.map.Country;
+import com.romagame.country.CountryManager;
 
 public class DiplomacyManager {
     private Map<String, Map<String, DiplomaticRelation>> relations;
@@ -280,7 +282,7 @@ public class DiplomacyManager {
 
     // Aggression-diplo stat management
     public void addAggression(String countryName, double amount) {
-        var country = countryManager.getCountry(countryName);
+        Country country = countryManager.getCountry(countryName);
         if (country != null) {
             country.addAggressionDiplo(amount);
         }
