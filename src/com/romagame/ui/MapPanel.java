@@ -575,7 +575,6 @@ public class MapPanel extends JPanel {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         // 1. Draw enhanced animated ocean background (cached for performance)
         if (mapLoaded && mapBackground != null) {
-            // Cache ocean background to avoid recreating every frame
             if (cachedOceanBackground == null || lastOceanBgWidth != getWidth() || lastOceanBgHeight != getHeight()) {
                 cachedOceanBackground = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
                 Graphics2D gAnim = cachedOceanBackground.createGraphics();
@@ -596,6 +595,28 @@ public class MapPanel extends JPanel {
                 lastOceanBgHeight = getHeight();
             }
             g2d.drawImage(cachedOceanBackground, 0, 0, null);
+        }
+        // 1b. Draw ocean mesh/tiles (rectangles) over ocean areas
+        if (provinceMask != null && colorToProvinceId != null) {
+            int tileSize = (int)Math.max(8, Math.round(currentScale * 8));
+            for (int yy = 0; yy < mapImgHeight; yy += tileSize) {
+                for (int xx = 0; xx < mapImgWidth; xx += tileSize) {
+                    int argb = provinceMask.getRGB(xx, yy) | 0xFF000000;
+                    String pid = colorToProvinceId.get(argb);
+                    if (pid == null) continue;
+                    com.romagame.map.Province p = engine.getWorldMap().getProvince(pid);
+                    if (p == null) continue;
+                    String owner = p.getOwner();
+                    if (owner.equals("Ocean") || owner.equals("Uncolonized") || owner.startsWith("Unknown") || owner.startsWith("rgb_") || owner.equals("REMOVE_FROM_MAP") || owner.equals("BORDER")) {
+                        int sx = currentOffsetX + (int)(xx * currentScale);
+                        int sy = currentOffsetY + (int)(yy * currentScale);
+                        g2d.setColor(new Color(70, 130, 200, 90)); // semi-transparent blue
+                        g2d.fillRect(sx, sy, tileSize, tileSize);
+                        g2d.setColor(new Color(40, 90, 160, 60));
+                        g2d.drawRect(sx, sy, tileSize, tileSize);
+                    }
+                }
+            }
         }
         // 2. Province fill (from mask)
         if (provinceColorMap != null) {
@@ -732,7 +753,8 @@ public class MapPanel extends JPanel {
                     Province p = engine.getWorldMap().getProvince(pid);
                     if (p != null) {
                         String owner = p.getOwner();
-                        if (owner.equals("Ocean") || owner.equals("Uncolonized") || owner.startsWith("Unknown") || owner.startsWith("rgb_") || owner.equals("REMOVE_FROM_MAP") || owner.equals("BORDER"))
+                        // Stricter filter: skip all non-nation tiles
+                        if (owner == null || owner.equals("Ocean") || owner.equals("Uncolonized") || owner.startsWith("Unknown") || owner.startsWith("rgb_") || owner.equals("REMOVE_FROM_MAP") || owner.equals("BORDER") || owner.equals("Water") || owner.equals("Sea") || owner.equals("Lake") || owner.equals("River"))
                             continue;
                         centroids.putIfAbsent(owner, new double[]{0, 0});
                         counts.put(owner, counts.getOrDefault(owner, 0) + 1);

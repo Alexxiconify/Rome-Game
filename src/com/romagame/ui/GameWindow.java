@@ -30,6 +30,17 @@ public class GameWindow extends JFrame {
         layoutComponents();
         setupEventHandlers();
         setupGameEngineCallback();
+        // Center on player country only after window is shown and sized
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            private boolean centered = false;
+            @Override
+            public void componentShown(java.awt.event.ComponentEvent e) {
+                if (!centered) {
+                    centerOnPlayerCountry();
+                    centered = true;
+                }
+            }
+        });
     }
     
     private void setupWindow() {
