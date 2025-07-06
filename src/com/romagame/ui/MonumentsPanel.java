@@ -157,150 +157,15 @@ public class MonumentsPanel extends JPanel {
     }
     
     private void initializeMonuments() {
-        // Create historical world monuments
-        monuments.put("Colosseum", new WorldMonument(
-            "Colosseum", 
-            "The great amphitheater of Rome, symbol of imperial power and entertainment.",
-            "Rome, Italy",
-            WorldMonument.MonumentType.WONDER,
-            1000,
-            "Built by Emperor Vespasian and completed by Titus in 80 AD"
-        ));
-        
-        monuments.put("Pantheon", new WorldMonument(
-            "Pantheon",
-            "The temple to all gods, a masterpiece of Roman architecture.",
-            "Rome, Italy",
-            WorldMonument.MonumentType.TEMPLE,
-            800,
-            "Built by Emperor Hadrian between 118-125 AD"
-        ));
-        
-        monuments.put("Hadrian's Wall", new WorldMonument(
-            "Hadrian's Wall",
-            "The great defensive wall marking the northern frontier of the Roman Empire.",
-            "Northern Britain",
-            WorldMonument.MonumentType.FORTRESS,
-            1200,
-            "Built by Emperor Hadrian from 122-128 AD"
-        ));
-        
-        monuments.put("Persepolis", new WorldMonument(
-            "Persepolis",
-            "The ceremonial capital of the Achaemenid Empire.",
-            "Persia",
-            WorldMonument.MonumentType.PALACE,
-            1500,
-            "Built by Darius I and his successors"
-        ));
-        
-        monuments.put("Hanging Gardens", new WorldMonument(
-            "Hanging Gardens",
-            "One of the Seven Wonders of the Ancient World.",
-            "Babylon",
-            WorldMonument.MonumentType.WONDER,
-            2000,
-            "Legendary gardens built by Nebuchadnezzar II"
-        ));
-        
-        monuments.put("Pyramids", new WorldMonument(
-            "Pyramids",
-            "The great pyramids of Giza, tombs of the pharaohs.",
-            "Giza, Egypt",
-            WorldMonument.MonumentType.WONDER,
-            3000,
-            "Built during the Old Kingdom period"
-        ));
-        
-        monuments.put("Great Wall", new WorldMonument(
-            "Great Wall",
-            "The massive defensive wall protecting China's northern frontier.",
-            "Northern China",
-            WorldMonument.MonumentType.FORTRESS,
-            2500,
-            "Built and expanded over centuries by various dynasties"
-        ));
-        
-        monuments.put("Stonehenge", new WorldMonument(
-            "Stonehenge",
-            "The mysterious stone circle of ancient Britain.",
-            "Wiltshire, England",
-            WorldMonument.MonumentType.TEMPLE,
-            600,
-            "Built in multiple phases from 3000-2000 BC"
-        ));
-        
-        monuments.put("Parthenon", new WorldMonument(
-            "Parthenon",
-            "The temple of Athena on the Acropolis of Athens.",
-            "Athens, Greece",
-            WorldMonument.MonumentType.TEMPLE,
-            1000,
-            "Built in the 5th century BC under Pericles"
-        ));
-        
-        monuments.put("Temple of Artemis", new WorldMonument(
-            "Temple of Artemis",
-            "One of the Seven Wonders of the Ancient World.",
-            "Ephesus, Asia Minor",
-            WorldMonument.MonumentType.TEMPLE,
-            1200,
-            "Built and rebuilt multiple times"
-        ));
-        
-        monuments.put("Lighthouse of Alexandria", new WorldMonument(
-            "Lighthouse of Alexandria",
-            "The great lighthouse guiding ships to Alexandria.",
-            "Alexandria, Egypt",
-            WorldMonument.MonumentType.INFRASTRUCTURE,
-            1500,
-            "Built by Ptolemy I and completed by Ptolemy II"
-        ));
-        
-        monuments.put("Mausoleum", new WorldMonument(
-            "Mausoleum",
-            "The tomb of Mausolus, one of the Seven Wonders.",
-            "Halicarnassus, Caria",
-            WorldMonument.MonumentType.WONDER,
-            1000,
-            "Built by Artemisia II in memory of her husband"
-        ));
-        
-        monuments.put("Temple of Solomon", new WorldMonument(
-            "Temple of Solomon",
-            "The first temple in Jerusalem, center of Jewish worship.",
-            "Jerusalem",
-            WorldMonument.MonumentType.TEMPLE,
-            800,
-            "Built by King Solomon in the 10th century BC"
-        ));
-        
-        monuments.put("Petra", new WorldMonument(
-            "Petra",
-            "The rose-red city carved into the rock.",
-            "Jordan",
-            WorldMonument.MonumentType.CULTURAL,
-            1000,
-            "Capital of the Nabataean Kingdom"
-        ));
-        
-        monuments.put("Mohenjo-daro", new WorldMonument(
-            "Mohenjo-daro",
-            "The great city of the Indus Valley Civilization.",
-            "Indus Valley",
-            WorldMonument.MonumentType.INFRASTRUCTURE,
-            1200,
-            "One of the largest cities of the ancient world"
-        ));
-        
-        monuments.put("Angkor Wat", new WorldMonument(
-            "Angkor Wat",
-            "The temple complex of the Khmer Empire.",
-            "Cambodia",
-            WorldMonument.MonumentType.TEMPLE,
-            2000,
-            "Built by King Suryavarman II in the 12th century"
-        ));
+        // Create historical world monuments using factory methods
+        monuments.put("Colosseum", WorldMonument.createColosseum());
+        monuments.put("Parthenon", WorldMonument.createParthenon());
+        monuments.put("Great Wall", WorldMonument.createGreatWall());
+        monuments.put("Hanging Gardens", WorldMonument.createHangingGardens());
+        monuments.put("Pyramids", WorldMonument.createPyramids());
+        monuments.put("Stonehenge", WorldMonument.createStonehenge());
+        monuments.put("Persepolis", WorldMonument.createPersepolis());
+        monuments.put("Theater of Dionysus", WorldMonument.createTheaterOfDionysus());
     }
     
     private void startConstruction() {
@@ -333,10 +198,10 @@ public class MonumentsPanel extends JPanel {
                 double cost = currentMonument.getConstructionCost() * 0.05; // 5% progress cost
                 if (playerCountry.getTreasury() >= cost) {
                     playerCountry.setTreasury(playerCountry.getTreasury() - cost);
-                    currentMonument.advanceConstruction(50); // Advance by 50 points
+                    currentMonument.updateConstruction(50); // Advance by 50 points
                     updateMonumentDetails();
                     
-                    if (currentMonument.isCompleted()) {
+                    if (currentMonument.isBuilt()) {
                         JOptionPane.showMessageDialog(this, 
                             "Construction of " + currentMonument.getName() + " completed!",
                             "Construction Complete",
@@ -370,11 +235,10 @@ public class MonumentsPanel extends JPanel {
                 details.append("Location: ").append(currentMonument.getLocation()).append("\n");
                 details.append("Construction Cost: ").append(currentMonument.getConstructionCost()).append(" points\n");
                 details.append("Owner: ").append(currentMonument.getOwner() != null ? currentMonument.getOwner() : "None").append("\n");
-                details.append("Status: ").append(currentMonument.isCompleted() ? "Completed" : "Not Built").append("\n\n");
+                details.append("Status: ").append(currentMonument.isBuilt() ? "Completed" : "Not Built").append("\n\n");
                 details.append("Description:\n");
                 details.append(currentMonument.getDescription()).append("\n\n");
-                details.append("Historical Context:\n");
-                details.append(currentMonument.getHistoricalContext()).append("\n\n");
+                details.append("Location: ").append(currentMonument.getLocation()).append("\n\n");
                 details.append("Effects (when completed):\n");
                 
                 Map<String, Double> effects = currentMonument.getEffects();
@@ -390,12 +254,12 @@ public class MonumentsPanel extends JPanel {
                 monumentDetails.setText(details.toString());
                 
                 // Update progress bar
-                constructionProgress.setValue((int) currentMonument.getCompletionPercentage());
-                constructionProgress.setString(String.format("%.1f%%", currentMonument.getCompletionPercentage()));
+                constructionProgress.setValue((int) currentMonument.getProgressPercentage());
+                constructionProgress.setString(String.format("%.1f%%", currentMonument.getProgressPercentage()));
                 
                 // Update button states
                 startConstructionButton.setEnabled(currentMonument.getOwner() == null);
-                advanceConstructionButton.setEnabled(currentMonument.getOwner() != null && !currentMonument.isCompleted());
+                advanceConstructionButton.setEnabled(currentMonument.getOwner() != null && !currentMonument.isBuilt());
             }
         }
     }
