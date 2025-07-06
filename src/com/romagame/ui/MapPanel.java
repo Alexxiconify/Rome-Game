@@ -586,6 +586,10 @@ public class MapPanel extends JPanel {
                     Province p = engine.getWorldMap().getProvince(pid);
                     if (p != null) {
                         String owner = p.getOwner();
+                        // Filter out unwanted owners
+                        if (owner.equals("Ocean") || owner.equals("Uncolonized") || owner.startsWith("Unknown") || owner.startsWith("rgb_") || owner.equals("REMOVE_FROM_MAP") || owner.equals("BORDER")) {
+                            continue;
+                        }
                         centroids.putIfAbsent(owner, new double[]{0, 0});
                         counts.put(owner, counts.getOrDefault(owner, 0) + 1);
                         centroids.get(owner)[0] += x;

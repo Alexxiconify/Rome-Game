@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
 
 public class WorldMap {
     private Map<String, Province> provinces;
@@ -96,5 +99,29 @@ public class WorldMap {
     public List<Country> getAllCountries() {
         System.out.println("getAllCountries called, countries size: " + countries.size());
         return new ArrayList<>(countries.values());
+    }
+
+    public void drawNationLabels(Graphics2D g2d, Map<String, double[]> centroids, Map<String, Integer> counts, int x0, int y0, double scale) {
+        for (String owner : centroids.keySet()) {
+            int count = counts.get(owner);
+            if (count < 200) continue; // Only label major nations
+            double[] c = centroids.get(owner);
+            int cx = (int)(c[0] / count);
+            int cy = (int)(c[1] / count);
+            int sx = x0 + (int)(cx * scale);
+            int sy = y0 + (int)(cy * scale);
+
+            // Scale font size with zoom, clamp between 14 and 48
+            int fontSize = Math.max(14, Math.min((int)(44 * scale), 48));
+            Font labelFont = new Font("Segoe UI", Font.BOLD, fontSize);
+            g2d.setFont(labelFont);
+            FontMetrics fm = g2d.getFontMetrics();
+            int lw = fm.stringWidth(owner) + 32;
+            int lh = fm.getHeight() + 10;
+            int lx = sx - lw / 2;
+            int ly = sy - lh / 2;
+
+            // Draw background and text as before...
+        }
     }
 }
