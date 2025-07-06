@@ -1,272 +1,153 @@
 package com.romagame.population;
 
 import com.romagame.map.Province;
-import com.romagame.map.Province.PopType;
 import com.romagame.map.Country;
+import com.romagame.map.Province.PopType;
 import java.util.*;
 import java.util.Random;
 
 public class PopulationManager {
     private Random random;
-    private Map<String, DevelopmentAction> developmentActions;
-    private Map<String, BuildingAction> buildingActions;
-    
-    public enum DevelopmentType {
-        ADMINISTRATIVE, DIPLOMATIC, MILITARY, TRADE, CULTURE, INFRASTRUCTURE
-    }
+    private Map<String, DevelopmentProject> activeProjects;
+    private Map<String, BuildingProject> buildingProjects;
     
     public PopulationManager() {
         this.random = new Random();
-        this.developmentActions = new HashMap<>();
-        this.buildingActions = new HashMap<>();
-        initializeActions();
+        this.activeProjects = new HashMap<>();
+        this.buildingProjects = new HashMap<>();
     }
     
-    private void initializeActions() {
-        // Development actions that pops can perform
-        developmentActions.put("Improve Roads", new DevelopmentAction("Improve Roads", DevelopmentType.INFRASTRUCTURE, 50, 0.5));
-        developmentActions.put("Expand Markets", new DevelopmentAction("Expand Markets", DevelopmentType.TRADE, 75, 0.8));
-        developmentActions.put("Build Schools", new DevelopmentAction("Build Schools", DevelopmentType.ADMINISTRATIVE, 100, 1.2));
-        developmentActions.put("Construct Temples", new DevelopmentAction("Construct Temples", DevelopmentType.CULTURE, 80, 1.0));
-        developmentActions.put("Improve Defenses", new DevelopmentAction("Improve Defenses", DevelopmentType.MILITARY, 90, 1.1));
-        developmentActions.put("Establish Trade Routes", new DevelopmentAction("Establish Trade Routes", DevelopmentType.DIPLOMATIC, 120, 1.5));
+    public void update() {
+        // Update all active development projects
+        for (DevelopmentProject project : activeProjects.values()) {
+            project.update();
+            if (project.isCompleted()) {
+                completeDevelopmentProject(project);
+            }
+        }
         
-        // Building actions
-        buildingActions.put("Market", new BuildingAction("Market", "Trade", 50, 0.3, "Increases trade income"));
-        buildingActions.put("Temple", new BuildingAction("Temple", "Culture", 60, 0.4, "Increases population happiness"));
-        buildingActions.put("Barracks", new BuildingAction("Barracks", "Military", 80, 0.5, "Increases recruitment speed"));
-        buildingActions.put("Aqueduct", new BuildingAction("Aqueduct", "Infrastructure", 100, 0.6, "Increases population growth"));
-        buildingActions.put("Library", new BuildingAction("Library", "Administrative", 90, 0.5, "Increases administrative efficiency"));
-        buildingActions.put("Harbor", new BuildingAction("Harbor", "Trade", 120, 0.7, "Increases naval capacity"));
-        buildingActions.put("Walls", new BuildingAction("Walls", "Military", 150, 0.8, "Increases defense bonus"));
-        buildingActions.put("University", new BuildingAction("University", "Administrative", 200, 1.0, "Increases technology research"));
-    }
-    
-    public void processPopulationDevelopment(Province province, Country country) {
-        // Process development actions based on population types
-        Map<PopType, Integer> pops = province.getPops();
+        // Update building projects
+        for (BuildingProject project : buildingProjects.values()) {
+            project.update();
+            if (project.isCompleted()) {
+                completeBuildingProject(project);
+            }
+        }
         
-        for (Map.Entry<PopType, Integer> entry : pops.entrySet()) {
-            PopType popType = entry.getKey();
-            int popCount = entry.getValue();
-            
-            if (popCount > 0) {
-                processPopDevelopment(province, country, popType, popCount);
-            }
-        }
+        // Clean up completed projects
+        activeProjects.entrySet().removeIf(entry -> entry.getValue().isCompleted());
+        buildingProjects.entrySet().removeIf(entry -> entry.getValue().isCompleted());
     }
     
-    private void processPopDevelopment(Province province, Country country, PopType popType, int popCount) {
-        // Different pop types have different development preferences
-        switch (popType) {
-            case NOBLES:
-                processNobleDevelopment(province, country, popCount);
+    public boolean startDevelopmentProject(Province province, DevelopmentType type, int workers) {
+        if (province.getPopulation() < workers) {
+            return false; // Not enough population
+        }
+        
+        String projectId = province.getId() + "_" + type.name() + "_" + System.currentTimeMillis();
+        DevelopmentProject project = new DevelopmentProject(projectId, province, type, workers);
+        activeProjects.put(projectId, project);
+        
+        // Deduct workers from population
+        province.setPop(PopType.PEASANTS, province.getPop(PopType.PEASANTS) - workers);
+        
+        return true;
+    }
+    
+    public boolean startBuildingProject(Province province, BuildingType type, int workers) {
+        if (province.getPopulation() < workers) {
+            return false; // Not enough population
+        }
+        
+        String projectId = province.getId() + "_" + type.name() + "_" + System.currentTimeMillis();
+        BuildingProject project = new BuildingProject(projectId, province, type, workers);
+        buildingProjects.put(projectId, project);
+        
+        // Deduct workers from population
+        province.setPop(PopType.CRAFTSMEN, province.getPop(PopType.CRAFTSMEN) - workers);
+        
+        return true;
+    }
+    
+    private void completeDevelopmentProject(DevelopmentProject project) {
+        Province province = project.getProvince();
+        DevelopmentType type = project.getType();
+        
+        switch (type) {
+            case INFRASTRUCTURE:
+                province.setDevelopment(province.getDevelopment() + 2.0);
+                province.addModifier("Improved Infrastructure");
                 break;
-            case CITY_FOLK:
-                processCityFolkDevelopment(province, country, popCount);
+            case AGRICULTURE:
+                province.setDevelopment(province.getDevelopment() + 1.5);
+                province.addModifier("Agricultural Development");
                 break;
-            case CRAFTSMEN:
-                processCraftsmenDevelopment(province, country, popCount);
+            case TRADE:
+                province.setDevelopment(province.getDevelopment() + 1.0);
+                province.addModifier("Trade Development");
                 break;
-            case PEASANTS:
-                processPeasantDevelopment(province, country, popCount);
-                break;
-            case SLAVES:
-                processSlaveDevelopment(province, country, popCount);
-                break;
-            case SERFS:
-                processSerfDevelopment(province, country, popCount);
-                break;
-            case SOLDIERS:
-                processSoldierDevelopment(province, country, popCount);
+            case MILITARY:
+                province.setDevelopment(province.getDevelopment() + 1.0);
+                province.addModifier("Military Infrastructure");
                 break;
         }
+        
+        // Return workers to population
+        province.setPop(PopType.PEASANTS, province.getPop(PopType.PEASANTS) + project.getWorkers());
     }
     
-    private void processNobleDevelopment(Province province, Country country, int popCount) {
-        // Nobles focus on administrative and cultural development
-        if (random.nextDouble() < 0.3) { // 30% chance
-            String action = random.nextDouble() < 0.6 ? "Build Schools" : "Construct Temples";
-            DevelopmentAction devAction = developmentActions.get(action);
-            
-            if (country.getTreasury() >= devAction.getCost()) {
-                country.setTreasury(country.getTreasury() - devAction.getCost());
-                province.setDevelopment(province.getDevelopment() + devAction.getDevelopmentBonus());
-                
-                // Add building if appropriate
-                if (action.equals("Construct Temples")) {
-                    addBuildingToProvince(province, "Temple");
-                }
-            }
-        }
-    }
-    
-    private void processCityFolkDevelopment(Province province, Country country, int popCount) {
-        // City folk focus on trade and infrastructure
-        if (random.nextDouble() < 0.4) { // 40% chance
-            String action = random.nextDouble() < 0.7 ? "Expand Markets" : "Improve Roads";
-            DevelopmentAction devAction = developmentActions.get(action);
-            
-            if (country.getTreasury() >= devAction.getCost()) {
-                country.setTreasury(country.getTreasury() - devAction.getCost());
-                province.setDevelopment(province.getDevelopment() + devAction.getDevelopmentBonus());
-                
-                // Add building if appropriate
-                if (action.equals("Expand Markets")) {
-                    addBuildingToProvince(province, "Market");
-                }
-            }
-        }
-    }
-    
-    private void processCraftsmenDevelopment(Province province, Country country, int popCount) {
-        // Craftsmen focus on infrastructure and trade
-        if (random.nextDouble() < 0.35) { // 35% chance
-            String action = random.nextDouble() < 0.5 ? "Improve Roads" : "Expand Markets";
-            DevelopmentAction devAction = developmentActions.get(action);
-            
-            if (country.getTreasury() >= devAction.getCost()) {
-                country.setTreasury(country.getTreasury() - devAction.getCost());
-                province.setDevelopment(province.getDevelopment() + devAction.getDevelopmentBonus());
-            }
-        }
-    }
-    
-    private void processPeasantDevelopment(Province province, Country country, int popCount) {
-        // Peasants focus on basic infrastructure
-        if (random.nextDouble() < 0.25) { // 25% chance
-            String action = "Improve Roads";
-            DevelopmentAction devAction = developmentActions.get(action);
-            
-            if (country.getTreasury() >= devAction.getCost()) {
-                country.setTreasury(country.getTreasury() - devAction.getCost());
-                province.setDevelopment(province.getDevelopment() + devAction.getDevelopmentBonus());
-            }
-        }
-    }
-    
-    private void processSlaveDevelopment(Province province, Country country, int popCount) {
-        // Slaves have limited development capabilities
-        if (random.nextDouble() < 0.1) { // 10% chance
-            String action = "Improve Roads";
-            DevelopmentAction devAction = developmentActions.get(action);
-            
-            if (country.getTreasury() >= devAction.getCost()) {
-                country.setTreasury(country.getTreasury() - devAction.getCost());
-                province.setDevelopment(province.getDevelopment() + devAction.getDevelopmentBonus() * 0.5); // Reduced bonus
-            }
-        }
-    }
-    
-    private void processSerfDevelopment(Province province, Country country, int popCount) {
-        // Serfs focus on basic infrastructure
-        if (random.nextDouble() < 0.2) { // 20% chance
-            String action = "Improve Roads";
-            DevelopmentAction devAction = developmentActions.get(action);
-            
-            if (country.getTreasury() >= devAction.getCost()) {
-                country.setTreasury(country.getTreasury() - devAction.getCost());
-                province.setDevelopment(province.getDevelopment() + devAction.getDevelopmentBonus() * 0.7); // Reduced bonus
-            }
-        }
-    }
-    
-    private void processSoldierDevelopment(Province province, Country country, int popCount) {
-        // Soldiers focus on military infrastructure
-        if (random.nextDouble() < 0.3) { // 30% chance
-            String action = "Improve Defenses";
-            DevelopmentAction devAction = developmentActions.get(action);
-            
-            if (country.getTreasury() >= devAction.getCost()) {
-                country.setTreasury(country.getTreasury() - devAction.getCost());
-                province.setDevelopment(province.getDevelopment() + devAction.getDevelopmentBonus());
-                
-                // Add military building
-                addBuildingToProvince(province, "Barracks");
-            }
-        }
-    }
-    
-    private void addBuildingToProvince(Province province, String buildingType) {
-        BuildingAction buildingAction = buildingActions.get(buildingType);
-        if (buildingAction != null) {
-            List<String> buildings = province.getBuildings();
-            if (!buildings.contains(buildingType)) {
-                buildings.add(buildingType);
-                // Apply building effects
-                applyBuildingEffects(province, buildingAction);
-            }
-        }
-    }
-    
-    private void applyBuildingEffects(Province province, BuildingAction building) {
-        switch (building.getCategory()) {
-            case "Trade":
+    private void completeBuildingProject(BuildingProject project) {
+        Province province = project.getProvince();
+        BuildingType type = project.getType();
+        
+        // Add building to province
+        province.addBuilding(type.name());
+        
+        // Apply building effects
+        switch (type) {
+            case FORUM:
                 province.addModifier("Trade Income +10%");
                 break;
-            case "Culture":
+            case TEMPLE:
                 province.addModifier("Population Happiness +5%");
                 break;
-            case "Military":
-                province.addModifier("Recruitment Speed +25%");
-                break;
-            case "Infrastructure":
+            case AQUEDUCT:
                 province.addModifier("Population Growth +15%");
                 break;
-            case "Administrative":
-                province.addModifier("Administrative Efficiency +10%");
+            case WALLS:
+                province.addModifier("Defense +20%");
+                break;
+            case BARRACKS:
+                province.addModifier("Recruitment Speed +25%");
+                break;
+            case MARKET:
+                province.addModifier("Tax Income +15%");
+                break;
+            case BATHHOUSE:
+                province.addModifier("Population Happiness +10%");
+                break;
+            case WORKSHOP:
+                province.addModifier("Production +20%");
                 break;
         }
+        
+        // Return workers to population
+        province.setPop(PopType.CRAFTSMEN, province.getPop(PopType.CRAFTSMEN) + project.getWorkers());
     }
     
-    public List<DevelopmentAction> getAvailableDevelopmentActions() {
-        return new ArrayList<>(developmentActions.values());
+    public List<DevelopmentProject> getActiveDevelopmentProjects() {
+        return new ArrayList<>(activeProjects.values());
     }
     
-    public List<BuildingAction> getAvailableBuildingActions() {
-        return new ArrayList<>(buildingActions.values());
+    public List<BuildingProject> getActiveBuildingProjects() {
+        return new ArrayList<>(buildingProjects.values());
     }
     
-    public static class DevelopmentAction {
-        private String name;
-        private DevelopmentType type;
-        private double cost;
-        private double developmentBonus;
-        
-        public DevelopmentAction(String name, DevelopmentType type, double cost, double developmentBonus) {
-            this.name = name;
-            this.type = type;
-            this.cost = cost;
-            this.developmentBonus = developmentBonus;
-        }
-        
-        // Getters
-        public String getName() { return name; }
-        public DevelopmentType getType() { return type; }
-        public double getCost() { return cost; }
-        public double getDevelopmentBonus() { return developmentBonus; }
+    public enum DevelopmentType {
+        INFRASTRUCTURE, AGRICULTURE, TRADE, MILITARY
     }
     
-    public static class BuildingAction {
-        private String name;
-        private String category;
-        private double cost;
-        private double maintenance;
-        private String description;
-        
-        public BuildingAction(String name, String category, double cost, double maintenance, String description) {
-            this.name = name;
-            this.category = category;
-            this.cost = cost;
-            this.maintenance = maintenance;
-            this.description = description;
-        }
-        
-        // Getters
-        public String getName() { return name; }
-        public String getCategory() { return category; }
-        public double getCost() { return cost; }
-        public double getMaintenance() { return maintenance; }
-        public String getDescription() { return description; }
+    public enum BuildingType {
+        FORUM, TEMPLE, AQUEDUCT, WALLS, BARRACKS, MARKET, BATHHOUSE, WORKSHOP
     }
 } 
