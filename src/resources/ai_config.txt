@@ -1,0 +1,68 @@
+# AI Nations Configuration
+# Format: NationName, Personality, Enabled
+# Only enabled nations will have AI behavior
+
+# Major Powers (Always AI)
+Rome, AGGRESSIVE, true
+Parthia, DEFENSIVE, true
+Armenia, DEFENSIVE, true
+Dacia, AGGRESSIVE, true
+Sarmatia, AGGRESSIVE, true
+
+# Germanic Tribes (Limited AI)
+Quadi, AGGRESSIVE, true
+Marcomanni, AGGRESSIVE, true
+Suebi, AGGRESSIVE, true
+Alemanni, AGGRESSIVE, true
+Chatti, AGGRESSIVE, true
+Cherusci, AGGRESSIVE, true
+Hermunduri, AGGRESSIVE, true
+Frisians, DEFENSIVE, true
+
+# Celtic Nations (Limited AI)
+Britons, DEFENSIVE, true
+Caledonians, AGGRESSIVE, true
+Hibernians, DEFENSIVE, true
+Picts, AGGRESSIVE, true
+Scoti, AGGRESSIVE, true
+
+# African Nations (Limited AI)
+Garamantes, TRADER, true
+Nubia, BUILDER, true
+Axum, TRADER, true
+
+# Arabian Nations (Limited AI)
+Himyar, TRADER, true
+Saba, TRADER, true
+Hadramaut, TRADER, true
+Oman, TRADER, true
+
+# Eastern Nations (Limited AI)
+Kushan, BALANCED, true
+Indo-Parthian, BALANCED, true
+
+# Disabled Nations (No AI)
+Ethopia, BALANCED, false
+Saba, TRADER, false
+Cholas, BALANCED, false
+Dongoye, BALANCED, false
+Fugan, BALANCED, false
+Chutus, BALANCED, false
+Maya, BALANCED, false
+Baekje, BALANCED, false
+Ceras, BALANCED, false
+Kush, BALANCED, false
+Qataban, TRADER, false
+Gerrha, TRADER, false
+Hadamut, TRADER, false
+Pandyas, BALANCED, false
+Satavahana, BALANCED, false
+Lambakannas, BALANCED, false
+Persia, DEFENSIVE, false
+Ye, BALANCED, false
+Persia_Clients, DEFENSIVE, false
+Japan, BALANCED, false
+Byeonhan, BALANCED, false
+Buyeo, BALANCED, false
+Roman_Clients, DEFENSIVE, false
+Eastern_Han_Empire, BALANCED, false 
