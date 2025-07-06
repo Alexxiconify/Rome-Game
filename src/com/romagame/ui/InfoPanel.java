@@ -2,7 +2,7 @@ package com.romagame.ui;
 
 import com.romagame.core.GameEngine;
 import com.romagame.map.Country;
-import com.romagame.diplomacy.DiplomacyManager;
+// import com.romagame.diplomacy.DiplomacyManager;
 import javax.swing.*;
 import java.awt.*;
 
@@ -103,57 +103,48 @@ public class InfoPanel extends JPanel {
         }
         
         // Laws
-        if (!country.getLaws().isEmpty()) {
+        if (!country.getEnactedLaws().isEmpty()) {
             sb.append("📜 ACTIVE LAWS:\n");
-            for (String law : country.getLaws()) {
-                sb.append("   • ").append(law).append("\n");
+            for (var law : country.getEnactedLaws()) {
+                sb.append("   • ").append(law.getName()).append("\n");
             }
             sb.append("\n");
         }
         
         // Reforms
-        if (!country.getReforms().isEmpty()) {
+        if (!country.getImplementedReforms().isEmpty()) {
             sb.append("🔧 GOVERNMENT REFORMS:\n");
-            for (String reform : country.getReforms()) {
-                sb.append("   • ").append(reform).append("\n");
+            for (var reform : country.getImplementedReforms()) {
+                sb.append("   • ").append(reform.getName()).append("\n");
             }
             sb.append("\n");
         }
         
         // Technologies
-        if (!country.getTechnologies().isEmpty()) {
+        if (!country.getResearchedTechnologies().isEmpty()) {
             sb.append("🔬 TECHNOLOGIES:\n");
-            for (String tech : country.getTechnologies()) {
+            for (String tech : country.getResearchedTechnologies()) {
                 sb.append("   • ").append(tech).append("\n");
             }
             sb.append("\n");
         }
         
         // Diplomatic Relations
-        DiplomacyManager diplomacyManager = engine.getDiplomacyManager();
-        var relations = diplomacyManager.getRelations(country.getName());
-        if (relations != null && !relations.isEmpty()) {
-            sb.append("🤝 DIPLOMATIC RELATIONS:\n");
-            for (var entry : relations.entrySet()) {
-                String relationType = getRelationType(entry.getValue());
-                sb.append("   ").append(entry.getKey()).append(": ").append(relationType)
-                  .append(" (").append(entry.getValue()).append(")\n");
-            }
-            sb.append("\n");
-        }
+        // Note: DiplomacyManager doesn't have getRelations method, so we'll skip this section
+        // for now until the diplomacy system is more fully implemented
         
-        // Active Wars
-        var wars = diplomacyManager.getWars();
-        if (!wars.isEmpty()) {
-            sb.append("⚔️  ACTIVE WARS:\n");
-            for (var war : wars) {
-                if (war.getAttacker().equals(country.getName()) || war.getDefender().equals(country.getName())) {
-                    sb.append("   ").append(war.getAttacker()).append(" vs ").append(war.getDefender())
-                      .append(" (Score: ").append(String.format("%.1f", war.getWarScore())).append(")\n");
-                }
-            }
-            sb.append("\n");
-        }
+        // Active Wars - skipping for now as diplomacy system needs more implementation
+        // var wars = diplomacyManager.getWars();
+        // if (wars != null && !wars.isEmpty()) {
+        //     sb.append("⚔️  ACTIVE WARS:\n");
+        //     for (var war : wars) {
+        //         if (war.getAttacker().equals(country.getName()) || war.getDefender().equals(country.getName())) {
+        //             sb.append("   ").append(war.getAttacker()).append(" vs ").append(war.getDefender())
+        //               .append(" (Score: ").append(String.format("%.1f", war.getWarScore())).append(")\n");
+        //         }
+        //     }
+        //     sb.append("\n");
+        // }
         
         // Colonization Missions
         var colonizationManager = engine.getColonizationManager();
