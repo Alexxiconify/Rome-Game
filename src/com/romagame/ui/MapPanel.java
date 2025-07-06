@@ -213,7 +213,7 @@ public class MapPanel extends JPanel {
         }
     }
 
-    private void loadProvinceOwnerColors() {
+    public void loadProvinceOwnerColors() {
         try (BufferedReader br = new BufferedReader(new FileReader("src/resources/province_ownership_report.csv"))) {
             String line;
             boolean firstLine = true;
