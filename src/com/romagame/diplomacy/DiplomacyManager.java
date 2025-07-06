@@ -266,4 +266,41 @@ public class DiplomacyManager {
         }
         return allies;
     }
+    
+    // Enhanced relation calculation
+    public double calculateBaseRelation(com.romagame.map.Country c1, com.romagame.map.Country c2) {
+        double base = 0.0;
+        if (c1.getReligion() != null && c1.getReligion().equals(c2.getReligion())) base += 20.0;
+        if (c1.getGovernmentType() != null && c1.getGovernmentType().equals(c2.getGovernmentType())) base += 15.0;
+        if (c1.getNationType() == c2.getNationType()) base += 20.0;
+        return base;
+    }
+
+    // Aggression-diplo stat management
+    public void addAggression(String countryName, double amount) {
+        var country = com.romagame.core.GameEngine.getInstance().getCountryManager().getCountry(countryName);
+        if (country != null) {
+            country.addAggressionDiplo(amount);
+        }
+    }
+
+    public void checkAggressionEffects(com.romagame.map.Country country) {
+        double aggro = country.getAggressionDiplo();
+        if (aggro > 50) {
+            // Sanctions: reduce trade, worsen relations
+            for (com.romagame.map.Country other : com.romagame.core.GameEngine.getInstance().getAllCountries()) {
+                if (!other.getName().equals(country.getName())) {
+                    modifyRelation(other.getName(), country.getName(), -10.0);
+                }
+            }
+        }
+        if (aggro > 100) {
+            // Coalition: AI nations may form a coalition
+            for (com.romagame.map.Country other : com.romagame.core.GameEngine.getInstance().getAllCountries()) {
+                if (!other.getName().equals(country.getName()) && getRelation(other.getName(), country.getName()) < -25) {
+                    formAlliance(other.getName(), "Coalition vs " + country.getName());
+                }
+            }
+        }
+    }
 } 
