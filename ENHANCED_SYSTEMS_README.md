@@ -5,11 +5,13 @@ This document describes the new enhanced systems added to the Roma Game, inspire
 ## 🏗️ Population Development System
 
 ### Overview
+
 The population system allows provinces to develop infrastructure and construct buildings using population groups ("pops").
 
 ### Key Components
 
 #### PopulationManager
+
 - **Location**: `src/com/romagame/population/PopulationManager.java`
 - **Purpose**: Manages development projects and building construction
 - **Features**:
@@ -19,6 +21,7 @@ The population system allows provinces to develop infrastructure and construct b
   - Manage worker allocation from population
 
 #### DevelopmentProject
+
 - **Location**: `src/com/romagame/population/DevelopmentProject.java`
 - **Purpose**: Represents ongoing development work
 - **Features**:
@@ -28,6 +31,7 @@ The population system allows provinces to develop infrastructure and construct b
   - Completion effects on provinces
 
 #### BuildingProject
+
 - **Location**: `src/com/romagame/population/BuildingProject.java`
 - **Purpose**: Represents building construction projects
 - **Features**:
@@ -37,12 +41,14 @@ The population system allows provinces to develop infrastructure and construct b
   - Upgrade system support
 
 ### Development Types
+
 1. **Infrastructure** - Roads, bridges, public works
 2. **Agriculture** - Farms, irrigation, food production
 3. **Trade** - Markets, ports, trade routes
 4. **Military** - Fortifications, barracks, training grounds
 
 ### Building Types
+
 1. **Forum** - Trade income +10%
 2. **Temple** - Population happiness +5%
 3. **Aqueduct** - Population growth +15%
@@ -55,11 +61,11 @@ The population system allows provinces to develop infrastructure and construct b
 ## 🏛️ World Monuments System
 
 ### Overview
+
 Famous historical monuments that provide buffs to specific nation types, similar to EU4's wonders.
 
-### Key Components
-
 #### WorldMonument
+
 - **Location**: `src/com/romagame/monuments/WorldMonument.java`
 - **Purpose**: Represents famous historical monuments
 - **Features**:
@@ -69,6 +75,7 @@ Famous historical monuments that provide buffs to specific nation types, similar
   - Historical context and descriptions
 
 #### MonumentManager
+
 - **Location**: `src/com/romagame/monuments/MonumentManager.java`
 - **Purpose**: Manages monument construction and availability
 - **Features**:
@@ -78,6 +85,7 @@ Famous historical monuments that provide buffs to specific nation types, similar
   - Built monument tracking
 
 ### Available Monuments
+
 1. **Colosseum** (Rome) - Prestige +50, Diplomatic Reputation +2, Trade Efficiency +15%
 2. **Parthenon** (Athens) - Religious Unity +25%, Stability +10%, Missionary Strength +20%
 3. **Great Wall** (China) - Fort Level +2, Defensiveness +25%, Army Tradition +10%
@@ -88,6 +96,7 @@ Famous historical monuments that provide buffs to specific nation types, similar
 8. **Theater of Dionysus** (Athens) - Culture conversion cost -25%, Unrest -2 for Greek/Roman nations
 
 ### Monument Types
+
 - **Wonder** - Prestige, diplomatic reputation, trade efficiency
 - **Temple** - Religious unity, stability, missionary strength
 - **Fortress** - Fort level, defensiveness, army tradition
@@ -96,12 +105,12 @@ Famous historical monuments that provide buffs to specific nation types, similar
 
 ## 🎭 EU4-Style Flavor Events
 
-### Overview
+### Overview 2
+
 Dynamic events with multiple choices and consequences, inspired by EU4's event system.
 
-### Key Components
-
 #### FlavorEvent
+
 - **Location**: `src/com/romagame/events/FlavorEvent.java`
 - **Purpose**: Represents game events with choices
 - **Features**:
@@ -111,6 +120,7 @@ Dynamic events with multiple choices and consequences, inspired by EU4's event s
   - Choice consequences
 
 #### EventChoice
+
 - **Location**: `src/com/romagame/events/EventChoice.java`
 - **Purpose**: Represents event choices and their effects
 - **Features**:
@@ -119,6 +129,7 @@ Dynamic events with multiple choices and consequences, inspired by EU4's event s
   - Modifier system integration
 
 #### EventTrigger
+
 - **Location**: `src/com/romagame/events/EventTrigger.java`
 - **Purpose**: Determines when events can fire
 - **Features**:
@@ -127,6 +138,7 @@ Dynamic events with multiple choices and consequences, inspired by EU4's event s
   - Probability calculations
 
 #### EventManager
+
 - **Location**: `src/com/romagame/events/EventManager.java`
 - **Purpose**: Manages event triggering and execution
 - **Features**:
@@ -136,6 +148,7 @@ Dynamic events with multiple choices and consequences, inspired by EU4's event s
   - Active event tracking
 
 ### Event Categories
+
 1. **Plague Outbreak** - Population and stability effects
 2. **Noble Revolt** - Military and stability consequences
 3. **Trade Opportunity** - Economic and diplomatic effects
@@ -146,6 +159,7 @@ Dynamic events with multiple choices and consequences, inspired by EU4's event s
 8. **Cultural Renaissance** - Prestige and cultural effects
 
 ### Event Effects
+
 - Stability changes
 - Prestige modifications
 - Treasury adjustments
@@ -159,12 +173,13 @@ Dynamic events with multiple choices and consequences, inspired by EU4's event s
 
 ## 👑 Ruler and Advisor System
 
-### Overview
+### Overview 3
+
 EU4-style rulers with monarch points and advisors with specializations.
 
-### Key Components
 
 #### Ruler
+
 - **Location**: `src/com/romagame/government/Ruler.java`
 - **Purpose**: Represents country rulers with monarch points
 - **Features**:
@@ -175,6 +190,7 @@ EU4-style rulers with monarch points and advisors with specializations.
   - Years reigned tracking
 
 #### Advisor
+
 - **Location**: `src/com/romagame/government/Advisor.java`
 - **Purpose**: Represents advisors with specializations
 - **Features**:
@@ -185,12 +201,14 @@ EU4-style rulers with monarch points and advisors with specializations.
   - Promotion system
 
 ### Ruler Personalities
+
 1. **Administrative** - +1 admin points
 2. **Diplomatic** - +1 diplomatic points
 3. **Military** - +1 military points
 4. **Balanced** - No bonus points
 
 ### Ruler Traits
+
 - **Genius traits**: Administrative, Diplomatic, Military (+2 points)
 - **Personality traits**: Cruel, Kind, Ambitious, Lazy, Just, Arbitrary
 - **Virtue traits**: Chaste, Lustful, Diligent, Slothful, Envious, Patient
@@ -198,6 +216,7 @@ EU4-style rulers with monarch points and advisors with specializations.
 - **Social traits**: Generous, Stingy, Zealous, Sceptical
 
 ### Advisor Types
+
 1. **Administrative Advisor** - Admin points, stability cost reduction
 2. **Diplomatic Advisor** - Diplomatic points, diplomatic reputation
 3. **Military Advisor** - Military points, army tradition
@@ -210,6 +229,7 @@ EU4-style rulers with monarch points and advisors with specializations.
 10. **Artist** - Diplomatic points, prestige, culture conversion
 
 ### Advisor Traits
+
 - **Efficient** - +1 to all point types
 - **Incompetent** - -1 to all point types
 - **Expensive** - +2 to salary
@@ -224,6 +244,7 @@ EU4-style rulers with monarch points and advisors with specializations.
 ## 🔧 Game Engine Integration
 
 ### Updated Components
+
 The main `GameEngine` class has been enhanced with:
 
 - **PopulationManager** integration for development projects
@@ -232,6 +253,7 @@ The main `GameEngine` class has been enhanced with:
 - **Ruler** and **Advisor** systems
 
 ### New Manager Access
+
 ```java
 // Access new managers through GameEngine
 PopulationManager populationManager = engine.getPopulationManager();
@@ -242,6 +264,7 @@ EventManager eventManager = engine.getEventManager();
 ## 🎮 Usage Examples
 
 ### Starting a Development Project
+
 ```java
 Province province = country.getProvinces().get(0);
 boolean success = populationManager.startDevelopmentProject(
@@ -252,12 +275,14 @@ boolean success = populationManager.startDevelopmentProject(
 ```
 
 ### Building a Monument
+
 ```java
 WorldMonument colosseum = WorldMonument.createColosseum();
 boolean success = monumentManager.startMonumentConstruction("Colosseum", country);
 ```
 
 ### Processing Events
+
 ```java
 // Events are automatically processed by the EventManager
 // Choices can be made through the UI
@@ -265,6 +290,7 @@ eventManager.executeEventChoice("plague_outbreak", country, 0);
 ```
 
 ### Managing Rulers and Advisors
+
 ```java
 Ruler ruler = new Ruler("Trajan", 45);
 ruler.update(); // Generates monarch points
@@ -277,11 +303,13 @@ Map<String, Double> bonuses = advisor.getBonuses();
 ## 🧪 Testing
 
 Run the verification script to test all systems:
+
 ```bash
 .\verify_enhanced_systems.bat
 ```
 
 This will check for:
+
 - ✅ All required Java files
 - ✅ Game engine integration
 - ✅ System functionality
@@ -300,4 +328,4 @@ The enhanced Roma Game now includes:
 7. **Development Projects** - Infrastructure and building construction
 8. **Game Integration** - All systems integrated into the main game engine
 
-These systems provide a rich, EU4-inspired gameplay experience while maintaining historical accuracy and Roman Empire theming. 
+These systems provide a rich, EU4-inspired gameplay experience while maintaining historical accuracy and Roman Empire theming.
