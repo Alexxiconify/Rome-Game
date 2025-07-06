@@ -546,36 +546,18 @@ public class MapPanel extends JPanel {
     }
 
     private Color getProvinceColor(Province province) {
-        // Assign vibrant, consistent color per country
         String owner = province.getOwner();
         if (!countryColors.containsKey(owner)) {
-            switch (owner) {
-                case "Roman Empire" -> countryColors.put(owner, new Color(220, 40, 40)); // Red
-                case "Parthia" -> countryColors.put(owner, new Color(40, 180, 60)); // Green
-                case "Armenia" -> countryColors.put(owner, new Color(60, 100, 220)); // Blue
-                case "Dacia" -> countryColors.put(owner, new Color(255, 220, 40)); // Yellow
-                case "Sarmatia" -> countryColors.put(owner, new Color(200, 60, 200)); // Magenta
-                case "Quadi", "Marcomanni", "Suebi", "Alemanni", "Chatti", "Cherusci", "Hermunduri", "Frisians" -> countryColors.put(owner, new Color(180, 180, 180)); // Light Gray
-                case "Britons", "Caledonians", "Hibernians", "Picts", "Scoti" -> countryColors.put(owner, new Color(120, 180, 120)); // Forest Green
-                case "Garamantes", "Nubia", "Axum" -> countryColors.put(owner, new Color(180, 120, 60)); // Brown
-                case "Himyar", "Saba", "Hadramaut", "Oman" -> countryColors.put(owner, new Color(255, 180, 100)); // Orange
-                case "Kushan", "Indo-Parthian" -> countryColors.put(owner, new Color(100, 255, 255)); // Cyan
-                case "Iberia", "Albania", "Lazica", "Colchis" -> countryColors.put(owner, new Color(150, 150, 255)); // Light Blue
-                case "Uninhabited" -> countryColors.put(owner, new Color(80, 80, 80)); // Dark Gray
-                default -> {
-                    // Assign a random but distinct color
-                    float hue = colorRand.nextFloat();
-                    float sat = 0.6f + 0.3f * colorRand.nextFloat();
-                    float bri = 0.7f + 0.2f * colorRand.nextFloat();
-                    countryColors.put(owner, Color.getHSBColor(hue, sat, bri));
-                }
-            }
+            // Assign a unique, non-magenta color for each country
+            int hash = Math.abs(owner.hashCode());
+            float hue = (hash % 360) / 360.0f;
+            Color uniqueColor = Color.getHSBColor(hue, 0.6f, 0.85f);
+            countryColors.put(owner, uniqueColor);
         }
         return countryColors.get(owner);
     }
 
     private void drawNationLabels(Graphics2D g2d, int x0, int y0, double scale, int imgW, int imgH) {
-        // For each country, find centroid of its provinces and draw name
         Map<String, double[]> centroids = new HashMap<>();
         Map<String, Integer> counts = new HashMap<>();
         for (int y = 0; y < imgH; y++) {
@@ -586,10 +568,8 @@ public class MapPanel extends JPanel {
                     Province p = engine.getWorldMap().getProvince(pid);
                     if (p != null) {
                         String owner = p.getOwner();
-                        // Filter out unwanted owners
-                        if (owner.equals("Ocean") || owner.equals("Uncolonized") || owner.startsWith("Unknown") || owner.startsWith("rgb_") || owner.equals("REMOVE_FROM_MAP") || owner.equals("BORDER")) {
+                        if (owner.equals("Ocean") || owner.equals("Uncolonized") || owner.startsWith("Unknown") || owner.startsWith("rgb_") || owner.equals("REMOVE_FROM_MAP") || owner.equals("BORDER"))
                             continue;
-                        }
                         centroids.putIfAbsent(owner, new double[]{0, 0});
                         counts.put(owner, counts.getOrDefault(owner, 0) + 1);
                         centroids.get(owner)[0] += x;
@@ -606,25 +586,25 @@ public class MapPanel extends JPanel {
             int cy = (int)(c[1] / count);
             int sx = x0 + (int)(cx * scale);
             int sy = y0 + (int)(cy * scale);
-            String label = owner;
-            Color col = countryColors.getOrDefault(owner, Color.WHITE);
-            // Draw drop shadow and rounded background
-            Font labelFont = new Font("Segoe UI", Font.BOLD, (int)(44 * scale));
+
+            int fontSize = Math.max(14, Math.min((int)(44 * scale), 48));
+            Font labelFont = new Font("Segoe UI", Font.BOLD, fontSize);
             g2d.setFont(labelFont);
             FontMetrics fm = g2d.getFontMetrics();
-            int lw = fm.stringWidth(label) + 32;
+            int lw = fm.stringWidth(owner) + 32;
             int lh = fm.getHeight() + 10;
-            int lx = sx - lw/2, ly = sy - lh/2;
+            int lx = sx - lw / 2;
+            int ly = sy - lh / 2;
+
             g2d.setColor(new Color(30,30,30,180));
             g2d.fillRoundRect(lx, ly, lw, lh, 18, 18);
             g2d.setColor(new Color(0,0,0,120));
             g2d.drawRoundRect(lx, ly, lw, lh, 18, 18);
-            // Draw shadow
             g2d.setColor(new Color(0,0,0,180));
-            g2d.drawString(label, sx+3, sy+3);
-            // Draw main text
+            g2d.drawString(owner, sx+3, sy+3);
+            Color col = countryColors.getOrDefault(owner, Color.WHITE);
             g2d.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), 220));
-            g2d.drawString(label, sx, sy);
+            g2d.drawString(owner, sx, sy);
         }
     }
 
