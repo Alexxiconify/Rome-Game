@@ -12,8 +12,10 @@ public class DiplomacyManager {
     private List<TradeAgreement> tradeAgreements;
     private List<War> activeWars;
     private Random random;
+    private com.romagame.core.CountryManager countryManager;
     
-    public DiplomacyManager() {
+    public DiplomacyManager(com.romagame.core.CountryManager countryManager) {
+        this.countryManager = countryManager;
         relations = new HashMap<>();
         alliances = new ArrayList<>();
         tradeAgreements = new ArrayList<>();
@@ -278,7 +280,7 @@ public class DiplomacyManager {
 
     // Aggression-diplo stat management
     public void addAggression(String countryName, double amount) {
-        var country = com.romagame.core.GameEngine.getInstance().getCountryManager().getCountry(countryName);
+        var country = countryManager.getCountry(countryName);
         if (country != null) {
             country.addAggressionDiplo(amount);
         }
@@ -288,7 +290,7 @@ public class DiplomacyManager {
         double aggro = country.getAggressionDiplo();
         if (aggro > 50) {
             // Sanctions: reduce trade, worsen relations
-            for (com.romagame.map.Country other : com.romagame.core.GameEngine.getInstance().getAllCountries()) {
+            for (com.romagame.map.Country other : countryManager.getAllCountries()) {
                 if (!other.getName().equals(country.getName())) {
                     modifyRelation(other.getName(), country.getName(), -10.0);
                 }
@@ -296,7 +298,7 @@ public class DiplomacyManager {
         }
         if (aggro > 100) {
             // Coalition: AI nations may form a coalition
-            for (com.romagame.map.Country other : com.romagame.core.GameEngine.getInstance().getAllCountries()) {
+            for (com.romagame.map.Country other : countryManager.getAllCountries()) {
                 if (!other.getName().equals(country.getName()) && getRelation(other.getName(), country.getName()) < -25) {
                     formAlliance(other.getName(), "Coalition vs " + country.getName());
                 }
