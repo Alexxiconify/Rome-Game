@@ -213,27 +213,18 @@ public class HistoricalTimeline {
     private static class HistoricalNation {
         private String name;
         private int spawnYear;
-        private String cultureGroup;
-        private String governmentType;
-        private String religion;
-        private String culture;
-        
+				private String cultureGroup;
+				
         public HistoricalNation(String name, int spawnYear, String cultureGroup, String governmentType, 
                               String religion, String culture) {
             this.name = name;
             this.spawnYear = spawnYear;
             this.cultureGroup = cultureGroup;
-            this.governmentType = governmentType;
-            this.religion = religion;
-            this.culture = culture;
         }
         
         // Getters
         public String getName() { return name; }
         public int getSpawnYear() { return spawnYear; }
         public String getCultureGroup() { return cultureGroup; }
-        public String getGovernmentType() { return governmentType; }
-        public String getReligion() { return religion; }
-        public String getCulture() { return culture; }
     }
 } 
