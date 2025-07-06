@@ -1,6 +1,7 @@
 package com.romagame.ui;
 
 import com.romagame.core.GameEngine;
+import com.romagame.core.GameSpeed;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -23,6 +24,7 @@ public class GameWindow extends JFrame {
     private FocusTreePanel focusTreePanel;
     private AIStatusPanel aiStatusPanel;
     private DiplomacyPanel diplomacyPanel;
+    private JLabel speedLabel;
     
     public GameWindow(GameEngine engine) {
         this.engine = engine;
@@ -86,6 +88,13 @@ public class GameWindow extends JFrame {
         
         mainTabbedPane = new JTabbedPane();
         mainTabbedPane.setFont(new Font("Times New Roman", Font.BOLD, 14));
+        
+        speedLabel = new JLabel("Speed: Normal");
+        speedLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        speedLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        speedLabel.setForeground(Color.YELLOW);
+        speedLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        speedLabel.setToolTipText("Click to change speed. Press Space to pause/unpause.");
     }
     
     private void layoutComponents() {
@@ -106,13 +115,13 @@ public class GameWindow extends JFrame {
         mainTabbedPane.addTab("🤝 Diplomacy", new ImageIcon(), diplomacyPanel, "Diplomacy and war");
         
         // Main content area
-        add(mainTabbedPane, BorderLayout.CENTER);
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(mainTabbedPane, BorderLayout.CENTER);
+        topPanel.add(speedLabel, BorderLayout.EAST);
+        add(topPanel, BorderLayout.CENTER);
         
         // Right panel for country info
         add(infoPanel, BorderLayout.EAST);
-        
-        // Bottom panel for controls
-        add(controlPanel, BorderLayout.SOUTH);
     }
     
     public void centerOnPlayerCountry() {
@@ -123,35 +132,6 @@ public class GameWindow extends JFrame {
     }
     
     private void setupEventHandlers() {
-        // Add keyboard shortcuts
-        getRootPane().registerKeyboardAction(
-            e -> engine.setGameSpeed(com.romagame.core.GameSpeed.PAUSED),
-            "Pause",
-            KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0),
-            JComponent.WHEN_IN_FOCUSED_WINDOW
-        );
-        
-        getRootPane().registerKeyboardAction(
-            e -> engine.setGameSpeed(com.romagame.core.GameSpeed.NORMAL),
-            "Normal Speed",
-            KeyStroke.getKeyStroke(KeyEvent.VK_1, 0),
-            JComponent.WHEN_IN_FOCUSED_WINDOW
-        );
-        
-        getRootPane().registerKeyboardAction(
-            e -> engine.setGameSpeed(com.romagame.core.GameSpeed.FAST),
-            "Fast Speed",
-            KeyStroke.getKeyStroke(KeyEvent.VK_2, 0),
-            JComponent.WHEN_IN_FOCUSED_WINDOW
-        );
-        
-        getRootPane().registerKeyboardAction(
-            e -> engine.setGameSpeed(com.romagame.core.GameSpeed.VERY_FAST),
-            "Very Fast Speed",
-            KeyStroke.getKeyStroke(KeyEvent.VK_3, 0),
-            JComponent.WHEN_IN_FOCUSED_WINDOW
-        );
-        
         // Add tab change listener
         mainTabbedPane.addChangeListener(e -> {
             if (mainTabbedPane.getSelectedIndex() == 0) {
@@ -159,6 +139,18 @@ public class GameWindow extends JFrame {
                 mapPanel.repaint();
             }
         });
+        
+        speedLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                cycleGameSpeed();
+            }
+        });
+        getRootPane().registerKeyboardAction(
+            e -> togglePause(),
+            KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0),
+            JComponent.WHEN_IN_FOCUSED_WINDOW
+        );
     }
     
     private void setupGameEngineCallback() {
@@ -181,5 +173,39 @@ public class GameWindow extends JFrame {
         focusTreePanel.updatePanel();
         aiStatusPanel.updatePanel();
         diplomacyPanel.updateDiplomacy();
+        updateSpeedLabel();
+    }
+    
+    private void cycleGameSpeed() {
+        GameSpeed current = engine.getGameSpeed();
+        GameSpeed next = switch (current) {
+            case PAUSED -> GameSpeed.NORMAL;
+            case NORMAL -> GameSpeed.FAST;
+            case FAST -> GameSpeed.VERY_FAST;
+            case VERY_FAST -> GameSpeed.PAUSED;
+            case SLOW -> GameSpeed.NORMAL;
+        };
+        engine.setGameSpeed(next);
+        updateSpeedLabel();
+    }
+    
+    private void togglePause() {
+        if (engine.getGameSpeed() == GameSpeed.PAUSED) {
+            engine.setGameSpeed(GameSpeed.NORMAL);
+        } else {
+            engine.setGameSpeed(GameSpeed.PAUSED);
+        }
+        updateSpeedLabel();
+    }
+    
+    private void updateSpeedLabel() {
+        String text = switch (engine.getGameSpeed()) {
+            case PAUSED -> "Speed: Paused";
+            case NORMAL -> "Speed: Normal";
+            case FAST -> "Speed: Fast";
+            case VERY_FAST -> "Speed: Very Fast";
+            case SLOW -> "Speed: Slow";
+        };
+        speedLabel.setText(text);
     }
 } 
