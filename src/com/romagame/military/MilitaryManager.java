@@ -70,4 +70,8 @@ public class MilitaryManager {
     public Navy getNavy(String name) {
         return navies.get(name);
     }
+    
+    public Map<String, Army> getArmies() {
+        return armies;
+    }
 } 

@@ -61,6 +61,18 @@ public class Country {
         this.cultureGroup = determineCultureGroup();
         this.goods = new HashMap<>();
         initializeCountry();
+        // Assign starting ruler for major nations
+        switch (name) {
+            case "Roman Empire" -> setRuler(new com.romagame.government.Ruler("Trajan", 45));
+            case "Parthia" -> setRuler(new com.romagame.government.Ruler("Osroes I", 50));
+            case "Armenia" -> setRuler(new com.romagame.government.Ruler("Parthamasiris", 38));
+            case "Dacia" -> setRuler(new com.romagame.government.Ruler("Decebalus", 42));
+            case "Sarmatia" -> setRuler(new com.romagame.government.Ruler("Sarmatian King", 40));
+            case "Britons" -> setRuler(new com.romagame.government.Ruler("Cartimandua", 35));
+            case "Persia" -> setRuler(new com.romagame.government.Ruler("Pacorus II", 48));
+            case "Eastern_Han_Empire" -> setRuler(new com.romagame.government.Ruler("Emperor An", 30));
+            default -> setRuler(new com.romagame.government.Ruler(name + " Ruler", 40));
+        }
     }
     
     private void initializeCountry() {

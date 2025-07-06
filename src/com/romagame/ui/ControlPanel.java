@@ -154,20 +154,65 @@ public class ControlPanel extends JPanel {
     }
     
     private void showDiplomacyDialog() {
-        String[] options = {"Send Gift", "Improve Relations", "Form Alliance", "Declare War"};
-        String choice = (String) JOptionPane.showInputDialog(
-            this,
-            "Choose diplomatic action:",
-            "Diplomacy",
-            JOptionPane.QUESTION_MESSAGE,
-            null,
-            options,
-            options[0]
-        );
+        var playerCountry = engine.getCountryManager().getPlayerCountry();
+        var allCountries = engine.getCountryManager().getAllCountries();
+        var diploManager = engine.getDiplomacyManager();
+        String playerName = playerCountry.getName();
         
-        if (choice != null) {
-            JOptionPane.showMessageDialog(this, "Diplomatic action: " + choice);
+        // Fog of war: only show countries within 5 provinces (example, using random distance for now)
+        int fogDistance = 5;
+        java.util.List<String> visibleCountries = new java.util.ArrayList<>();
+        java.util.List<String> distantCountries = new java.util.ArrayList<>();
+        java.util.Random rand = new java.util.Random();
+        for (var c : allCountries) {
+            if (c == playerCountry) continue;
+            int fakeDistance = rand.nextInt(10); // TODO: Replace with real distance calculation
+            if (fakeDistance <= fogDistance) {
+                visibleCountries.add(c.getName());
+            } else {
+                distantCountries.add(c.getName());
+            }
         }
+        
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.add(new JLabel("Known Nations and Opinions:"));
+        for (String country : visibleCountries) {
+            double opinion = diploManager.getRelation(playerName, country);
+            // Decay opinion for further but visible nations
+            int fakeDistance = rand.nextInt(fogDistance + 1);
+            double decay = 1.0 - (fakeDistance / (double)fogDistance) * 0.5; // up to 50% decay
+            double shownOpinion = opinion * decay;
+            String opinionStr = String.format("%.0f", shownOpinion);
+            String status = (opinion >= 50) ? "Friendly" : (opinion >= 25) ? "Cordial" : (opinion >= 0) ? "Neutral" : (opinion >= -25) ? "Hostile" : "Hostile";
+            boolean atWar = (opinion <= -100);
+            JPanel row = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+            row.add(new JLabel(country + " | Opinion: " + opinionStr + " (" + status + ") " + (atWar ? "[At War]" : "[At Peace]")));
+            JButton warBtn = new JButton(atWar ? "At War" : "Declare War");
+            warBtn.setEnabled(!atWar);
+            warBtn.addActionListener(e -> {
+                int confirm = JOptionPane.showConfirmDialog(this, "Declare war on " + country + "?", "Confirm War", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    diploManager.setRelation(playerName, country, -100);
+                    JOptionPane.showMessageDialog(this, "You are now at war with " + country + "!");
+                    showDiplomacyDialog(); // Refresh
+                }
+            });
+            row.add(warBtn);
+            panel.add(row);
+        }
+        // Distant nations (fogged)
+        for (String country : distantCountries) {
+            JPanel row = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+            row.add(new JLabel(country + " | Opinion: Unknown (Fog of War) [Status: Unknown]"));
+            JButton warBtn = new JButton("Declare War");
+            warBtn.setEnabled(false);
+            row.add(warBtn);
+            panel.add(row);
+        }
+        JScrollPane scroll = new JScrollPane(panel);
+        scroll.setPreferredSize(new java.awt.Dimension(400, 300));
+        JOptionPane.showMessageDialog(this, scroll, "Diplomacy", JOptionPane.PLAIN_MESSAGE);
     }
     
     private void showColonizationDialog() {
