@@ -106,7 +106,7 @@ public class GameThread extends Thread {
         paused.set(true);
     }
     
-    public void resume() {
+    public void resumeGame() {
         paused.set(false);
     }
     
