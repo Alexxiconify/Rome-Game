@@ -7,135 +7,68 @@ import java.util.*;
 public class WorldMonument {
     private String name;
     private String description;
+    private MonumentType type;
     private String location;
     private String owner;
-    private MonumentType type;
+    private boolean isBuilt;
     private int constructionProgress;
-    private int constructionCost;
-    private boolean isCompleted;
+    private int totalWork;
     private Map<String, Double> effects;
     private List<NationType> buffedNations;
-    private String historicalContext;
+    private int constructionCost;
     
-    public enum MonumentType {
-        WONDER, TEMPLE, PALACE, FORTRESS, INFRASTRUCTURE, CULTURAL
-    }
-    
-    public WorldMonument(String name, String description, String location, MonumentType type, 
-                        int constructionCost, String historicalContext) {
+    public WorldMonument(String name, String description, MonumentType type, String location, 
+                        int constructionCost, List<NationType> buffedNations) {
         this.name = name;
         this.description = description;
-        this.location = location;
         this.type = type;
-        this.constructionCost = constructionCost;
-        this.historicalContext = historicalContext;
-        this.constructionProgress = 0;
-        this.isCompleted = false;
+        this.location = location;
         this.owner = null;
+        this.isBuilt = false;
+        this.constructionProgress = 0;
+        this.totalWork = calculateTotalWork();
         this.effects = new HashMap<>();
-        this.buffedNations = new ArrayList<>();
+        this.buffedNations = buffedNations;
+        this.constructionCost = constructionCost;
         initializeEffects();
     }
     
+    private int calculateTotalWork() {
+        return switch (type) {
+            case WONDER -> 50000;
+            case TEMPLE -> 30000;
+            case FORTRESS -> 40000;
+            case PALACE -> 35000;
+            case THEATER -> 25000;
+        };
+    }
+    
     private void initializeEffects() {
-        switch (name) {
-            case "Colosseum":
-                effects.put("prestige", 0.2);
-                effects.put("stability", 0.1);
-                effects.put("population_happiness", 0.15);
-                buffedNations.add(NationType.ROMAN);
-                break;
-            case "Pantheon":
-                effects.put("religious_unity", 0.25);
-                effects.put("missionary_strength", 0.1);
-                effects.put("clergy_influence", 0.2);
-                buffedNations.add(NationType.ROMAN);
-                break;
-            case "Hadrian's Wall":
-                effects.put("defensiveness", 0.3);
-                effects.put("fort_level", 2.0);
-                effects.put("separatism", -0.2);
-                buffedNations.add(NationType.ROMAN);
-                buffedNations.add(NationType.CELTIC);
-                break;
-            case "Persepolis":
-                effects.put("diplomatic_relations", 2.0);
-                effects.put("prestige", 0.15);
-                effects.put("trade_efficiency", 0.1);
-                buffedNations.add(NationType.EASTERN);
-                break;
-            case "Hanging Gardens":
-                effects.put("population_growth", 0.2);
-                effects.put("development_cost", -0.1);
-                effects.put("agriculture_efficiency", 0.15);
-                buffedNations.add(NationType.EASTERN);
-                break;
-            case "Pyramids":
-                effects.put("prestige", 0.3);
-                effects.put("stability", 0.15);
-                effects.put("religious_unity", 0.2);
-                buffedNations.add(NationType.AFRICAN);
-                break;
-            case "Great Wall":
-                effects.put("defensiveness", 0.4);
-                effects.put("fort_level", 3.0);
-                effects.put("separatism", -0.3);
-                buffedNations.add(NationType.EASTERN);
-                break;
-            case "Stonehenge":
-                effects.put("religious_unity", 0.15);
-                effects.put("stability", 0.1);
-                effects.put("culture_conversion", 0.1);
-                buffedNations.add(NationType.CELTIC);
-                break;
-            case "Parthenon":
-                effects.put("culture_conversion", 0.2);
-                effects.put("prestige", 0.15);
-                effects.put("technology_cost", -0.1);
-                buffedNations.add(NationType.GREEK);
-                break;
-            case "Temple of Artemis":
+        switch (type) {
+            case WONDER:
+                effects.put("prestige", 50.0);
+                effects.put("diplomatic_reputation", 2.0);
                 effects.put("trade_efficiency", 0.15);
-                effects.put("merchant_slots", 1.0);
-                effects.put("diplomatic_relations", 1.0);
-                buffedNations.add(NationType.GREEK);
                 break;
-            case "Lighthouse of Alexandria":
-                effects.put("naval_force_limit", 0.3);
-                effects.put("trade_efficiency", 0.2);
-                effects.put("ship_cost", -0.1);
-                buffedNations.add(NationType.GREEK);
-                buffedNations.add(NationType.AFRICAN);
-                break;
-            case "Mausoleum":
-                effects.put("prestige", 0.25);
-                effects.put("stability", 0.1);
-                effects.put("legitimacy", 0.15);
-                buffedNations.add(NationType.EASTERN);
-                break;
-            case "Temple of Solomon":
-                effects.put("religious_unity", 0.3);
-                effects.put("missionary_strength", 0.15);
-                effects.put("clergy_influence", 0.25);
-                buffedNations.add(NationType.ARABIAN);
-                break;
-            case "Petra":
-                effects.put("trade_efficiency", 0.2);
-                effects.put("merchant_slots", 1.0);
-                effects.put("diplomatic_relations", 1.0);
-                buffedNations.add(NationType.ARABIAN);
-                break;
-            case "Mohenjo-daro":
-                effects.put("development_cost", -0.15);
-                effects.put("infrastructure_efficiency", 0.2);
-                effects.put("population_growth", 0.1);
-                buffedNations.add(NationType.INDIAN);
-                break;
-            case "Angkor Wat":
+            case TEMPLE:
                 effects.put("religious_unity", 0.25);
-                effects.put("culture_conversion", 0.15);
                 effects.put("stability", 0.1);
-                buffedNations.add(NationType.INDIAN);
+                effects.put("missionary_strength", 0.2);
+                break;
+            case FORTRESS:
+                effects.put("fort_level", 2.0);
+                effects.put("defensiveness", 0.25);
+                effects.put("army_tradition", 0.1);
+                break;
+            case PALACE:
+                effects.put("legitimacy", 0.2);
+                effects.put("absolutism", 0.1);
+                effects.put("diplomatic_relations", 2.0);
+                break;
+            case THEATER:
+                effects.put("culture_conversion_cost", -0.25);
+                effects.put("unrest", -2.0);
+                effects.put("prestige", 25.0);
                 break;
         }
     }
@@ -143,121 +76,142 @@ public class WorldMonument {
     public void startConstruction(String owner) {
         this.owner = owner;
         this.constructionProgress = 0;
-        this.isCompleted = false;
     }
     
-    public void advanceConstruction(int progress) {
-        if (!isCompleted) {
-            constructionProgress += progress;
-            if (constructionProgress >= constructionCost) {
-                completeConstruction();
-            }
+    public void updateConstruction(int workDone) {
+        if (isBuilt) return;
+        
+        constructionProgress += workDone;
+        if (constructionProgress >= totalWork) {
+            completeConstruction();
         }
     }
     
     private void completeConstruction() {
-        this.isCompleted = true;
-        this.constructionProgress = constructionCost;
+        isBuilt = true;
+        // Apply effects to the owner
+        applyEffectsToOwner();
     }
     
-    public boolean isCompleted() {
-        return isCompleted;
+    private void applyEffectsToOwner() {
+        if (owner == null) return;
+        
+        // Effects are applied through the country's modifier system
+        // This would be handled by the game engine
     }
     
-    public boolean isBuffedNation(Country country) {
+    public boolean canBuild(Country country) {
+        // Check if the country's nation type is in the buffed nations list
         return buffedNations.contains(country.getNationType());
     }
     
-    public void applyEffects(Country country) {
-        if (!isCompleted || !isBuffedNation(country)) {
-            return;
-        }
-        
-        for (Map.Entry<String, Double> effect : effects.entrySet()) {
-            String modifier = effect.getKey();
-            double value = effect.getValue();
-            
-            switch (modifier) {
-                case "prestige":
-                    country.setPrestige(country.getPrestige() + value);
-                    break;
-                case "stability":
-                    country.setStability(country.getStability() + value);
-                    break;
-                case "religious_unity":
-                    country.addModifier("Religious Unity", value);
-                    break;
-                case "missionary_strength":
-                    country.addModifier("Missionary Strength", value);
-                    break;
-                case "clergy_influence":
-                    country.addModifier("Clergy Influence", value);
-                    break;
-                case "defensiveness":
-                    country.addModifier("Defensiveness", value);
-                    break;
-                case "fort_level":
-                    country.addModifier("Fort Level", (int)value);
-                    break;
-                case "separatism":
-                    country.addModifier("Separatism", value);
-                    break;
-                case "diplomatic_relations":
-                    country.addModifier("Diplomatic Relations", (int)value);
-                    break;
-                case "trade_efficiency":
-                    country.addModifier("Trade Efficiency", value);
-                    break;
-                case "population_growth":
-                    country.addModifier("Population Growth", value);
-                    break;
-                case "development_cost":
-                    country.addModifier("Development Cost", value);
-                    break;
-                case "agriculture_efficiency":
-                    country.addModifier("Agriculture Efficiency", value);
-                    break;
-                case "culture_conversion":
-                    country.addModifier("Culture Conversion", value);
-                    break;
-                case "technology_cost":
-                    country.addModifier("Technology Cost", value);
-                    break;
-                case "merchant_slots":
-                    country.addModifier("Merchant Slots", (int)value);
-                    break;
-                case "naval_force_limit":
-                    country.addModifier("Naval Force Limit", value);
-                    break;
-                case "ship_cost":
-                    country.addModifier("Ship Cost", value);
-                    break;
-                case "legitimacy":
-                    country.setLegitimacy(country.getLegitimacy() + value);
-                    break;
-                case "infrastructure_efficiency":
-                    country.addModifier("Infrastructure Efficiency", value);
-                    break;
-                case "population_happiness":
-                    country.addModifier("Population Happiness", value);
-                    break;
-            }
-        }
+    public double getProgressPercentage() {
+        return (double) constructionProgress / totalWork * 100.0;
     }
     
     // Getters
     public String getName() { return name; }
     public String getDescription() { return description; }
+    public MonumentType getType() { return type; }
     public String getLocation() { return location; }
     public String getOwner() { return owner; }
-    public MonumentType getType() { return type; }
+    public boolean isBuilt() { return isBuilt; }
     public int getConstructionProgress() { return constructionProgress; }
+    public int getTotalWork() { return totalWork; }
+    public Map<String, Double> getEffects() { return effects; }
+    public List<NationType> getBuffedNations() { return buffedNations; }
     public int getConstructionCost() { return constructionCost; }
-    public Map<String, Double> getEffects() { return new HashMap<>(effects); }
-    public List<NationType> getBuffedNations() { return new ArrayList<>(buffedNations); }
-    public String getHistoricalContext() { return historicalContext; }
     
-    public double getCompletionPercentage() {
-        return (double) constructionProgress / constructionCost * 100.0;
+    public enum MonumentType {
+        WONDER, TEMPLE, FORTRESS, PALACE, THEATER
+    }
+    
+    // Static factory methods for famous monuments
+    public static WorldMonument createColosseum() {
+        return new WorldMonument(
+            "Colosseum",
+            "The great amphitheater of Rome, symbol of imperial power and entertainment",
+            MonumentType.WONDER,
+            "Rome",
+            1000,
+            Arrays.asList(NationType.ROMAN)
+        );
+    }
+    
+    public static WorldMonument createParthenon() {
+        return new WorldMonument(
+            "Parthenon",
+            "The magnificent temple to Athena, symbol of Greek culture and wisdom",
+            MonumentType.TEMPLE,
+            "Athens",
+            800,
+            Arrays.asList(NationType.GREEK, NationType.ROMAN)
+        );
+    }
+    
+    public static WorldMonument createGreatWall() {
+        return new WorldMonument(
+            "Great Wall",
+            "The massive defensive wall protecting the empire from northern invaders",
+            MonumentType.FORTRESS,
+            "Northern China",
+            1500,
+            Arrays.asList(NationType.EASTERN)
+        );
+    }
+    
+    public static WorldMonument createHangingGardens() {
+        return new WorldMonument(
+            "Hanging Gardens",
+            "The legendary gardens of Babylon, wonder of the ancient world",
+            MonumentType.WONDER,
+            "Babylon",
+            1200,
+            Arrays.asList(NationType.EASTERN, NationType.ARABIAN)
+        );
+    }
+    
+    public static WorldMonument createPyramids() {
+        return new WorldMonument(
+            "Pyramids of Giza",
+            "The eternal tombs of the pharaohs, wonder of the ancient world",
+            MonumentType.WONDER,
+            "Egypt",
+            2000,
+            Arrays.asList(NationType.AFRICAN, NationType.ARABIAN)
+        );
+    }
+    
+    public static WorldMonument createStonehenge() {
+        return new WorldMonument(
+            "Stonehenge",
+            "The mysterious stone circle, ancient temple to the gods",
+            MonumentType.TEMPLE,
+            "Britain",
+            600,
+            Arrays.asList(NationType.CELTIC, NationType.GERMANIC)
+        );
+    }
+    
+    public static WorldMonument createPersepolis() {
+        return new WorldMonument(
+            "Persepolis",
+            "The magnificent palace complex of the Persian kings",
+            MonumentType.PALACE,
+            "Persia",
+            900,
+            Arrays.asList(NationType.EASTERN, NationType.ARABIAN)
+        );
+    }
+    
+    public static WorldMonument createTheaterOfDionysus() {
+        return new WorldMonument(
+            "Theater of Dionysus",
+            "The great theater where Greek drama was performed",
+            MonumentType.THEATER,
+            "Athens",
+            500,
+            Arrays.asList(NationType.GREEK, NationType.ROMAN)
+        );
     }
 } 
