@@ -3,6 +3,8 @@ package com.romagame.ui;
 import com.romagame.core.GameEngine;
 import com.romagame.map.Country;
 import com.romagame.diplomacy.DiplomacyManager;
+import com.romagame.diplomacy.War;
+import com.romagame.diplomacy.DiplomaticRelation;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;

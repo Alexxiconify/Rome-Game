@@ -2,11 +2,14 @@ package com.romagame.ui;
 
 import com.romagame.core.GameEngine;
 import com.romagame.diplomacy.DiplomacyManager;
+import com.romagame.diplomacy.DiplomaticRelation;
+import com.romagame.diplomacy.TradeAgreement;
 import com.romagame.diplomacy.War;
 import com.romagame.map.Country;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 
 public class DiplomacyPanel extends JPanel {
