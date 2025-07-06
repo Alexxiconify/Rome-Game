@@ -16,6 +16,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.List;
 import java.util.function.Consumer;
+import com.romagame.ui.UIUpdateManager;
 
 public class GameEngine {
     private WorldMap worldMap;
@@ -31,7 +32,8 @@ public class GameEngine {
     private GameDate currentDate;
     private GameSpeed gameSpeed;
     private boolean isRunning;
-    private ScheduledExecutorService gameLoop;
+    private GameThread gameThread;
+    private UIUpdateManager uiUpdateManager;
     private Consumer<GameEngine> uiUpdateCallback;
     
     public GameEngine() {
@@ -161,6 +163,7 @@ public class GameEngine {
     public GameDate getCurrentDate() { return currentDate; }
     public GameSpeed getGameSpeed() { return gameSpeed; }
     public boolean isRunning() { return isRunning; }
+    public Consumer<GameEngine> getUIUpdateCallback() { return uiUpdateCallback; }
     
     // Convenience methods for country access
     public List<Country> getAllCountries() {

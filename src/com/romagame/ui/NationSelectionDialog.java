@@ -133,15 +133,24 @@ public class NationSelectionDialog extends JDialog {
             System.out.println("  - " + country.getName());
         }
         
-        // Add all valid countries from the engine
+        // Create a list of selectable country names and sort them alphabetically
+        List<String> selectableCountries = new ArrayList<>();
         for (Country country : countries) {
             String countryName = country.getName();
             if (isSelectableNation(countryName)) {
-                countryComboBox.addItem(countryName);
+                selectableCountries.add(countryName);
                 System.out.println("Added country: " + countryName);
             } else {
                 System.out.println("Filtered out country: " + countryName);
             }
+        }
+        
+        // Sort the country names alphabetically
+        selectableCountries.sort(String::compareToIgnoreCase);
+        
+        // Add sorted countries to the combo box
+        for (String countryName : selectableCountries) {
+            countryComboBox.addItem(countryName);
         }
         
         System.out.println("Total items in combo box: " + countryComboBox.getItemCount());

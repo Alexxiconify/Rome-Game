@@ -4,10 +4,13 @@ import com.romagame.core.GameEngine;
 import com.romagame.map.Province;
 import com.romagame.map.ProvinceData;
 import com.romagame.map.ProvinceDataLoader;
+import com.romagame.map.Country;
+import com.romagame.map.DistanceCalculator;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
@@ -16,6 +19,8 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.awt.event.ActionEvent;
@@ -333,31 +338,68 @@ public class MapPanel extends JPanel {
                 if (e.getButton() == MouseEvent.BUTTON1) {
                     // Left-click: select army if clicked on icon
                     MilitaryManager mm = engine.getMilitaryManager();
+                    Point clickPoint = e.getPoint();
+                    
                     for (Army army : mm.getArmies().values()) {
-                        // Fake hit test for now
-                        int x = getWidth() / 2 + (int)(Math.random() * 200 - 100);
-                        int y = getHeight() / 2 + (int)(Math.random() * 200 - 100);
-                        if (e.getX() >= x && e.getX() <= x + 20 && e.getY() >= y && e.getY() <= y + 20) {
+                        String loc = army.getLocation();
+                        if (loc == null || loc.equals("Unknown")) continue;
+                        Province province = engine.getWorldMap().getProvince(loc);
+                        if (province == null) continue;
+                        
+                        // Convert province coordinates to screen coordinates
+                        Point2D.Double mapCoords = DistanceCalculator.latLonToMapCoords(
+                            province.getLatitude(), province.getLongitude(), 
+                            mapImgWidth, mapImgHeight
+                        );
+                        Point screenCoords = DistanceCalculator.mapToScreen(
+                            mapCoords, currentScale, currentOffsetX, currentOffsetY
+                        );
+                        
+                        // Check if click is within army icon bounds
+                        int iconSize = 20;
+                        int x = screenCoords.x - iconSize / 2;
+                        int y = screenCoords.y - iconSize / 2;
+                        
+                        if (clickPoint.x >= x && clickPoint.x <= x + iconSize && 
+                            clickPoint.y >= y && clickPoint.y <= y + iconSize) {
                             selectedArmy = army;
+                            
                             // Show context menu
                             JPopupMenu menu = new JPopupMenu();
-                            JMenuItem split = new JMenuItem("Split");
-                            JMenuItem merge = new JMenuItem("Merge");
-                            JMenuItem disband = new JMenuItem("Disband");
-                            menu.add(split); menu.add(merge); menu.add(disband);
-                            menu.show(MapPanel.this, x, y + 20);
+                            JMenuItem move = new JMenuItem("Move Army");
+                            JMenuItem split = new JMenuItem("Split Army");
+                            JMenuItem merge = new JMenuItem("Merge Army");
+                            JMenuItem disband = new JMenuItem("Disband Army");
+                            JMenuItem details = new JMenuItem("Show Details");
+                            
+                            move.addActionListener(evt -> showMoveArmyDialog(army));
+                            split.addActionListener(evt -> showSplitArmyDialog(army));
+                            merge.addActionListener(evt -> showMergeArmyDialog(army));
+                            disband.addActionListener(evt -> showDisbandArmyDialog(army));
+                            details.addActionListener(evt -> showArmyDetailsDialog(army));
+                            
+                            menu.add(move);
+                            menu.add(split);
+                            menu.add(merge);
+                            menu.add(disband);
+                            menu.addSeparator();
+                            menu.add(details);
+                            
+                            menu.show(MapPanel.this, x, y + iconSize);
                             repaint();
                             return;
                         }
                     }
                     selectedArmy = null;
                     repaint();
-                } else if (e.getButton() == MouseEvent.BUTTON3 && selectedArmy != null) {
+                } else if (e.getButton() == MouseEvent.BUTTON3) {
                     // Right-click: move selected army to province
-                    String provinceId = getProvinceIdAt(e.getPoint());
-                    if (provinceId != null) {
-                        selectedArmy.setLocation(provinceId);
-                        repaint();
+                    if (selectedArmy != null) {
+                        String provinceId = getProvinceIdAt(e.getPoint());
+                        if (provinceId != null) {
+                            selectedArmy.setLocation(provinceId);
+                            repaint();
+                        }
                     }
                 }
             }
@@ -629,13 +671,41 @@ public class MapPanel extends JPanel {
             if (loc == null || loc.equals("Unknown")) continue;
             Province province = engine.getWorldMap().getProvince(loc);
             if (province == null) continue;
-            // Get province center (fake for now)
-            int x = getWidth() / 2 + (int)(Math.random() * 200 - 100);
-            int y = getHeight() / 2 + (int)(Math.random() * 200 - 100);
-            g2d.setColor(army == selectedArmy ? Color.YELLOW : Color.RED);
-            g2d.fillOval(x, y, 20, 20);
+            
+            // Convert province coordinates to map coordinates
+            Point2D.Double mapCoords = DistanceCalculator.latLonToMapCoords(
+                province.getLatitude(), province.getLongitude(), 
+                mapImgWidth, mapImgHeight
+            );
+            
+            // Convert map coordinates to screen coordinates
+            Point screenCoords = DistanceCalculator.mapToScreen(
+                mapCoords, currentScale, currentOffsetX, currentOffsetY
+            );
+            
+            // Draw army icon
+            int iconSize = 20;
+            int x = screenCoords.x - iconSize / 2;
+            int y = screenCoords.y - iconSize / 2;
+            
+            // Draw army icon with different colors based on ownership
+            Country playerCountry = engine.getCountryManager().getPlayerCountry();
+            if (playerCountry != null && army.getCountry().equals(playerCountry.getName())) {
+                g2d.setColor(army == selectedArmy ? Color.YELLOW : Color.GREEN);
+            } else {
+                g2d.setColor(army == selectedArmy ? Color.YELLOW : Color.RED);
+            }
+            
+            g2d.fillOval(x, y, iconSize, iconSize);
             g2d.setColor(Color.BLACK);
-            g2d.drawString(army.getName(), x, y + 30);
+            g2d.drawOval(x, y, iconSize, iconSize);
+            
+            // Draw army name
+            g2d.setFont(new Font("Arial", Font.BOLD, 10));
+            FontMetrics fm = g2d.getFontMetrics();
+            int textWidth = fm.stringWidth(army.getName());
+            g2d.setColor(Color.WHITE);
+            g2d.drawString(army.getName(), x + (iconSize - textWidth) / 2, y + iconSize + 12);
         }
     }
 
@@ -808,6 +878,94 @@ public class MapPanel extends JPanel {
     
     public String getSelectedNation() {
         return selectedNation;
+    }
+    
+    // Army context menu dialog methods
+    private void showMoveArmyDialog(Army army) {
+        // Get all provinces for selection
+        List<String> provinceIds = new ArrayList<>();
+        for (Province province : engine.getWorldMap().getAllProvinces()) {
+            provinceIds.add(province.getId());
+        }
+        
+        String selectedProvince = (String) JOptionPane.showInputDialog(
+            this,
+            "Select destination province for " + army.getName() + ":",
+            "Move Army",
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            provinceIds.toArray(new String[0]),
+            army.getLocation()
+        );
+        
+        if (selectedProvince != null && !selectedProvince.equals(army.getLocation())) {
+            army.setLocation(selectedProvince);
+            repaint();
+            JOptionPane.showMessageDialog(this, 
+                army.getName() + " moved to " + selectedProvince + "!",
+                "Army Moved",
+                JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+    
+    private void showSplitArmyDialog(Army army) {
+        // For now, just show a message - full implementation would require army splitting logic
+        JOptionPane.showMessageDialog(this,
+            "Split army functionality to be implemented.\n" +
+            "This would allow dividing " + army.getName() + " into smaller units.",
+            "Split Army",
+            JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    private void showMergeArmyDialog(Army army) {
+        // For now, just show a message - full implementation would require army merging logic
+        JOptionPane.showMessageDialog(this,
+            "Merge army functionality to be implemented.\n" +
+            "This would allow combining " + army.getName() + " with other armies.",
+            "Merge Army",
+            JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    private void showDisbandArmyDialog(Army army) {
+        int result = JOptionPane.showConfirmDialog(this,
+            "Are you sure you want to disband " + army.getName() + "?\n" +
+            "This action cannot be undone.",
+            "Disband Army",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE);
+            
+        if (result == JOptionPane.YES_OPTION) {
+            // Remove army from military manager
+            engine.getMilitaryManager().getArmies().remove(army.getName());
+            selectedArmy = null;
+            repaint();
+            JOptionPane.showMessageDialog(this,
+                army.getName() + " has been disbanded.",
+                "Army Disbanded",
+                JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+    
+    private void showArmyDetailsDialog(Army army) {
+        StringBuilder details = new StringBuilder();
+        details.append("Army: ").append(army.getName()).append("\n");
+        details.append("Country: ").append(army.getCountry()).append("\n");
+        details.append("Location: ").append(army.getLocation()).append("\n");
+        details.append("Total Strength: ").append(army.getTotalStrength()).append("\n");
+        details.append("Combat Power: ").append(String.format("%.1f", army.getCombatPower())).append("\n");
+        details.append("Morale: ").append(String.format("%.1f", army.getMorale())).append("\n");
+        details.append("Organization: ").append(String.format("%.1f", army.getOrganization())).append("\n");
+        details.append("Status: ").append(army.isEngaged() ? "Engaged" : "Ready").append("\n\n");
+        
+        details.append("Unit Composition:\n");
+        for (Map.Entry<String, Integer> unit : army.getUnits().entrySet()) {
+            details.append("- ").append(unit.getKey()).append(": ").append(unit.getValue()).append("\n");
+        }
+        
+        JOptionPane.showMessageDialog(this,
+            details.toString(),
+            "Army Details - " + army.getName(),
+            JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void loadProvinceData() {
