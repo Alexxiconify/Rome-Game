@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
-import com.romagame.military.War;
 
 public class CountryManager {
     private WorldMap worldMap;
@@ -61,17 +60,6 @@ public class CountryManager {
     public void setPlayerCountry(String countryName) {
         if (countries.containsKey(countryName)) {
             this.playerCountry = countryName;
-        }
-    }
-    
-    public void declareWar(String attacker, String defender) {
-        Country attackerCountry = countries.get(attacker);
-        Country defenderCountry = countries.get(defender);
-        
-        if (attackerCountry != null && defenderCountry != null) {
-            // Create war between countries
-            War war= new War(attackerCountry, defenderCountry);
-            // Add war to war manager
         }
     }
     
