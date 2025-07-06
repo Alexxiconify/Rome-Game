@@ -20,7 +20,7 @@ public class Main {
             if (dialog.getSelectedCountry() != null) {
                 window.setVisible(true);
                 // Center map on selected nation
-                window.centerOnPlayerCountry();
+                window.centerOnPlayerRegion();
                 engine.start();
             } else {
                 // No nation selected, exit
