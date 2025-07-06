@@ -634,7 +634,7 @@ public class MapPanel extends JPanel {
         }
     }
 
-    private void centerOnNation(String nation) {
+    public void centerOnNation(String nation) {
         if (provinceMask == null || colorToProvinceId.isEmpty()) return;
         int imgW = provinceMask.getWidth();
         int imgH = provinceMask.getHeight();
