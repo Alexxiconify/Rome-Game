@@ -4,8 +4,6 @@ import com.romagame.core.GameEngine;
 import com.romagame.core.GameSpeed;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class GameSpeedPanel extends JPanel {
     private final GameEngine engine;
