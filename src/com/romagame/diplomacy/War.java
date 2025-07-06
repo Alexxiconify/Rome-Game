@@ -1,7 +1,5 @@
 package com.romagame.diplomacy;
 
-import com.romagame.map.Country;
-import com.romagame.military.Army;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
