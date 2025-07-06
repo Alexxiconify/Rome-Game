@@ -1,3 +1,4 @@
+
 Nation(0, 0, 0, Ocean);
 Nation(20, 125, 175, Ethopia);
 Nation(39, 190, 58, Unknown1);
