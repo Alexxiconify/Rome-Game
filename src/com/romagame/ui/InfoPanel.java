@@ -226,7 +226,7 @@ public class InfoPanel extends JPanel {
         infoArea.setCaretPosition(0); // Scroll to top
     }
     
-    private String getRelationType(int value) {
+    public String getRelationType(int value) {
         if (value >= 100) return "Alliance";
         else if (value >= 50) return "Friendly";
         else if (value >= 0) return "Neutral";
