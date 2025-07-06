@@ -57,6 +57,7 @@ java -cp "src" Main
 ## Nation Selection
 
 The game features 34 playable nations including:
+
 - **Roman Empire** (starting tech level 5)
 - **Parthia** (starting tech level 4)
 - **Eastern Han Empire** (starting tech level 4)
@@ -64,6 +65,7 @@ The game features 34 playable nations including:
 - And many more with unique starting conditions
 
 Each nation has:
+
 - Unique starting prestige, legitimacy, and stability
 - Varied military forces and resources
 - Nation-specific ideas, laws, and reforms
@@ -79,6 +81,7 @@ Each nation has:
 ## Development
 
 The game is built with:
+
 - **Java Swing** for the UI
 - **Multi-threading** for performance
 - **JSON** for data storage
@@ -177,7 +180,7 @@ javac -d bin src/**/*.java
 java -cp bin com.romagame.Main
 ```
 
-### Development
+### Development 1
 
 ```bash
 # Run with debug information
@@ -258,4 +261,4 @@ This project is for educational purposes. The Q-BAM map reference is used with p
 
 ---
 
-*Roma Game - A grand strategy adventure awaits!* 
+*Roma Game - A grand strategy adventure awaits!*
