@@ -68,6 +68,8 @@ public class MapPanel extends JPanel {
 
     private Army selectedArmy = null;
 
+    private Map<String, String> colorKeyToProvinceId = new HashMap<>();
+
     public MapPanel(GameEngine engine) {
         this.engine = engine;
         setupPanel();
@@ -241,18 +243,8 @@ public class MapPanel extends JPanel {
                 int r = (argb >> 16) & 0xFF;
                 int g = (argb >> 8) & 0xFF;
                 int b = argb & 0xFF;
-                // Compose province ID from color (if you have a color->provinceId map, use it; otherwise, skip coloring)
-                // Here, we skip coloring if not found
                 String colorKey = String.format("%d,%d,%d", r, g, b);
-                String provinceId = null;
-                for (String pid : provinceIdToOwner.keySet()) {
-                    // If you have a color->provinceId map, use it here for efficiency
-                    // This is a fallback: skip if not found
-                    if (pid.endsWith(colorKey)) {
-                        provinceId = pid;
-                        break;
-                    }
-                }
+                String provinceId = colorKeyToProvinceId.get(colorKey);
                 if (provinceId != null) {
                     String owner = provinceIdToOwner.get(provinceId);
                     String colorStr = nationToColor.get(owner);
@@ -735,16 +727,8 @@ public class MapPanel extends JPanel {
         for (int y = 0; y < imgH; y++) {
             for (int x = 0; x < imgW; x++) {
                 int argb = provinceMask.getRGB(x, y);
-                // Compose province ID from color (if you have a color->provinceId map, use it; otherwise, skip)
-                // Here, we skip if not found
                 String colorKey = String.format("%d,%d,%d", (argb >> 16) & 0xFF, (argb >> 8) & 0xFF, argb & 0xFF);
-                String provinceId = null;
-                for (String pid : provinceIdToOwner.keySet()) {
-                    if (pid.endsWith(colorKey)) {
-                        provinceId = pid;
-                        break;
-                    }
-                }
+                String provinceId = colorKeyToProvinceId.get(colorKey);
                 if (provinceId != null) {
                     String owner = provinceIdToOwner.get(provinceId);
                     if (owner == null || owner.equals("Ocean") || owner.equals("Uncolonized") || owner.startsWith("Unknown") || owner.startsWith("rgb_") || owner.equals("REMOVE_FROM_MAP") || owner.equals("BORDER") || owner.equals("Water") || owner.equals("Sea") || owner.equals("Lake") || owner.equals("River"))
@@ -758,7 +742,7 @@ public class MapPanel extends JPanel {
         }
         for (String owner : centroids.keySet()) {
             int count = counts.get(owner);
-            if (count < 100) continue; // Show more nations (lowered threshold)
+            if (count < 100) continue;
             double[] c = centroids.get(owner);
             int cx = (int)(c[0] / count);
             int cy = (int)(c[1] / count);
@@ -996,6 +980,10 @@ public class MapPanel extends JPanel {
             for (String entry : provinceEntries) {
                 String provinceId = entry.split("\"province_id\"\\s*:\\s*\"")[1].split("\"")[0];
                 String owner = entry.split("\"owner_name\"\\s*:\\s*\"")[1].split("\"")[0];
+                String colorStr = entry.split("\"mask_color\"\\s*:\\s*\\[")[1].split("]")[0].replaceAll("\\s", "");
+                String[] rgb = colorStr.split(",");
+                String colorKey = String.format("%s,%s,%s", rgb[0], rgb[1], rgb[2]);
+                colorKeyToProvinceId.put(colorKey, provinceId);
                 provinceIdToOwner.put(provinceId, owner);
             }
 
