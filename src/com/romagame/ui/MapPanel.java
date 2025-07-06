@@ -2,8 +2,6 @@ package com.romagame.ui;
 
 import com.romagame.core.GameEngine;
 import com.romagame.map.Province;
-import com.romagame.map.ProvinceData;
-import com.romagame.map.ProvinceDataLoader;
 import com.romagame.map.Country;
 import com.romagame.map.DistanceCalculator;
 import javax.swing.*;
@@ -27,6 +25,8 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import com.romagame.military.Army;
 import com.romagame.military.MilitaryManager;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class MapPanel extends JPanel {
     private GameEngine engine;
@@ -54,9 +54,9 @@ public class MapPanel extends JPanel {
     private String cachedProvinceForHighlight = null;
     
     // Province data from JSON
-    private Map<String, ProvinceData> provinceData = new HashMap<>();
-    private Map<String, String> maskColorToProvinceId = new HashMap<>();
-    public Map<String, String> ownerColorToNation = new HashMap<>();
+    private Map<String, String> provinceIdToOwner = new HashMap<>();
+    private Map<String, String> nationToColor = new HashMap<>();
+    private List<String> nationList = new ArrayList<>();
 
     // Centralized transform fields
     private double currentScale;
@@ -73,9 +73,8 @@ public class MapPanel extends JPanel {
     public MapPanel(GameEngine engine) {
         this.engine = engine;
         setupPanel();
-        loadProvinceData();
+        loadNationsAndProvinces();
         loadMapBackground();
-        loadProvinceOwnerColors();
         loadProvinceMask();
         setupMouseListeners();
     }
@@ -176,7 +175,6 @@ public class MapPanel extends JPanel {
             File maskFile = new File("src/resources/province_mask.png");
             if (maskFile.exists()) {
                 provinceMask = ImageIO.read(maskFile);
-                loadColorToProvinceId();
                 updateProvinceColorMap();
                 updateBorderOverlay();
                 updateLandShading();
@@ -239,25 +237,38 @@ public class MapPanel extends JPanel {
         if (provinceMask == null) return;
         int w = provinceMask.getWidth(), h = provinceMask.getHeight();
         provinceColorMap = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
                 int argb = provinceMask.getRGB(x, y);
                 int r = (argb >> 16) & 0xFF;
                 int g = (argb >> 8) & 0xFF;
                 int b = argb & 0xFF;
-                String maskKey = r + "," + g + "," + b;
-                String provinceId = maskColorToProvinceId.get(maskKey);
-
-                if (provinceId != null && provinceData.containsKey(provinceId)) {
-                    int[] ownerColor = provinceData.get(provinceId).owner_color;
-                    int ownerR = Math.min(255, Math.max(0, ownerColor[0]));
-                    int ownerG = Math.min(255, Math.max(0, ownerColor[1]));
-                    int ownerB = Math.min(255, Math.max(0, ownerColor[2]));
-                    int ownerArgb = (0xFF << 24) | (ownerR << 16) | (ownerG << 8) | ownerB;
-                    provinceColorMap.setRGB(x, y, ownerArgb);
+                // Compose province ID from color (if you have a color->provinceId map, use it; otherwise, skip coloring)
+                // Here, we skip coloring if not found
+                String colorKey = String.format("%d,%d,%d", r, g, b);
+                String provinceId = null;
+                for (String pid : provinceIdToOwner.keySet()) {
+                    // If you have a color->provinceId map, use it here for efficiency
+                    // This is a fallback: skip if not found
+                    if (pid.endsWith(colorKey)) {
+                        provinceId = pid;
+                        break;
+                    }
+                }
+                if (provinceId != null) {
+                    String owner = provinceIdToOwner.get(provinceId);
+                    String colorStr = nationToColor.get(owner);
+                    if (colorStr != null) {
+                        String[] rgb = colorStr.split(",");
+                        int ownerR = Integer.parseInt(rgb[0]);
+                        int ownerG = Integer.parseInt(rgb[1]);
+                        int ownerB = Integer.parseInt(rgb[2]);
+                        int ownerArgb = (0xFF << 24) | (ownerR << 16) | (ownerG << 8) | ownerB;
+                        provinceColorMap.setRGB(x, y, ownerArgb);
+                    } else {
+                        provinceColorMap.setRGB(x, y, 0x00000000);
+                    }
                 } else {
-                    // Transparent for unassigned
                     provinceColorMap.setRGB(x, y, 0x00000000);
                 }
             }
@@ -421,9 +432,10 @@ public class MapPanel extends JPanel {
                     
                     // Update tooltip with nation name
                     if (hoveredProvinceId != null) {
-                        ProvinceData provinceDataItem = provinceData.get(hoveredProvinceId);
-                        if (provinceDataItem != null) {
-                            setToolTipText("Province: " + hoveredProvinceId + " | Nation: " + provinceDataItem.getNation());
+                        String owner = provinceIdToOwner.get(hoveredProvinceId);
+                        String color = nationToColor.get(owner);
+                        if (color != null) {
+                            setToolTipText("Province: " + hoveredProvinceId + " | Nation: " + owner);
                         } else {
                             setToolTipText("Province: " + hoveredProvinceId);
                         }
@@ -967,14 +979,25 @@ public class MapPanel extends JPanel {
             JOptionPane.INFORMATION_MESSAGE);
     }
 
-    private void loadProvinceData() {
+    private void loadNationsAndProvinces() {
         try {
-            provinceData = ProvinceDataLoader.loadProvinceData("src/resources/province_data.json");
-            maskColorToProvinceId = ProvinceDataLoader.buildMaskColorToProvinceId(provinceData);
-            ownerColorToNation = ProvinceDataLoader.buildOwnerColorToNation(provinceData);
-            System.out.println("Loaded " + provinceData.size() + " provinces from province_data.json");
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(new File("src/resources/nations_and_provinces.json"));
+            for (JsonNode nation : root.get("nations")) {
+                String name = nation.get("name").asText();
+                JsonNode colorArr = nation.get("color");
+                String colorStr = String.format("%d,%d,%d", colorArr.get(0).asInt(), colorArr.get(1).asInt(), colorArr.get(2).asInt());
+                nationToColor.put(name, colorStr);
+                nationList.add(name);
+            }
+            for (JsonNode province : root.get("provinces")) {
+                String provinceId = province.get("province_id").asText();
+                String owner = province.get("owner_name").asText();
+                provinceIdToOwner.put(provinceId, owner);
+            }
+            System.out.println("Loaded nations and provinces from nations_and_provinces.json");
         } catch (Exception e) {
-            System.err.println("Warning: Could not load province_data.json: " + e.getMessage());
+            System.err.println("Failed to load nations_and_provinces.json: " + e.getMessage());
         }
     }
 
