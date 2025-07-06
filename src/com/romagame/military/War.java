@@ -102,6 +102,13 @@ public class War {
             strength += unit.getValue() * 100.0; // Each unit contributes 100 strength
         }
         
+        // --- Military Tech Bonus ---
+        // Tech factor: Each tech level above 1 gives +10% strength (level 1 = 1.0x, level 20 = 2.9x)
+        // This makes tech a decisive factor in combat
+        double techFactor = 1.0 + 0.1 * (country.getMilitaryTechLevel() - 1);
+        strength *= techFactor;
+        // ---
+        
         // Add technology bonuses based on researched technologies
         strength += country.getResearchedTechnologies().size() * 50.0;
         

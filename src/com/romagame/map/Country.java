@@ -44,6 +44,19 @@ public class Country {
     public static final Map<NationType, List<String>> GROUP_LAWS = new HashMap<>();
     public static final Map<NationType, List<String>> GROUP_SOLDIER_TYPES = new HashMap<>();
 
+    // --- Military Tech System ---
+    /**
+     * Military tech level (1-20). Higher is better. Impacts combat.
+     *
+     * Example starting values:
+     *   Roman Empire: 5
+     *   Parthia: 4
+     *   Armenia, Dacia, Sarmatia, Britons, Persia, Eastern_Han_Empire: 3-4
+     *   Medium nations: 2-3
+     *   Small/minor nations: 1-2
+     */
+    private int militaryTechLevel;
+
     static {
         // Example group ideas
         GROUP_IDEAS.put(NationType.ROMAN, List.of("Pax Romana", "Legionary Discipline", "Roman Roads", "Imperial Administration"));
@@ -97,15 +110,25 @@ public class Country {
         initializeCountry();
         // Assign starting ruler for major nations
         switch (name) {
-            case "Roman Empire" -> setRuler(new com.romagame.government.Ruler("Trajan", 45));
-            case "Parthia" -> setRuler(new com.romagame.government.Ruler("Osroes I", 50));
-            case "Armenia" -> setRuler(new com.romagame.government.Ruler("Parthamasiris", 38));
-            case "Dacia" -> setRuler(new com.romagame.government.Ruler("Decebalus", 42));
-            case "Sarmatia" -> setRuler(new com.romagame.government.Ruler("Sarmatian King", 40));
-            case "Britons" -> setRuler(new com.romagame.government.Ruler("Cartimandua", 35));
-            case "Persia" -> setRuler(new com.romagame.government.Ruler("Pacorus II", 48));
-            case "Eastern_Han_Empire" -> setRuler(new com.romagame.government.Ruler("Emperor An", 30));
-            default -> setRuler(new com.romagame.government.Ruler(name + " Ruler", 40));
+            case "Roman Empire" -> {
+                setRuler(new com.romagame.government.Ruler("Trajan", 45));
+                this.militaryTechLevel = 5;
+            }
+            case "Parthia" -> {
+                setRuler(new com.romagame.government.Ruler("Osroes I", 50));
+                this.militaryTechLevel = 4;
+            }
+            case "Armenia", "Dacia", "Sarmatia", "Britons", "Persia", "Eastern_Han_Empire" -> {
+                setRuler(new com.romagame.government.Ruler(name + " Ruler", 40));
+                this.militaryTechLevel = 3;
+            }
+            default -> {
+                setRuler(new com.romagame.government.Ruler(name + " Ruler", 40));
+                // Assign tech based on size/type (simple heuristic)
+                if (provinces.size() >= 8) this.militaryTechLevel = 3;
+                else if (provinces.size() >= 4) this.militaryTechLevel = 2;
+                else this.militaryTechLevel = 1;
+            }
         }
     }
     
@@ -532,4 +555,10 @@ public class Country {
 
     public Ruler getRuler() { return ruler; }
     public void setRuler(Ruler ruler) { this.ruler = ruler; }
+
+    // --- Military Tech Getters/Setters ---
+    public int getMilitaryTechLevel() { return militaryTechLevel; }
+    public void setMilitaryTechLevel(int level) {
+        this.militaryTechLevel = Math.max(1, Math.min(20, level));
+    }
 } 
