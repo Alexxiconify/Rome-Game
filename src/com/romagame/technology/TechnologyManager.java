@@ -4,8 +4,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
-import com.romagame.map.Country;
-
 public class TechnologyManager {
     private Map<String, Technology> technologies;
     private Map<String, Map<String, TechnologyProgress>> countryResearchProgress;
