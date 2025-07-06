@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import com.romagame.government.Ruler;
 
 public class Country {
     public enum NationType {
@@ -28,6 +29,7 @@ public class Country {
     private NationType nationType;
     private String cultureGroup;
     private Map<String, Integer> goods;
+    private Ruler ruler;
 
     // Group-based mechanics (static for all countries)
     public static final Map<NationType, List<String>> GROUP_IDEAS = new HashMap<>();
@@ -315,4 +317,7 @@ public class Country {
         // For now, return a default year - this should be connected to the game engine
         return 117; // Default to 117 AD for the Roman Empire scenario
     }
+
+    public Ruler getRuler() { return ruler; }
+    public void setRuler(Ruler ruler) { this.ruler = ruler; }
 } 
