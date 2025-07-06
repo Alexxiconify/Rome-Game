@@ -39,7 +39,7 @@ public class GameWindow extends JFrame {
             @Override
             public void componentShown(java.awt.event.ComponentEvent e) {
                 if (!centered) {
-                    centerOnPlayerCountry();
+                    centerOnPlayerRegion();
                     centered = true;
                 }
             }
@@ -124,12 +124,6 @@ public class GameWindow extends JFrame {
         add(infoPanel, BorderLayout.EAST);
     }
     
-    public void centerOnPlayerCountry() {
-        if (engine.getCountryManager().getPlayerCountry() != null) {
-            String playerCountry = engine.getCountryManager().getPlayerCountry().getName();
-            mapPanel.centerOnNation(playerCountry);
-        }
-    }
     
     private void setupEventHandlers() {
         // Add tab change listener
