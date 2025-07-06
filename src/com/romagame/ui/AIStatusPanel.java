@@ -57,7 +57,8 @@ public class AIStatusPanel extends JPanel {
         for (Country country : allCountries) {
             if (!country.getName().equals(playerCountry) && 
                 !country.getName().equals("Ocean") && 
-                !country.getName().equals("Uncolonized")) {
+                !country.getName().equals("Uncolonized") &&
+                aiManager.isNationEnabled(country.getName())) {
                 
                 aiCount++;
                 sb.append("=== ").append(country.getName()).append(" ===\n");
