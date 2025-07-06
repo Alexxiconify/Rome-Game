@@ -226,7 +226,7 @@ public class LawsPanel extends JPanel {
         showLawDetails();
     }
     
-    private void updateLawDetails() {
+    public void updateLawDetails() {
         Country playerCountry = engine.getCountryManager().getPlayerCountry();
         if (playerCountry == null) {
             lawDetails.setText("No country selected");
