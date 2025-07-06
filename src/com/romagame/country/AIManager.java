@@ -71,6 +71,11 @@ public class AIManager {
             return; // Skip player country
         }
         
+        // Only process enabled nations
+        if (!isNationEnabled(country.getName())) {
+            return;
+        }
+        
         AIPersonality personality = aiPersonalities.getOrDefault(country.getName(), AIPersonality.BALANCED);
         List<AIAction> actions = determineActions(country, personality);
         
