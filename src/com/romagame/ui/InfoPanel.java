@@ -14,6 +14,11 @@ public class InfoPanel extends JPanel {
     private GameEngine engine;
     private JTextArea infoArea;
     private JScrollPane scrollPane;
+    private JPanel bottomInfoPanel;
+    private JLabel zoomLabel;
+    private JLabel dateLabel;
+    private JLabel speedLabel;
+    private JLabel playingAsLabel;
     
     public InfoPanel(GameEngine engine) {
         this.engine = engine;
@@ -41,11 +46,23 @@ public class InfoPanel extends JPanel {
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        
+        bottomInfoPanel = new JPanel();
+        bottomInfoPanel.setLayout(new BoxLayout(bottomInfoPanel, BoxLayout.Y_AXIS));
+        zoomLabel = new JLabel();
+        dateLabel = new JLabel();
+        speedLabel = new JLabel();
+        playingAsLabel = new JLabel();
+        bottomInfoPanel.add(zoomLabel);
+        bottomInfoPanel.add(dateLabel);
+        bottomInfoPanel.add(speedLabel);
+        bottomInfoPanel.add(playingAsLabel);
     }
     
     private void layoutComponents() {
         setLayout(new BorderLayout());
         add(scrollPane, BorderLayout.CENTER);
+        add(bottomInfoPanel, BorderLayout.SOUTH);
     }
     
     public void updateInfo() {
@@ -53,6 +70,12 @@ public class InfoPanel extends JPanel {
         if (playerCountry != null) {
             updateDetailedInfo(playerCountry);
         }
+        // Update bottom info
+        zoomLabel.setText("Zoom: 4x"); // Replace with actual zoom if available
+        dateLabel.setText("Date: " + engine.getCurrentDate());
+        speedLabel.setText("Speed: " + engine.getGameSpeed());
+        Country player = engine.getCountryManager().getPlayerCountry();
+        playingAsLabel.setText("Playing as: " + (player != null ? player.getName() : "None"));
     }
     
     private void updateDetailedInfo(Country country) {
