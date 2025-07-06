@@ -379,7 +379,7 @@ public class MapPanel extends JPanel {
                         // Only select province if click is on a valid province pixel
                         Point mapPoint = screenToMap(e.getPoint());
                         if (getProvinceIdAt(mapPoint) != null) {
-                            handleProvinceClick(e.getPoint());
+                handleProvinceClick(e.getPoint());
                         }
                     }
                 } else if (e.getButton() == MouseEvent.BUTTON3) {
@@ -1048,7 +1048,7 @@ public class MapPanel extends JPanel {
                     invalidateOverlayCache();
                     repaint();
                     // Show province info dialog
-                    showProvinceInfo(clickedProvince);
+                showProvinceInfo(clickedProvince);
                 }
             }
         }
