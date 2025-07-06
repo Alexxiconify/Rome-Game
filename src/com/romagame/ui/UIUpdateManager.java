@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class UIUpdateManager {
-    private final GameEngine engine;
+    public final GameEngine engine;
     private final AtomicBoolean updateScheduled;
     private final AtomicLong lastUpdateTime;
     private final Timer updateTimer;
