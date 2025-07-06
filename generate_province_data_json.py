@@ -1,12 +1,210 @@
-import numpy as np
-from PIL import Image
+try:
+    import numpy as np
+except ImportError:
+    print("Error: numpy is required. Install with: pip install numpy")
+    exit(1)
+
+try:
+    from PIL import Image
+except ImportError:
+    print("Error: PIL (Pillow) is required. Install with: pip install Pillow")
+    exit(1)
+
 import json
 import time
+from multiprocessing import Pool, cpu_count
 
 # File paths
 start_img_path = "start.png"
 mask_img_path = "province_mask.png"
 output_json_path = "province_data.json"
+
+def fast_province_data_generation():
+    """Fast version using NumPy vectorized operations"""
+    print("Loading images...")
+    start_time = time.time()
+    
+    # Load images
+    start_img = np.array(Image.open(start_img_path).convert("RGBA"))
+    mask_img = np.array(Image.open(mask_img_path).convert("RGBA"))
+    
+    height, width, _ = mask_img.shape
+    print(f"Image loaded: {width}x{height} pixels")
+    
+    # Step 1: Find unique mask colors using NumPy's unique
+    print("Finding unique mask colors...")
+    mask_rgb = mask_img[:, :, :3]
+    
+    # Reshape to 2D array for unique operation
+    pixels_2d = mask_rgb.reshape(-1, 3)
+    unique_colors, _ = np.unique(pixels_2d, axis=0, return_index=True)
+    
+    # Convert to tuples for dictionary keys
+    unique_colors_tuples = [tuple(color) for color in unique_colors]
+    
+    # Create mask_to_province mapping
+    mask_to_province = {}
+    for i, mask_color in enumerate(unique_colors_tuples):
+        province_id = f"province_{i+1:04d}"
+        mask_to_province[mask_color] = province_id
+    
+    print(f"Found {len(mask_to_province)} unique provinces")
+    
+    # Step 2: Find owner colors using vectorized operations
+    print("Finding owner colors from start.png...")
+    province_data = {}
+    nation_colors = {}
+    
+    # Process all provinces at once using vectorized operations
+    processed_count = 0
+    total_provinces = len(mask_to_province)
+    
+    for mask_color in unique_colors_tuples:
+        # Find all pixels with this mask color using NumPy
+        color_matches = np.all(mask_rgb == mask_color, axis=2)
+        
+        if np.any(color_matches):
+            # Get the first matching pixel
+            y_coords, x_coords = np.where(color_matches)
+            y, x = y_coords[0], x_coords[0]
+            owner_color = tuple(start_img[y, x][:3])
+            
+            province_id = mask_to_province[mask_color]
+            province_data[province_id] = {
+                "mask_color": mask_color,
+                "owner_color": owner_color
+            }
+            
+            # Add to nation_colors
+            if owner_color not in nation_colors:
+                nation_colors[owner_color] = f"nation_{len(nation_colors)+1:04d}"
+        
+        processed_count += 1
+        if processed_count % 100 == 0 or processed_count == total_provinces:
+            print(f"Processed {processed_count}/{total_provinces} provinces...")
+    
+    print(f"Successfully processed {len(province_data)} provinces")
+    
+    # Step 3: Build nation list
+    print("Building nation list...")
+    nations = []
+    for color, name in nation_colors.items():
+        nations.append({
+            "name": name,
+            "color": color
+        })
+    
+    # Step 4: Output JSON
+    print("Writing output...")
+    output = {
+        "provinces": province_data,
+        "nations": nations
+    }
+    
+    with open(output_json_path, "w") as f:
+        json.dump(output, f, indent=2)
+    
+    end_time = time.time()
+    print(f"Output written to {output_json_path}")
+    print(f"Total processing time: {end_time - start_time:.2f} seconds")
+    print(f"Processed {len(province_data)} provinces and {len(nations)} nations")
+    
+    # Debug info
+    print(f"\nDebug Info:")
+    print(f"- Total unique mask colors found: {len(mask_to_province)}")
+    print(f"- Provinces with owner colors: {len(province_data)}")
+    print(f"- Unique nation colors: {len(nations)}")
+    
+    if len(province_data) == 0:
+        print("WARNING: No provinces were processed! Check if images are the same size.")
+        print(f"Start image shape: {start_img.shape}")
+        print(f"Mask image shape: {mask_img.shape}")
+
+def ultra_fast_province_data_generation():
+    """Ultra-fast version using advanced NumPy operations"""
+    print("Loading images...")
+    start_time = time.time()
+    
+    # Load images
+    start_img = np.array(Image.open(start_img_path).convert("RGBA"))
+    mask_img = np.array(Image.open(mask_img_path).convert("RGBA"))
+    
+    height, width, _ = mask_img.shape
+    print(f"Image loaded: {width}x{height} pixels")
+    
+    # Step 1: Find unique mask colors using NumPy's unique
+    print("Finding unique mask colors...")
+    mask_rgb = mask_img[:, :, :3]
+    
+    # Reshape to 2D array for unique operation
+    pixels_2d = mask_rgb.reshape(-1, 3)
+    unique_colors, _ = np.unique(pixels_2d, axis=0, return_index=True)
+    
+    # Convert to tuples for dictionary keys
+    unique_colors_tuples = [tuple(color) for color in unique_colors]
+    
+    # Create mask_to_province mapping
+    mask_to_province = {}
+    for i, mask_color in enumerate(unique_colors_tuples):
+        province_id = f"province_{i+1:04d}"
+        mask_to_province[mask_color] = province_id
+    
+    print(f"Found {len(mask_to_province)} unique provinces")
+    
+    # Step 2: Find owner colors using vectorized operations
+    print("Finding owner colors...")
+    province_data = {}
+    nation_colors = {}
+    
+    # Create a mapping from mask colors to owner colors
+    color_mapping = {}
+    
+    for mask_color in unique_colors_tuples:
+        # Find all pixels with this mask color
+        color_matches = np.all(mask_rgb == mask_color, axis=2)
+        
+        if np.any(color_matches):
+            # Get the first matching pixel
+            y_coords, x_coords = np.where(color_matches)
+            y, x = y_coords[0], x_coords[0]
+            owner_color = tuple(start_img[y, x][:3])
+            color_mapping[mask_color] = owner_color
+    
+    # Process results
+    for mask_color, owner_color in color_mapping.items():
+        province_id = mask_to_province[mask_color]
+        province_data[province_id] = {
+            "mask_color": mask_color,
+            "owner_color": owner_color
+        }
+        
+        # Add to nation_colors
+        if owner_color not in nation_colors:
+            nation_colors[owner_color] = f"nation_{len(nation_colors)+1:04d}"
+    
+    # Step 3: Build nation list
+    print("Building nation list...")
+    nations = []
+    for color, name in nation_colors.items():
+        nations.append({
+            "name": name,
+            "color": color
+        })
+    
+    # Step 4: Output JSON
+    print("Writing output...")
+    output = {
+        "provinces": province_data,
+        "nations": nations
+    }
+    
+    with open(output_json_path, "w") as f:
+        json.dump(output, f, indent=2)
+    
+    end_time = time.time()
+    print(f"Output written to {output_json_path}")
+    print(f"Total processing time: {end_time - start_time:.2f} seconds")
+    print(f"Processed {len(province_data)} provinces and {len(nations)} nations")
 
 def simple_province_data_generation():
     """Simple, reliable version that ensures proper owner color detection"""
@@ -223,92 +421,6 @@ def optimize_province_data_generation():
     print(f"Total processing time: {end_time - start_time:.2f} seconds")
     print(f"Processed {len(province_data)} provinces and {len(nations)} nations")
 
-def ultra_fast_province_data_generation():
-    """Ultra-fast version using NumPy vectorized operations"""
-    print("Loading images...")
-    start_time = time.time()
-    
-    # Load images
-    start_img = np.array(Image.open(start_img_path).convert("RGBA"))
-    mask_img = np.array(Image.open(mask_img_path).convert("RGBA"))
-    
-    height, width, _ = mask_img.shape
-    print(f"Image loaded: {width}x{height} pixels")
-    
-    # Step 1: Find unique mask colors using NumPy's unique
-    print("Finding unique mask colors...")
-    mask_rgb = mask_img[:, :, :3]
-    
-    # Reshape to 2D array for unique operation
-    pixels_2d = mask_rgb.reshape(-1, 3)
-    unique_colors, _ = np.unique(pixels_2d, axis=0, return_index=True)
-    
-    # Convert to tuples for dictionary keys
-    unique_colors_tuples = [tuple(color) for color in unique_colors]
-    
-    # Create mask_to_province mapping
-    mask_to_province = {}
-    for i, mask_color in enumerate(unique_colors_tuples):
-        province_id = f"province_{i+1:04d}"
-        mask_to_province[mask_color] = province_id
-    
-    print(f"Found {len(mask_to_province)} unique provinces")
-    
-    # Step 2: Find owner colors using vectorized operations
-    print("Finding owner colors...")
-    province_data = {}
-    nation_colors = {}
-    
-    # Create a mapping from mask colors to owner colors
-    color_mapping = {}
-    
-    for mask_color in unique_colors_tuples:
-        # Find all pixels with this mask color
-        color_matches = np.all(mask_rgb == mask_color, axis=2)
-        
-        if np.any(color_matches):
-            # Get the first matching pixel
-            y_coords, x_coords = np.where(color_matches)
-            y, x = y_coords[0], x_coords[0]
-            owner_color = tuple(start_img[y, x][:3])
-            color_mapping[mask_color] = owner_color
-    
-    # Process results
-    for mask_color, owner_color in color_mapping.items():
-        province_id = mask_to_province[mask_color]
-        province_data[province_id] = {
-            "mask_color": mask_color,
-            "owner_color": owner_color
-        }
-        
-        # Add to nation_colors
-        if owner_color not in nation_colors:
-            nation_colors[owner_color] = f"nation_{len(nation_colors)+1:04d}"
-    
-    # Step 3: Build nation list
-    print("Building nation list...")
-    nations = []
-    for color, name in nation_colors.items():
-        nations.append({
-            "name": name,
-            "color": color
-        })
-    
-    # Step 4: Output JSON
-    print("Writing output...")
-    output = {
-        "provinces": province_data,
-        "nations": nations
-    }
-    
-    with open(output_json_path, "w") as f:
-        json.dump(output, f, indent=2)
-    
-    end_time = time.time()
-    print(f"Output written to {output_json_path}")
-    print(f"Total processing time: {end_time - start_time:.2f} seconds")
-    print(f"Processed {len(province_data)} provinces and {len(nations)} nations")
-
 if __name__ == "__main__":
-    # Use the simple, reliable version by default
-    simple_province_data_generation()
+    # Use the fast version by default for better performance
+    fast_province_data_generation()
