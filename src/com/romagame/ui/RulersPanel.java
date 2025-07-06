@@ -4,13 +4,12 @@ import com.romagame.core.GameEngine;
 import com.romagame.events.EventManager;
 import com.romagame.events.EventManager.Ruler;
 import com.romagame.events.EventManager.Advisor;
-import com.romagame.map.Country;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
 public class RulersPanel extends JPanel {
-    private GameEngine engine;
+    public GameEngine engine;
     private EventManager eventManager;
     private JList<String> rulerList;
     private DefaultListModel<String> rulerListModel;
