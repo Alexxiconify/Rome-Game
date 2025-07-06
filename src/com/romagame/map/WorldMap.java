@@ -4,10 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics2D;
-import java.awt.Color;
 
 public class WorldMap {
     private Map<String, Province> provinces;
