@@ -80,27 +80,41 @@ public class GameEngine {
     public void start() {
         if (!isRunning) {
             isRunning = true;
-            gameLoop = Executors.newScheduledThreadPool(1);
-            gameLoop.scheduleAtFixedRate(this::update, 0, getUpdateInterval(), TimeUnit.MILLISECONDS);
+            
+            // Initialize UI update manager
+            uiUpdateManager = new UIUpdateManager(this);
+            
+            // Create and start game thread
+            gameThread = new GameThread(this);
+            gameThread.start();
         }
     }
     
     public void pause() {
-        isRunning = false;
-        if (gameLoop != null) {
-            gameLoop.shutdown();
+        if (gameThread != null) {
+            gameThread.pause();
         }
+        isRunning = false;
+    }
+    
+    public void resume() {
+        if (gameThread != null) {
+            gameThread.resumeGame();
+        }
+        isRunning = true;
     }
     
     public void setGameSpeed(GameSpeed speed) {
         this.gameSpeed = speed;
-        // Restart the game loop with new speed if running
-        if (isRunning && gameLoop != null) {
-            gameLoop.shutdown();
-            if (speed != GameSpeed.PAUSED) {
-                gameLoop = Executors.newScheduledThreadPool(1);
-                gameLoop.scheduleAtFixedRate(this::update, 0, getUpdateInterval(), TimeUnit.MILLISECONDS);
-            }
+        if (gameThread != null) {
+            int threadSpeed = switch (speed) {
+                case PAUSED -> 0;
+                case SLOW -> 1;
+                case NORMAL -> 1;
+                case FAST -> 2;
+                case VERY_FAST -> 3;
+            };
+            gameThread.setGameSpeed(threadSpeed);
         }
     }
     
@@ -114,27 +128,22 @@ public class GameEngine {
         };
     }
     
-    private void update() {
-        if (!isRunning) return;
-        
-        // Update all game systems
-        currentDate.advance();
-        countryManager.update();
-        economyManager.update();
-        militaryManager.update();
-        diplomacyManager.update();
-        technologyManager.update();
-        colonizationManager.update();
-        populationManager.update();
-        
-        // Process events and AI decisions
-        processEvents();
-        processAI();
-        
-        // Update UI on EDT (Event Dispatch Thread)
-        if (uiUpdateCallback != null) {
-            javax.swing.SwingUtilities.invokeLater(() -> uiUpdateCallback.accept(this));
+    public void stop() {
+        isRunning = false;
+        if (gameThread != null) {
+            gameThread.stopGame();
         }
+        if (uiUpdateManager != null) {
+            uiUpdateManager.stop();
+        }
+    }
+    
+    public GameThread getGameThread() {
+        return gameThread;
+    }
+    
+    public UIUpdateManager getUIUpdateManager() {
+        return uiUpdateManager;
     }
     
     private void processEvents() {
