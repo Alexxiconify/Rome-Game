@@ -3,14 +3,11 @@ package com.romagame.population;
 import com.romagame.map.Province;
 import com.romagame.map.Province.PopType;
 import java.util.*;
-import java.util.Random;
-
 public class PopulationManager {
     private Map<String, DevelopmentProject> activeProjects;
     private Map<String, BuildingProject> buildingProjects;
     
     public PopulationManager() {
-        this.random = new Random();
         this.activeProjects = new HashMap<>();
         this.buildingProjects = new HashMap<>();
     }
