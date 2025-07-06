@@ -2,11 +2,8 @@ package com.romagame.ui;
 
 import com.romagame.core.GameEngine;
 import com.romagame.map.Country;
-import com.romagame.military.Army;
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
-import java.util.ArrayList;
 
 public class SoldiersPanel extends JPanel {
     private GameEngine engine;
