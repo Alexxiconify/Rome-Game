@@ -10,13 +10,11 @@ import java.util.HashMap;
 
 public class HistoricalTimeline {
     private WorldMap worldMap;
-    private CountryManager countryManager;
     private Map<String, HistoricalNation> historicalNations;
     private List<String> spawnedNations;
     
     public HistoricalTimeline(WorldMap worldMap, CountryManager countryManager) {
         this.worldMap = worldMap;
-        this.countryManager = countryManager;
         this.historicalNations = new HashMap<>();
         this.spawnedNations = new ArrayList<>();
         initializeHistoricalNations();
