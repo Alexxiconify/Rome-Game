@@ -201,6 +201,14 @@ public class HistoricalNationSpawner {
                     provinces.addAll(List.of("central_asia_" + random.nextInt(20)));
                 }
             }
+            case GREEK -> {
+                // Assign Greek provinces (example)
+                provinces.addAll(List.of("greece_" + random.nextInt(10)));
+            }
+            case ROMAN -> {
+                // Assign Roman provinces (example)
+                provinces.addAll(List.of("italy_" + random.nextInt(10)));
+            }
         }
         
         return provinces;
