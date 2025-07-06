@@ -2,8 +2,8 @@ import pandas as pd
 import json
 
 # Load data
-owner_df = pd.read_csv('../owner_color_name.csv')
-prov_df = pd.read_csv('../province_owners.csv')
+owner_df = pd.read_csv('owner_color_name.csv')
+prov_df = pd.read_csv('province_owners.csv')
 
 # Clean color strings to tuple
 owner_df['owner_color'] = owner_df['owner_color'].apply(lambda x: tuple(int(i) for i in x.strip('()').replace(' ', '').split(',')))
