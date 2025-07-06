@@ -982,29 +982,26 @@ public class MapPanel extends JPanel {
     private void loadNationsAndProvinces() {
         try {
             String jsonText = new String(Files.readAllBytes(Paths.get("src/resources/nations_and_provinces.json")));
-            JsonReader reader = Json.createReader(new StringReader(jsonText));
-            JsonObject root = reader.readObject();
-
-            // Nations
-            JsonArray nations = root.getJsonArray("nations");
-            for (int i = 0; i < nations.size(); i++) {
-                JsonObject nation = nations.getJsonObject(i);
-                String name = nation.getString("name");
-                JsonArray colorArr = nation.getJsonArray("color");
-                String colorStr = String.format("%d,%d,%d", colorArr.getInt(0), colorArr.getInt(1), colorArr.getInt(2));
-                nationToColor.put(name, colorStr);
+            // Parse nations
+            String nationsBlock = jsonText.split("\"nations\"\\s*:\\s*\\[", 2)[1].split("],", 2)[0];
+            String[] nationEntries = nationsBlock.split("\\},\\s*\\{");
+            for (String entry : nationEntries) {
+                String name = entry.split("\"name\"\\s*:\\s*\"")[1].split("\"")[0];
+                String colorStr = entry.split("\"color\"\\s*:\\s*\\[")[1].split("]")[0].replaceAll("\\s", "");
+                nationToColor.put(name, colorStr.replace(",", ","));
                 nationList.add(name);
             }
 
-            // Provinces
-            JsonArray provinces = root.getJsonArray("provinces");
-            for (int i = 0; i < provinces.size(); i++) {
-                JsonObject province = provinces.getJsonObject(i);
-                String provinceId = province.getString("province_id");
-                String owner = province.getString("owner_name");
+            // Parse provinces
+            String provincesBlock = jsonText.split("\"provinces\"\\s*:\\s*\\[", 2)[1].split("]")[0];
+            String[] provinceEntries = provincesBlock.split("\\},\\s*\\{");
+            for (String entry : provinceEntries) {
+                String provinceId = entry.split("\"province_id\"\\s*:\\s*\"")[1].split("\"")[0];
+                String owner = entry.split("\"owner_name\"\\s*:\\s*\"")[1].split("\"")[0];
                 provinceIdToOwner.put(provinceId, owner);
             }
-            System.out.println("Loaded nations and provinces from nations_and_provinces.json");
+
+            System.out.println("Loaded nations and provinces from nations_and_provinces.json (basic parser)");
         } catch (Exception e) {
             System.err.println("Failed to load nations_and_provinces.json: " + e.getMessage());
         }
