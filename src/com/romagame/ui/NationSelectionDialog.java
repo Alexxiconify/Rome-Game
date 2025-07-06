@@ -16,6 +16,11 @@ public class NationSelectionDialog extends JDialog {
     private JTextArea descriptionArea;
     private JButton startButton;
     private JButton cancelButton;
+    private static final String DEFAULT_NATION = "Rome";
+    private static final String[] PINNED_NATIONS = {
+        "Rome", "Parthia", "Han", "Carthage", "Egypt", "Maurya", "Kushan", "Axum", "Dacia", "Germania", "Sarmatia", "Armenia", "Nabatea", "Judea", "Saba"
+    };
+    private JPanel pinnedPanel;
     
     public NationSelectionDialog(JFrame parent, GameEngine engine) {
         super(parent, "Choose Your Nation", true);
@@ -58,6 +63,15 @@ public class NationSelectionDialog extends JDialog {
         cancelButton.setBackground(new Color(200, 100, 100));
         cancelButton.setForeground(Color.WHITE);
         cancelButton.setFont(new Font("Arial", Font.BOLD, 14));
+        
+        pinnedPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 2));
+        for (String nation : PINNED_NATIONS) {
+            JButton btn = new JButton(nation);
+            btn.setFont(new Font("Arial", Font.BOLD, 12));
+            btn.setFocusable(false);
+            btn.addActionListener(e -> selectPinnedNation(nation));
+            pinnedPanel.add(btn);
+        }
     }
     
     private void layoutComponents() {
@@ -77,7 +91,8 @@ public class NationSelectionDialog extends JDialog {
         // Country selection panel
         JPanel selectionPanel = new JPanel(new BorderLayout(5, 5));
         selectionPanel.add(new JLabel("Choose your nation:"), BorderLayout.NORTH);
-        selectionPanel.add(countryComboBox, BorderLayout.CENTER);
+        selectionPanel.add(pinnedPanel, BorderLayout.CENTER);
+        selectionPanel.add(countryComboBox, BorderLayout.SOUTH);
         
         // Description panel
         JPanel descriptionPanel = new JPanel(new BorderLayout(5, 5));
@@ -155,15 +170,29 @@ public class NationSelectionDialog extends JDialog {
         
         System.out.println("Total items in combo box: " + countryComboBox.getItemCount());
         
+        // Set default selection to Rome if present
+        int defaultIdx = 0;
+        for (int i = 0; i < countryComboBox.getItemCount(); i++) {
+            if (countryComboBox.getItemAt(i).equalsIgnoreCase(DEFAULT_NATION)) {
+                defaultIdx = i;
+                break;
+            }
+        }
         if (countryComboBox.getItemCount() > 0) {
-            countryComboBox.setSelectedIndex(0);
+            countryComboBox.setSelectedIndex(defaultIdx);
             updateDescription();
         }
     }
     
-
-    
-
+    private void selectPinnedNation(String nation) {
+        for (int i = 0; i < countryComboBox.getItemCount(); i++) {
+            if (countryComboBox.getItemAt(i).equalsIgnoreCase(nation)) {
+                countryComboBox.setSelectedIndex(i);
+                updateDescription();
+                break;
+            }
+        }
+    }
     
     private boolean isSelectableNation(String name) {
         if (name == null) return false;
