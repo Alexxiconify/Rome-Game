@@ -146,13 +146,11 @@ public class TechnologyManager {
     // Inner class to track research progress
     private static class TechnologyProgress {
         private Technology technology;
-        private String countryName;
         private double progress;
         private boolean completed;
         
         public TechnologyProgress(Technology tech, String country) {
             this.technology = tech;
-            this.countryName = country;
             this.progress = 0.0;
             this.completed = false;
         }
