@@ -28,9 +28,16 @@ public class ControlPanel extends JPanel {
     }
     
     private void setupPanel() {
-        setPreferredSize(new Dimension(1400, 100));
-        setBackground(new Color(60, 60, 60));
-        setBorder(BorderFactory.createTitledBorder("Game Controls"));
+        setPreferredSize(new Dimension(1600, 120));
+        setBackground(new Color(139, 69, 19));
+        setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(new Color(255, 215, 0), 2),
+            "⚔ Imperium Controls",
+            javax.swing.border.TitledBorder.CENTER,
+            javax.swing.border.TitledBorder.TOP,
+            new Font("Times New Roman", Font.BOLD, 16),
+            new Color(255, 215, 0)
+        ));
     }
     
     private void createComponents() {
@@ -44,16 +51,16 @@ public class ControlPanel extends JPanel {
         diplomacyButton = new JButton("🤝 Diplomacy");
         JButton colonizeButton = new JButton("🏴 Colonize");
         
-        // Style buttons
-        styleButton(pauseButton, new Color(200, 100, 100));
-        styleButton(slowButton, new Color(200, 150, 100));
-        styleButton(normalButton, new Color(100, 200, 100));
-        styleButton(fastButton, new Color(100, 150, 200));
-        styleButton(veryFastButton, new Color(200, 100, 200));
-        styleButton(recruitButton, new Color(150, 150, 200));
-        styleButton(buildButton, new Color(200, 200, 150));
-        styleButton(diplomacyButton, new Color(150, 200, 150));
-        styleButton(colonizeButton, new Color(200, 150, 200));
+        // Style buttons with ancient Rome theme
+        styleButton(pauseButton, new Color(205, 133, 63));
+        styleButton(slowButton, new Color(210, 105, 30));
+        styleButton(normalButton, new Color(160, 82, 45));
+        styleButton(fastButton, new Color(139, 69, 19));
+        styleButton(veryFastButton, new Color(101, 67, 33));
+        styleButton(recruitButton, new Color(205, 133, 63));
+        styleButton(buildButton, new Color(210, 105, 30));
+        styleButton(diplomacyButton, new Color(160, 82, 45));
+        styleButton(colonizeButton, new Color(139, 69, 19));
         
         // Store colonize button for later use
         this.colonizeButton = colonizeButton;
@@ -61,8 +68,8 @@ public class ControlPanel extends JPanel {
     
     private void styleButton(JButton button, Color backgroundColor) {
         button.setBackground(backgroundColor);
-        button.setForeground(Color.BLACK);
-        button.setFont(new Font("Arial", Font.BOLD, 12));
+        button.setForeground(new Color(25, 25, 112));
+        button.setFont(new Font("Times New Roman", Font.BOLD, 12));
         button.setFocusPainted(false);
         button.setBorder(BorderFactory.createRaisedBevelBorder());
     }
@@ -71,7 +78,10 @@ public class ControlPanel extends JPanel {
         setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
         
         // Speed controls
-        add(new JLabel("Speed:"));
+        JLabel speedLabel = new JLabel("⚡ Speed:");
+        speedLabel.setFont(new Font("Times New Roman", Font.BOLD, 14));
+        speedLabel.setForeground(new Color(255, 215, 0));
+        add(speedLabel);
         add(pauseButton);
         add(slowButton);
         add(normalButton);
@@ -79,7 +89,10 @@ public class ControlPanel extends JPanel {
         add(veryFastButton);
         
         // Action buttons
-        add(new JLabel("Actions:"));
+        JLabel actionLabel = new JLabel("⚔ Actions:");
+        actionLabel.setFont(new Font("Times New Roman", Font.BOLD, 14));
+        actionLabel.setForeground(new Color(255, 215, 0));
+        add(actionLabel);
         add(recruitButton);
         add(buildButton);
         add(diplomacyButton);
