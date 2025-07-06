@@ -30,7 +30,7 @@ import com.romagame.military.MilitaryManager;
 
 public class MapPanel extends JPanel {
     private GameEngine engine;
-    private double zoom = 4.0;
+    private double zoom = 2.0;
     private int offsetX = 0;
     private int offsetY = 0;
     private boolean isDragging = false;
