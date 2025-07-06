@@ -1,18 +1,27 @@
 package com.romagame.ui;
 
 import com.romagame.core.GameEngine;
+import com.romagame.map.Country;
+import com.romagame.technology.Technology;
+import com.romagame.technology.TechnologyManager;
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
+import java.util.Map;
 
 public class TechTreePanel extends JPanel {
     private GameEngine engine;
-    private JList<String> techList;
-    private DefaultListModel<String> techModel;
+    private JList<Technology> techList;
+    private DefaultListModel<Technology> techModel;
     private JTextArea techDetails;
     private JButton researchButton;
+    private JButton stopButton;
+    private List<Technology> availableTechnologies;
+    private TechnologyManager techManager;
     
     public TechTreePanel(GameEngine engine) {
         this.engine = engine;
+        this.techManager = engine.getTechnologyManager();
         setupPanel();
         createComponents();
         layoutComponents();
@@ -22,7 +31,7 @@ public class TechTreePanel extends JPanel {
     
     private void setupPanel() {
         setLayout(new BorderLayout());
-        setBackground(new Color(139, 69, 19));
+        setBackground(new Color(70, 130, 180));
         setBorder(BorderFactory.createTitledBorder(
             BorderFactory.createLineBorder(new Color(255, 215, 0), 2),
             "🔬 Technology Tree",
@@ -37,16 +46,17 @@ public class TechTreePanel extends JPanel {
         techModel = new DefaultListModel<>();
         techList = new JList<>(techModel);
         techList.setFont(new Font("Times New Roman", Font.PLAIN, 12));
-        techList.setBackground(new Color(205, 133, 63));
+        techList.setBackground(new Color(135, 206, 235));
         techList.setForeground(new Color(25, 25, 112));
         
         techDetails = new JTextArea();
         techDetails.setFont(new Font("Times New Roman", Font.PLAIN, 12));
-        techDetails.setBackground(new Color(245, 222, 179));
+        techDetails.setBackground(new Color(240, 248, 255));
         techDetails.setForeground(new Color(25, 25, 112));
         techDetails.setEditable(false);
         
-        researchButton = createStyledButton("Research Technology", new Color(100, 200, 100));
+        researchButton = createStyledButton("Start Research", new Color(100, 200, 100));
+        stopButton = createStyledButton("Stop Research", new Color(200, 100, 100));
     }
     
     private JButton createStyledButton(String text, Color bgColor) {
@@ -61,10 +71,10 @@ public class TechTreePanel extends JPanel {
     
     private void layoutComponents() {
         JPanel leftPanel = new JPanel(new BorderLayout());
-        leftPanel.setBackground(new Color(139, 69, 19));
+        leftPanel.setBackground(new Color(70, 130, 180));
         leftPanel.setBorder(BorderFactory.createTitledBorder(
             BorderFactory.createLineBorder(new Color(255, 215, 0)),
-            "Technologies",
+            "Available Technologies",
             javax.swing.border.TitledBorder.CENTER,
             javax.swing.border.TitledBorder.TOP,
             new Font("Times New Roman", Font.BOLD, 14),
@@ -75,14 +85,15 @@ public class TechTreePanel extends JPanel {
         leftPanel.add(listScrollPane, BorderLayout.CENTER);
         
         JPanel rightPanel = new JPanel(new BorderLayout());
-        rightPanel.setBackground(new Color(139, 69, 19));
+        rightPanel.setBackground(new Color(70, 130, 180));
         
         JScrollPane detailsScrollPane = new JScrollPane(techDetails);
         rightPanel.add(detailsScrollPane, BorderLayout.CENTER);
         
         JPanel buttonPanel = new JPanel(new FlowLayout());
-        buttonPanel.setBackground(new Color(139, 69, 19));
+        buttonPanel.setBackground(new Color(70, 130, 180));
         buttonPanel.add(researchButton);
+        buttonPanel.add(stopButton);
         rightPanel.add(buttonPanel, BorderLayout.SOUTH);
         
         add(leftPanel, BorderLayout.WEST);
@@ -90,31 +101,145 @@ public class TechTreePanel extends JPanel {
     }
     
     private void setupEventHandlers() {
-        researchButton.addActionListener(e -> researchTechnology());
+        techList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                showTechnologyDetails();
+            }
+        });
+        
+        researchButton.addActionListener(e -> startResearch());
+        stopButton.addActionListener(e -> stopResearch());
     }
     
-    private void researchTechnology() {
-        JOptionPane.showMessageDialog(this, "Technology researched!");
+    private void showTechnologyDetails() {
+        Technology selectedTech = techList.getSelectedValue();
+        Country playerCountry = engine.getCountryManager().getPlayerCountry();
+        
+        if (selectedTech == null || playerCountry == null) {
+            techDetails.setText("No technology selected or no country selected");
+            return;
+        }
+        
+        StringBuilder details = new StringBuilder();
+        details.append("Technology: ").append(selectedTech.getName()).append("\n");
+        details.append("Category: ").append(selectedTech.getCategory()).append("\n");
+        details.append("Level: ").append(selectedTech.getLevel()).append("\n");
+        details.append("Research Cost: ").append(String.format("%.0f", selectedTech.getResearchCost())).append(" points\n");
+        details.append("Research Time: ").append(selectedTech.getResearchTime()).append(" days\n");
+        details.append("Description: ").append(selectedTech.getDescription()).append("\n\n");
+        
+        details.append("Requirements:\n");
+        List<String> requirements = selectedTech.getRequirements();
+        if (requirements.isEmpty()) {
+            details.append("- None\n");
+        } else {
+            for (String requirement : requirements) {
+                boolean hasRequirement = playerCountry.hasTechnology(requirement);
+                details.append("- ").append(requirement)
+                      .append(hasRequirement ? " ✓" : " ✗").append("\n");
+            }
+        }
+        
+        boolean canResearch = techManager.canResearch(playerCountry.getName(), selectedTech.getName());
+        boolean isResearching = techManager.isResearching(playerCountry.getName(), selectedTech.getName());
+        boolean hasResearched = playerCountry.hasTechnology(selectedTech.getName());
+        
+        details.append("\nCan Research: ").append(canResearch ? "Yes" : "No");
+        details.append("\nIs Researching: ").append(isResearching ? "Yes" : "No");
+        details.append("\nHas Researched: ").append(hasResearched ? "Yes" : "No");
+        
+        if (isResearching) {
+            double progress = techManager.getResearchProgress(playerCountry.getName(), selectedTech.getName());
+            details.append("\nResearch Progress: ").append(String.format("%.1f%%", progress * 100));
+        }
+        
+        techDetails.setText(details.toString());
+    }
+    
+    private void startResearch() {
+        Technology selectedTech = techList.getSelectedValue();
+        Country playerCountry = engine.getCountryManager().getPlayerCountry();
+        
+        if (selectedTech == null) {
+            JOptionPane.showMessageDialog(this, "Please select a technology to research.");
+            return;
+        }
+        
+        if (playerCountry == null) {
+            JOptionPane.showMessageDialog(this, "No country selected.");
+            return;
+        }
+        
+        if (playerCountry.hasTechnology(selectedTech.getName())) {
+            JOptionPane.showMessageDialog(this, "This technology is already researched.");
+            return;
+        }
+        
+        if (techManager.isResearching(playerCountry.getName(), selectedTech.getName())) {
+            JOptionPane.showMessageDialog(this, "This technology is already being researched.");
+            return;
+        }
+        
+        if (!techManager.canResearch(playerCountry.getName(), selectedTech.getName())) {
+            JOptionPane.showMessageDialog(this, "Requirements not met for this technology.");
+            return;
+        }
+        
+        // Start technology research
+        techManager.startResearch(playerCountry.getName(), selectedTech.getName());
+        playerCountry.startTechnologyResearch(selectedTech.getName());
+        JOptionPane.showMessageDialog(this, "Technology '" + selectedTech.getName() + "' research started!");
+        
+        // Update the display
+        updatePanel();
+    }
+    
+    private void stopResearch() {
+        Technology selectedTech = techList.getSelectedValue();
+        Country playerCountry = engine.getCountryManager().getPlayerCountry();
+        
+        if (selectedTech == null) {
+            JOptionPane.showMessageDialog(this, "Please select a technology to stop researching.");
+            return;
+        }
+        
+        if (playerCountry == null) {
+            JOptionPane.showMessageDialog(this, "No country selected.");
+            return;
+        }
+        
+        if (!techManager.isResearching(playerCountry.getName(), selectedTech.getName())) {
+            JOptionPane.showMessageDialog(this, "This technology is not being researched.");
+            return;
+        }
+        
+        // Stop technology research
+        techManager.stopResearch(playerCountry.getName(), selectedTech.getName());
+        playerCountry.getResearchingTechnologies().remove(selectedTech.getName());
+        JOptionPane.showMessageDialog(this, "Technology '" + selectedTech.getName() + "' research stopped!");
+        
+        // Update the display
+        updatePanel();
     }
     
     public void updatePanel() {
         techModel.clear();
-        techModel.addElement("Iron Working - Researched");
-        techModel.addElement("Masonry - Researched");
-        techModel.addElement("Agriculture - Researched");
-        techModel.addElement("Military Tactics - Available");
-        techModel.addElement("Engineering - Available");
-        techModel.addElement("Medicine - Locked");
         
-        techDetails.setText("Technology Overview:\n\n" +
-            "Researched Technologies: 3\n" +
-            "Available Technologies: 2\n" +
-            "Research Points: 5\n\n" +
-            "Technology Effects:\n" +
-            "- Iron Working: +20% military efficiency\n" +
-            "- Masonry: +15% building construction\n" +
-            "- Agriculture: +25% food production\n" +
-            "- Military Tactics: +30% army morale\n" +
-            "- Engineering: +20% infrastructure bonus");
+        Country playerCountry = engine.getCountryManager().getPlayerCountry();
+        if (playerCountry == null) {
+            techDetails.setText("No country selected");
+            return;
+        }
+        
+        // Get available technologies for the country
+        availableTechnologies = techManager.getAvailableTechnologies(playerCountry.getName());
+        
+        // Add technologies to the list
+        for (Technology tech : availableTechnologies) {
+            techModel.addElement(tech);
+        }
+        
+        // Update details
+        showTechnologyDetails();
     }
 } 
