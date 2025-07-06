@@ -5,6 +5,7 @@ import com.romagame.core.GameSpeed;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import com.romagame.map.Country;
 
 public class GameWindow extends JFrame {
     private GameEngine engine;
@@ -33,17 +34,7 @@ public class GameWindow extends JFrame {
         layoutComponents();
         setupEventHandlers();
         setupGameEngineCallback();
-        // Center on player country only after window is shown and sized
-        addComponentListener(new java.awt.event.ComponentAdapter() {
-            private boolean centered = false;
-            @Override
-            public void componentShown(java.awt.event.ComponentEvent e) {
-                if (!centered) {
-                    centerOnPlayerRegion();
-                    centered = true;
-                }
-            }
-        });
+        centerOnPlayerRegion();
     }
     
     private void setupWindow() {
@@ -201,5 +192,27 @@ public class GameWindow extends JFrame {
             case SLOW -> "Speed: Slow";
         };
         speedLabel.setText(text);
+    }
+    
+    public void centerOnPlayerRegion() {
+        Country player = engine.getCountryManager().getPlayerCountry();
+        if (player == null) return;
+        String name = player.getName();
+        int centerX, centerY;
+        // Example mapping, adjust as needed
+        if (name.equalsIgnoreCase("Rome") || name.equalsIgnoreCase("France") || name.equalsIgnoreCase("Germanic") || name.equalsIgnoreCase("Britain") || name.equalsIgnoreCase("Spain")) {
+            // Europe
+            centerX = 600; centerY = 300;
+        } else if (name.equalsIgnoreCase("China") || name.equalsIgnoreCase("Baekje") || name.equalsIgnoreCase("Silla") || name.equalsIgnoreCase("Japan") || name.equalsIgnoreCase("India")) {
+            // Asia
+            centerX = 1200; centerY = 400;
+        } else if (name.equalsIgnoreCase("Maya") || name.equalsIgnoreCase("Aztec") || name.equalsIgnoreCase("Olmec")) {
+            // Central America
+            centerX = 200; centerY = 600;
+        } else {
+            // Default to Europe
+            centerX = 600; centerY = 300;
+        }
+        mapPanel.centerOnCoordinates(centerX, centerY);
     }
 } 
