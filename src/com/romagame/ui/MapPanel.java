@@ -456,19 +456,6 @@ public class MapPanel extends JPanel {
         });
     }
 
-    private void setupWaterAnimation() {
-        waterAnimTimer = new javax.swing.Timer(100, new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                waterAnimPhase += 0.03f;
-                repaint();
-            }
-        });
-        waterAnimTimer.start();
-    }
-
-    private void setupRepaintTimer() {
-
-    }
 
     private void updateCachedBorders(int imgW, int imgH, double scale, int x, int y) {
         if (cachedBorders != null && cachedBorders.getWidth() == getWidth() && cachedBorders.getHeight() == getHeight()) return;
@@ -1013,7 +1000,7 @@ public class MapPanel extends JPanel {
         currentOffsetY = (panelH - drawH) / 2 + offsetY;
     }
 
-    private Point mapToScreen(int mapX, int mapY) {
+    public Point mapToScreen(int mapX, int mapY) {
         int x = (int)(mapX * currentScale) + currentOffsetX;
         int y = (int)(mapY * currentScale) + currentOffsetY;
         return new Point(x, y);
