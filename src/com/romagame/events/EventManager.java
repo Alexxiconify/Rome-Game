@@ -1,7 +1,6 @@
 package com.romagame.events;
 
 import com.romagame.map.Country;
-import com.romagame.map.Province;
 import java.util.*;
 import java.util.Random;
 

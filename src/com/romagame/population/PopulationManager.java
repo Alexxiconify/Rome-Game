@@ -1,13 +1,11 @@
 package com.romagame.population;
 
 import com.romagame.map.Province;
-import com.romagame.map.Country;
 import com.romagame.map.Province.PopType;
 import java.util.*;
 import java.util.Random;
 
 public class PopulationManager {
-    private Random random;
     private Map<String, DevelopmentProject> activeProjects;
     private Map<String, BuildingProject> buildingProjects;
     
