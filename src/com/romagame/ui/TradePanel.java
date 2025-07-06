@@ -1,12 +1,11 @@
 package com.romagame.ui;
 
 import com.romagame.core.GameEngine;
-import com.romagame.map.Country;
 import javax.swing.*;
 import java.awt.*;
 
 public class TradePanel extends JPanel {
-    private GameEngine engine;
+    public GameEngine engine;
     private JTextArea tradeDetails;
     private JList<String> tradeGoodsList;
     private DefaultListModel<String> tradeGoodsModel;

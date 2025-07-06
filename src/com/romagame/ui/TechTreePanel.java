@@ -7,8 +7,6 @@ import com.romagame.technology.TechnologyManager;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
-import java.util.Map;
-
 public class TechTreePanel extends JPanel {
     private GameEngine engine;
     private JList<Technology> techList;
