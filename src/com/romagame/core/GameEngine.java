@@ -41,12 +41,14 @@ public class GameEngine {
         
         // Initialize all managers
         worldMap = new WorldMap();
-        countryManager = new CountryManager(worldMap);
         economyManager = new EconomyManager();
         militaryManager = new MilitaryManager();
         diplomacyManager = new DiplomacyManager();
         technologyManager = new TechnologyManager();
         colonizationManager = new ColonizationManager(worldMap);
+        
+        // Initialize country manager with AI support
+        countryManager = new CountryManager(worldMap, diplomacyManager, militaryManager, economyManager);
         
         // Setup initial game state
         setupInitialGameState();
