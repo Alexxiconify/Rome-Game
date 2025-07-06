@@ -25,7 +25,7 @@ public class GameWindow extends JFrame {
     private FocusTreePanel focusTreePanel;
     private AIStatusPanel aiStatusPanel;
     private DiplomacyPanel diplomacyPanel;
-    private JLabel speedLabel;
+    private JButton speedButton;
     
     public GameWindow(GameEngine engine) {
         this.engine = engine;
@@ -80,12 +80,12 @@ public class GameWindow extends JFrame {
         mainTabbedPane = new JTabbedPane();
         mainTabbedPane.setFont(new Font("Times New Roman", Font.BOLD, 14));
         
-        speedLabel = new JLabel("Speed: Normal");
-        speedLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-        speedLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        speedLabel.setForeground(Color.YELLOW);
-        speedLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        speedLabel.setToolTipText("Click to change speed. Press Space to pause/unpause.");
+        speedButton = new JButton("Speed: Normal");
+        speedButton.setFont(new Font("Arial", Font.BOLD, 13));
+        speedButton.setForeground(Color.YELLOW);
+        speedButton.setBackground(new Color(80, 40, 0));
+        speedButton.setFocusPainted(false);
+        speedButton.setToolTipText("Click to change speed. Press Space to pause/unpause.");
     }
     
     private void layoutComponents() {
@@ -104,11 +104,13 @@ public class GameWindow extends JFrame {
         mainTabbedPane.addTab("🎯 Focus", new ImageIcon(), focusTreePanel, "Focus tree");
         mainTabbedPane.addTab("🤖 AI Status", new ImageIcon(), aiStatusPanel, "AI nations status");
         mainTabbedPane.addTab("🤝 Diplomacy", new ImageIcon(), diplomacyPanel, "Diplomacy and war");
+        mainTabbedPane.addTab("⏩ Speed", new ImageIcon(), new JPanel(), "Game speed");
+        int speedTabIndex = mainTabbedPane.getTabCount() - 1;
+        mainTabbedPane.setTabComponentAt(speedTabIndex, speedButton);
         
         // Main content area
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.add(mainTabbedPane, BorderLayout.CENTER);
-        topPanel.add(speedLabel, BorderLayout.EAST);
         add(topPanel, BorderLayout.CENTER);
         
         // Right panel for country info
@@ -125,12 +127,7 @@ public class GameWindow extends JFrame {
             }
         });
         
-        speedLabel.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent e) {
-                cycleGameSpeed();
-            }
-        });
+        speedButton.addActionListener(e -> cycleGameSpeed());
         getRootPane().registerKeyboardAction(
             e -> togglePause(),
             KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0),
@@ -191,7 +188,7 @@ public class GameWindow extends JFrame {
             case VERY_FAST -> "Speed: Very Fast";
             case SLOW -> "Speed: Slow";
         };
-        speedLabel.setText(text);
+        speedButton.setText(text);
     }
     
     public void centerOnPlayerRegion() {
