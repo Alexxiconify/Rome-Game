@@ -1,3 +1,5 @@
+package com.romagame.map;
+
 // Auto-generated province creation code
 public class ProvinceCreationSnippets {
     public static void createProvincesPart1(WorldMap map) {
