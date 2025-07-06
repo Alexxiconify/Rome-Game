@@ -30,6 +30,13 @@ public class Country {
     private String cultureGroup;
     private Map<String, Integer> goods;
     private Ruler ruler;
+    
+    // New fields for laws, reforms, and technology
+    private List<Law> enactedLaws;
+    private List<Law> enactingLaws;
+    private List<GovernmentReform> implementedReforms;
+    private List<String> researchedTechnologies;
+    private List<String> researchingTechnologies;
 
     // Group-based mechanics (static for all countries)
     public static final Map<NationType, List<String>> GROUP_IDEAS = new HashMap<>();
@@ -47,7 +54,26 @@ public class Country {
         GROUP_IDEAS.put(NationType.ARABIAN, List.of("Arabian Trade", "Desert Warfare"));
         GROUP_IDEAS.put(NationType.INDIAN, List.of("Silk Road Trade", "Buddhist Influence"));
         GROUP_IDEAS.put(NationType.TRIBAL, List.of("Tribal Unity", "Warrior Spirit"));
-        // ... similar for GROUP_REFORMS, GROUP_LAWS, GROUP_SOLDIER_TYPES ...
+        
+        // Group reforms
+        GROUP_REFORMS.put(NationType.ROMAN, List.of("Imperial Administration", "Legionary Discipline", "Roman Roads"));
+        GROUP_REFORMS.put(NationType.GERMANIC, List.of("Tribal Council", "Germanic Warriors", "Forest Warfare"));
+        GROUP_REFORMS.put(NationType.CELTIC, List.of("Tribal Council", "Celtic Warriors", "Island Defense"));
+        GROUP_REFORMS.put(NationType.EASTERN, List.of("Absolute Monarchy", "Cavalry Tradition", "Silk Road Control"));
+        GROUP_REFORMS.put(NationType.AFRICAN, List.of("Tribal Council", "Desert Adaptation", "Trade Routes"));
+        GROUP_REFORMS.put(NationType.ARABIAN, List.of("Merchant Republic", "Arabian Trade", "Desert Warfare"));
+        GROUP_REFORMS.put(NationType.INDIAN, List.of("Theocratic State", "Silk Road Trade", "Buddhist Influence"));
+        GROUP_REFORMS.put(NationType.TRIBAL, List.of("Tribal Council", "Tribal Unity", "Warrior Spirit"));
+        
+        // Group laws
+        GROUP_LAWS.put(NationType.ROMAN, List.of("Twelve Tables", "Lex Militaris", "Lex Agraria"));
+        GROUP_LAWS.put(NationType.GERMANIC, List.of("Tribal Law", "Warrior Code", "Forest Law"));
+        GROUP_LAWS.put(NationType.CELTIC, List.of("Tribal Law", "Warrior Code", "Island Law"));
+        GROUP_LAWS.put(NationType.EASTERN, List.of("Royal Law", "Cavalry Law", "Trade Law"));
+        GROUP_LAWS.put(NationType.AFRICAN, List.of("Tribal Law", "Desert Law", "Trade Law"));
+        GROUP_LAWS.put(NationType.ARABIAN, List.of("Merchant Law", "Trade Law", "Desert Law"));
+        GROUP_LAWS.put(NationType.INDIAN, List.of("Religious Law", "Trade Law", "Cultural Law"));
+        GROUP_LAWS.put(NationType.TRIBAL, List.of("Tribal Law", "Warrior Code", "Unity Law"));
     }
 
     public Country(String name) {
@@ -60,6 +86,14 @@ public class Country {
         this.nationType = determineNationType();
         this.cultureGroup = determineCultureGroup();
         this.goods = new HashMap<>();
+        
+        // Initialize new collections
+        this.enactedLaws = new ArrayList<>();
+        this.enactingLaws = new ArrayList<>();
+        this.implementedReforms = new ArrayList<>();
+        this.researchedTechnologies = new ArrayList<>();
+        this.researchingTechnologies = new ArrayList<>();
+        
         initializeCountry();
         // Assign starting ruler for major nations
         switch (name) {
@@ -103,6 +137,79 @@ public class Country {
         
         // Add starting ideas
         addStartingIdeas();
+        
+        // Add starting laws, reforms, and technologies
+        addStartingLaws();
+        addStartingReforms();
+        addStartingTechnologies();
+    }
+    
+    private void addStartingLaws() {
+        // Add nation-specific starting laws
+        List<String> startingLaws = GROUP_LAWS.getOrDefault(nationType, new ArrayList<>());
+        for (String lawName : startingLaws) {
+            // Find and enact the law
+            for (Law law : Law.createHistoricalLaws()) {
+                if (law.getName().equals(lawName)) {
+                    enactedLaws.add(law);
+                    break;
+                }
+            }
+        }
+    }
+    
+    private void addStartingReforms() {
+        // Add nation-specific starting reforms
+        List<String> startingReforms = GROUP_REFORMS.getOrDefault(nationType, new ArrayList<>());
+        for (String reformName : startingReforms) {
+            // Find and implement the reform
+            for (GovernmentReform reform : GovernmentReform.createTieredReforms()) {
+                if (reform.getName().equals(reformName)) {
+                    implementedReforms.add(reform);
+                    break;
+                }
+            }
+        }
+    }
+    
+    private void addStartingTechnologies() {
+        // Add basic technologies based on nation type
+        switch (nationType) {
+            case ROMAN -> {
+                researchedTechnologies.add("Military Tech");
+                researchedTechnologies.add("Administrative Tech");
+                researchedTechnologies.add("Infrastructure Tech");
+            }
+            case GERMANIC -> {
+                researchedTechnologies.add("Military Tech");
+                researchedTechnologies.add("Trade Tech");
+            }
+            case CELTIC -> {
+                researchedTechnologies.add("Military Tech");
+                researchedTechnologies.add("Trade Tech");
+            }
+            case EASTERN -> {
+                researchedTechnologies.add("Military Tech");
+                researchedTechnologies.add("Diplomatic Tech");
+                researchedTechnologies.add("Trade Tech");
+            }
+            case AFRICAN -> {
+                researchedTechnologies.add("Trade Tech");
+                researchedTechnologies.add("Diplomatic Tech");
+            }
+            case ARABIAN -> {
+                researchedTechnologies.add("Trade Tech");
+                researchedTechnologies.add("Diplomatic Tech");
+                researchedTechnologies.add("Naval Tech");
+            }
+            case INDIAN -> {
+                researchedTechnologies.add("Trade Tech");
+                researchedTechnologies.add("Administrative Tech");
+            }
+            default -> {
+                researchedTechnologies.add("Military Tech");
+            }
+        }
     }
     
     private String determineGovernmentType() {
@@ -222,6 +329,15 @@ public class Country {
         calculateExpenses();
         updateTreasury();
         updateStability();
+        
+        // Update law enactment progress
+        updateLawEnactment();
+        
+        // Update reform implementation progress
+        updateReformImplementation();
+        
+        // Update technology research progress
+        updateTechnologyResearch();
     }
     
     private void calculateIncome() {
@@ -247,6 +363,90 @@ public class Country {
         // Natural stability drift
         if (stability < 0) stability += 0.01;
         if (stability > 3) stability = 3;
+    }
+    
+    private void updateLawEnactment() {
+        // Update progress for laws being enacted
+        for (Law law : enactingLaws) {
+            law.updateEnactment();
+            if (law.isEnacted()) {
+                enactedLaws.add(law);
+            }
+        }
+        // Remove completed laws from enacting list
+        enactingLaws.removeIf(Law::isEnacted);
+    }
+    
+    private void updateReformImplementation() {
+        // Update progress for reforms being implemented
+        // This would be similar to law enactment
+    }
+    
+    private void updateTechnologyResearch() {
+        // Update progress for technologies being researched
+        // This would be handled by TechnologyManager
+    }
+    
+    // Law management methods
+    public void startLawEnactment(Law law) {
+        if (law.canEnact(this) && !enactedLaws.contains(law) && !enactingLaws.contains(law)) {
+            law.startEnactment(this);
+            enactingLaws.add(law);
+        }
+    }
+    
+    public List<Law> getEnactedLaws() {
+        return new ArrayList<>(enactedLaws);
+    }
+    
+    public List<Law> getEnactingLaws() {
+        return new ArrayList<>(enactingLaws);
+    }
+    
+    public boolean hasLaw(String lawName) {
+        return enactedLaws.stream().anyMatch(law -> law.getName().equals(lawName));
+    }
+    
+    // Reform management methods
+    public void implementReform(GovernmentReform reform) {
+        if (reform.canImplement(this) && !implementedReforms.contains(reform)) {
+            reform.implement(this);
+            implementedReforms.add(reform);
+        }
+    }
+    
+    public List<GovernmentReform> getImplementedReforms() {
+        return new ArrayList<>(implementedReforms);
+    }
+    
+    public boolean hasReform(String reformName) {
+        return implementedReforms.stream().anyMatch(reform -> reform.getName().equals(reformName));
+    }
+    
+    // Technology management methods
+    public void startTechnologyResearch(String techName) {
+        if (!researchedTechnologies.contains(techName) && !researchingTechnologies.contains(techName)) {
+            researchingTechnologies.add(techName);
+        }
+    }
+    
+    public void completeTechnologyResearch(String techName) {
+        if (researchingTechnologies.contains(techName)) {
+            researchingTechnologies.remove(techName);
+            researchedTechnologies.add(techName);
+        }
+    }
+    
+    public List<String> getResearchedTechnologies() {
+        return new ArrayList<>(researchedTechnologies);
+    }
+    
+    public List<String> getResearchingTechnologies() {
+        return new ArrayList<>(researchingTechnologies);
+    }
+    
+    public boolean hasTechnology(String techName) {
+        return researchedTechnologies.contains(techName);
     }
     
     // Getters and setters
