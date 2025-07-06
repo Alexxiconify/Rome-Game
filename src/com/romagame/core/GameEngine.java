@@ -51,7 +51,6 @@ public class GameEngine {
         colonizationManager = new ColonizationManager(worldMap);
         populationManager = new PopulationManager();
         eventManager = new EventManager();
-        historicalTimeline = new HistoricalTimeline(worldMap, countryManager);
         historicalNationSpawner = new HistoricalNationSpawner(worldMap);
         
         // Initialize country manager with AI support
