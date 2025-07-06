@@ -2,12 +2,8 @@ package com.romagame.ui;
 
 import com.romagame.core.GameEngine;
 import com.romagame.map.Country;
-import com.romagame.map.Province;
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
-import java.util.ArrayList;
-
 public class PopulationPanel extends JPanel {
     private GameEngine engine;
     private JList<String> provinceList;
@@ -163,7 +159,7 @@ public class PopulationPanel extends JPanel {
         developButton.addActionListener(e -> developProvince());
     }
     
-    private void migratePopulation() {
+    public void migratePopulation() {
         int selectedIndex = provinceList.getSelectedIndex();
         if (selectedIndex >= 0) {
             String selectedProvince = provinceList.getSelectedValue();

@@ -5,7 +5,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class NationalIdeasPanel extends JPanel {
-    private GameEngine engine;
+    public GameEngine engine;
     private JList<String> ideasList;
     private DefaultListModel<String> ideasModel;
     private JTextArea ideaDetails;
