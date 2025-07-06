@@ -80,8 +80,6 @@ public class MapPanel extends JPanel {
         loadProvinceOwnerColors();
         loadProvinceMask();
         setupMouseListeners();
-        setupWaterAnimation();
-        setupRepaintTimer();
         // Center on Buyeo's centroid
         SwingUtilities.invokeLater(() -> centerOnNation("Buyeo"));
     }
