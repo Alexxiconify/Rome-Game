@@ -98,7 +98,6 @@ public class WorldMap {
     }
 
     public List<Country> getAllCountries() {
-        System.out.println("getAllCountries called, countries size: " + countries.size());
         return new ArrayList<>(countries.values());
     }
 }

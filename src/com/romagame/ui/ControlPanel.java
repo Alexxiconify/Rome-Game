@@ -159,15 +159,20 @@ public class ControlPanel extends JPanel {
         var diploManager = engine.getDiplomacyManager();
         String playerName = playerCountry.getName();
         
-        // Fog of war: only show countries within 5 provinces (example, using random distance for now)
-        int fogDistance = 5;
+        // Fog of war: only show countries within 2000 km (real distance calculation)
+        double fogDistance = 2000.0; // 2000 km visibility
         java.util.List<String> visibleCountries = new java.util.ArrayList<>();
         java.util.List<String> distantCountries = new java.util.ArrayList<>();
-        java.util.Random rand = new java.util.Random();
+        
         for (var c : allCountries) {
             if (c == playerCountry) continue;
-            int fakeDistance = rand.nextInt(10); // TODO: Replace with real distance calculation
-            if (fakeDistance <= fogDistance) {
+            
+            // Calculate real distance between countries
+            double distance = com.romagame.map.DistanceCalculator.calculateFogOfWarDistance(
+                playerCountry, c, engine.getWorldMap()
+            );
+            
+            if (distance >= 0 && distance <= fogDistance) {
                 visibleCountries.add(c.getName());
             } else {
                 distantCountries.add(c.getName());
@@ -179,9 +184,12 @@ public class ControlPanel extends JPanel {
         panel.add(new JLabel("Known Nations and Opinions:"));
         for (String country : visibleCountries) {
             double opinion = diploManager.getRelation(playerName, country);
-            // Decay opinion for further but visible nations
-            int fakeDistance = rand.nextInt(fogDistance + 1);
-            double decay = 1.0 - (fakeDistance / (double)fogDistance) * 0.5; // up to 50% decay
+            // Calculate real distance for opinion decay
+            Country targetCountry = engine.getCountryManager().getCountry(country);
+            double distance = com.romagame.map.DistanceCalculator.calculateFogOfWarDistance(
+                playerCountry, targetCountry, engine.getWorldMap()
+            );
+            double decay = 1.0 - Math.min(1.0, distance / fogDistance) * 0.5; // up to 50% decay
             double shownOpinion = opinion * decay;
             String opinionStr = String.format("%.0f", shownOpinion);
             String status = (opinion >= 50) ? "Friendly" : (opinion >= 25) ? "Cordial" : (opinion >= 0) ? "Neutral" : (opinion >= -25) ? "Hostile" : "Hostile";
