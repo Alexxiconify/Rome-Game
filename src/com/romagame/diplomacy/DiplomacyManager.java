@@ -14,9 +14,9 @@ public class DiplomacyManager {
     private List<TradeAgreement> tradeAgreements;
     private List<War> activeWars;
     private Random random;
-    private com.romagame.core.CountryManager countryManager;
+    private com.romagame.country.CountryManager countryManager;
     
-    public DiplomacyManager(com.romagame.core.CountryManager countryManager) {
+    public DiplomacyManager(com.romagame.country.CountryManager countryManager) {
         this.countryManager = countryManager;
         relations = new HashMap<>();
         alliances = new ArrayList<>();

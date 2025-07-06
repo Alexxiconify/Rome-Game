@@ -52,7 +52,7 @@ public class GameEngine {
         worldMap = new WorldMap();
         economyManager = new EconomyManager();
         militaryManager = new MilitaryManager();
-        diplomacyManager = new DiplomacyManager();
+        diplomacyManager = new DiplomacyManager(countryManager);
         technologyManager = new TechnologyManager();
         colonizationManager = new ColonizationManager(worldMap);
         populationManager = new PopulationManager();
