@@ -137,12 +137,9 @@ public class Country {
         this.governmentType = determineGovernmentType();
         this.religion = determineReligion();
         this.culture = determineCulture();
-        this.prestige = 0.0;
-        this.stability = 0.0;
-        this.legitimacy = 1.0;
-        this.treasury = 100.0;
-        this.income = 10.0;
-        this.expenses = 5.0;
+        
+        // Set starting values based on nation
+        setStartingValues();
         
         // Initialize resources
         resources.put("Gold", 0.0);
@@ -165,6 +162,193 @@ public class Country {
         addStartingLaws();
         addStartingReforms();
         addStartingTechnologies();
+    }
+    
+    private void setStartingValues() {
+        // Set starting values based on nation name
+        switch (name) {
+            case "Roman Empire" -> {
+                this.prestige = 50.0;
+                this.legitimacy = 0.9;
+                this.stability = 0.7;
+                this.treasury = 500.0;
+                this.income = 25.0;
+                this.expenses = 15.0;
+                // Starting military
+                military.put("Infantry", 5000);
+                military.put("Cavalry", 1000);
+                military.put("Artillery", 50);
+                military.put("Ships", 20);
+                // Starting resources
+                resources.put("Gold", 100.0);
+                resources.put("Iron", 200.0);
+                resources.put("Grain", 500.0);
+                resources.put("Wool", 150.0);
+                resources.put("Wine", 300.0);
+                resources.put("Spices", 50.0);
+            }
+            case "Parthia" -> {
+                this.prestige = 35.0;
+                this.legitimacy = 0.8;
+                this.stability = 0.6;
+                this.treasury = 300.0;
+                this.income = 18.0;
+                this.expenses = 12.0;
+                // Starting military
+                military.put("Infantry", 3000);
+                military.put("Cavalry", 2000);
+                military.put("Artillery", 30);
+                military.put("Ships", 10);
+                // Starting resources
+                resources.put("Gold", 80.0);
+                resources.put("Iron", 120.0);
+                resources.put("Grain", 300.0);
+                resources.put("Wool", 100.0);
+                resources.put("Wine", 150.0);
+                resources.put("Spices", 100.0);
+            }
+            case "Armenia" -> {
+                this.prestige = 20.0;
+                this.legitimacy = 0.7;
+                this.stability = 0.5;
+                this.treasury = 150.0;
+                this.income = 12.0;
+                this.expenses = 8.0;
+                // Starting military
+                military.put("Infantry", 2000);
+                military.put("Cavalry", 800);
+                military.put("Artillery", 20);
+                military.put("Ships", 5);
+                // Starting resources
+                resources.put("Gold", 50.0);
+                resources.put("Iron", 80.0);
+                resources.put("Grain", 200.0);
+                resources.put("Wool", 80.0);
+                resources.put("Wine", 100.0);
+                resources.put("Spices", 30.0);
+            }
+            case "Dacia" -> {
+                this.prestige = 15.0;
+                this.legitimacy = 0.6;
+                this.stability = 0.4;
+                this.treasury = 100.0;
+                this.income = 10.0;
+                this.expenses = 7.0;
+                // Starting military
+                military.put("Infantry", 2500);
+                military.put("Cavalry", 600);
+                military.put("Artillery", 15);
+                military.put("Ships", 3);
+                // Starting resources
+                resources.put("Gold", 40.0);
+                resources.put("Iron", 100.0);
+                resources.put("Grain", 180.0);
+                resources.put("Wool", 120.0);
+                resources.put("Wine", 80.0);
+                resources.put("Spices", 20.0);
+            }
+            case "Sarmatia" -> {
+                this.prestige = 12.0;
+                this.legitimacy = 0.5;
+                this.stability = 0.3;
+                this.treasury = 80.0;
+                this.income = 8.0;
+                this.expenses = 6.0;
+                // Starting military
+                military.put("Infantry", 1800);
+                military.put("Cavalry", 1200);
+                military.put("Artillery", 10);
+                military.put("Ships", 2);
+                // Starting resources
+                resources.put("Gold", 30.0);
+                resources.put("Iron", 60.0);
+                resources.put("Grain", 150.0);
+                resources.put("Wool", 200.0);
+                resources.put("Wine", 50.0);
+                resources.put("Spices", 15.0);
+            }
+            case "Britons" -> {
+                this.prestige = 10.0;
+                this.legitimacy = 0.4;
+                this.stability = 0.3;
+                this.treasury = 60.0;
+                this.income = 7.0;
+                this.expenses = 5.0;
+                // Starting military
+                military.put("Infantry", 1500);
+                military.put("Cavalry", 400);
+                military.put("Artillery", 8);
+                military.put("Ships", 8);
+                // Starting resources
+                resources.put("Gold", 25.0);
+                resources.put("Iron", 70.0);
+                resources.put("Grain", 120.0);
+                resources.put("Wool", 250.0);
+                resources.put("Wine", 40.0);
+                resources.put("Spices", 10.0);
+            }
+            case "Persia" -> {
+                this.prestige = 25.0;
+                this.legitimacy = 0.75;
+                this.stability = 0.55;
+                this.treasury = 200.0;
+                this.income = 15.0;
+                this.expenses = 10.0;
+                // Starting military
+                military.put("Infantry", 2200);
+                military.put("Cavalry", 1500);
+                military.put("Artillery", 25);
+                military.put("Ships", 12);
+                // Starting resources
+                resources.put("Gold", 70.0);
+                resources.put("Iron", 90.0);
+                resources.put("Grain", 250.0);
+                resources.put("Wool", 90.0);
+                resources.put("Wine", 120.0);
+                resources.put("Spices", 80.0);
+            }
+            case "Eastern_Han_Empire" -> {
+                this.prestige = 40.0;
+                this.legitimacy = 0.85;
+                this.stability = 0.65;
+                this.treasury = 400.0;
+                this.income = 22.0;
+                this.expenses = 14.0;
+                // Starting military
+                military.put("Infantry", 4000);
+                military.put("Cavalry", 1200);
+                military.put("Artillery", 40);
+                military.put("Ships", 25);
+                // Starting resources
+                resources.put("Gold", 120.0);
+                resources.put("Iron", 150.0);
+                resources.put("Grain", 400.0);
+                resources.put("Wool", 110.0);
+                resources.put("Wine", 200.0);
+                resources.put("Spices", 150.0);
+            }
+            default -> {
+                // Default values for other nations
+                this.prestige = 5.0;
+                this.legitimacy = 0.5;
+                this.stability = 0.3;
+                this.treasury = 50.0;
+                this.income = 5.0;
+                this.expenses = 3.0;
+                // Starting military
+                military.put("Infantry", 500);
+                military.put("Cavalry", 200);
+                military.put("Artillery", 5);
+                military.put("Ships", 1);
+                // Starting resources
+                resources.put("Gold", 20.0);
+                resources.put("Iron", 30.0);
+                resources.put("Grain", 80.0);
+                resources.put("Wool", 60.0);
+                resources.put("Wine", 30.0);
+                resources.put("Spices", 5.0);
+            }
+        }
     }
     
     private void addStartingLaws() {
