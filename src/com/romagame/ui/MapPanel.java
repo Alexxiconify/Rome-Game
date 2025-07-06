@@ -1052,7 +1052,7 @@ public class MapPanel extends JPanel {
         return null;
     }
 
-    private void handleProvinceClick(Point p) {
+    public void handleProvinceClick(Point p) {
         if (provinceMask == null) return;
         Point mapPoint = screenToMap(p);
         if (mapPoint == null) return;
@@ -1074,7 +1074,7 @@ public class MapPanel extends JPanel {
         }
     }
 
-    private void showProvinceInfo(Province province) {
+    public void showProvinceInfo(Province province) {
         // Get the nation name from JSON data if available
         String nationName = province.getOwner();
         ProvinceData provinceDataItem = provinceData.get(province.getId());
