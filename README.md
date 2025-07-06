@@ -87,7 +87,7 @@ The game is built with:
 - **JSON** for data storage
 - **Modular architecture** with separate managers for different game systems
 
-## Features
+## Features 1
 
 ### Core Game Systems
 
