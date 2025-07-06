@@ -46,10 +46,8 @@ public class MapPanel extends JPanel {
     private Point mouseMapPoint = null;
     private String hoveredProvinceId = null;
     private BufferedImage landShading = null;
-    private float waterAnimPhase = 0f;
     private javax.swing.Timer waterAnimTimer;
     private Map<String, Color> countryColors = new HashMap<>();
-    private javax.swing.Timer repaintTimer;
     private Map<String, Color> provinceIdToOwnerColor = new HashMap<>();
     private String selectedNation = null; // Add this field to track selected nation
     private BufferedImage cachedBorders = null;
