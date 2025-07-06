@@ -52,6 +52,9 @@ public class TechnologyManager {
         for (Map<String, TechnologyProgress> countryProgress : countryResearchProgress.values()) {
             for (TechnologyProgress progress : countryProgress.values()) {
                 progress.update();
+                if (progress.isCompleted()) {
+                    // handle completed research
+                }
             }
         }
     }
