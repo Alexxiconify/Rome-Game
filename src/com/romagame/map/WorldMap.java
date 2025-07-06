@@ -100,4 +100,10 @@ public class WorldMap {
     public List<Country> getAllCountries() {
         return new ArrayList<>(countries.values());
     }
+
+    public void addCountry(Country country) {
+        if (!countries.containsKey(country.getName())) {
+            countries.put(country.getName(), country);
+        }
+    }
 }

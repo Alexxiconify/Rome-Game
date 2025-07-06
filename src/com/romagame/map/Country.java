@@ -745,4 +745,14 @@ public class Country {
     public void setMilitaryTechLevel(int level) {
         this.militaryTechLevel = Math.max(1, Math.min(20, level));
     }
+
+    public void setGovernmentType(String governmentType) {
+        this.governmentType = governmentType;
+    }
+    public void setReligion(String religion) {
+        this.religion = religion;
+    }
+    public void setCulture(String culture) {
+        this.culture = culture;
+    }
 } 
