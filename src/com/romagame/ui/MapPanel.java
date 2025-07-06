@@ -56,6 +56,11 @@ public class MapPanel extends JPanel {
     private Map<String, String> maskColorToProvinceId = new HashMap<>();
     private Map<String, String> ownerColorToNation = new HashMap<>();
 
+    // Centralized transform fields
+    private double currentScale;
+    private int currentOffsetX, currentOffsetY;
+    private int mapImgWidth, mapImgHeight;
+
     public MapPanel(GameEngine engine) {
         this.engine = engine;
         setupPanel();
@@ -78,7 +83,7 @@ public class MapPanel extends JPanel {
 
     private void loadMapBackground() {
         try {
-            File mapFile = new File("resources/map_background.png");
+            File mapFile = new File("src/resources/map_background.png");
             if (mapFile.exists()) {
                 mapBackground = ImageIO.read(mapFile);
                 mapLoaded = true;
@@ -134,7 +139,7 @@ public class MapPanel extends JPanel {
 
     private void loadProvinceMask() {
         try {
-            File maskFile = new File("province_mask.png");
+            File maskFile = new File("src/resources/province_mask.png");
             if (maskFile.exists()) {
                 provinceMask = ImageIO.read(maskFile);
                 loadColorToProvinceId();
@@ -150,7 +155,7 @@ public class MapPanel extends JPanel {
     }
 
     private void loadColorToProvinceId() {
-        try (BufferedReader br = new BufferedReader(new FileReader("resources/province_color_map.csv"))) {
+        try (BufferedReader br = new BufferedReader(new FileReader("src/resources/province_color_map.csv"))) {
             String line;
             boolean firstLine = true;
             while ((line = br.readLine()) != null) {
@@ -177,7 +182,7 @@ public class MapPanel extends JPanel {
     }
 
     private void loadProvinceOwnerColors() {
-        try (BufferedReader br = new BufferedReader(new FileReader("province_ownership_report.csv"))) {
+        try (BufferedReader br = new BufferedReader(new FileReader("src/resources/province_ownership_report.csv"))) {
             String line;
             boolean firstLine = true;
             while ((line = br.readLine()) != null) {
@@ -328,71 +333,6 @@ public class MapPanel extends JPanel {
         });
     }
 
-    private Point screenToMap(Point p) {
-        int panelW = getWidth();
-        int panelH = getHeight();
-        int imgW = provinceMask.getWidth();
-        int imgH = provinceMask.getHeight();
-        double scale = Math.min(panelW / (double)imgW, panelH / (double)imgH) * zoom;
-        int drawW = (int)(imgW * scale);
-        int drawH = (int)(imgH * scale);
-        int x0 = (panelW - drawW) / 2 + offsetX;
-        int y0 = (panelH - drawH) / 2 + offsetY;
-        int mapX = (int)((p.x - x0) / scale);
-        int mapY = (int)((p.y - y0) / scale);
-        return new Point(mapX, mapY);
-    }
-
-    private String getProvinceIdAt(Point mapPoint) {
-        if (provinceMask == null || mapPoint == null) return null;
-        int x = mapPoint.x, y = mapPoint.y;
-        if (x < 0 || y < 0 || x >= provinceMask.getWidth() || y >= provinceMask.getHeight()) return null;
-        int argb = provinceMask.getRGB(x, y);
-        
-        // First try the old colorToProvinceId mapping
-        String provinceId = colorToProvinceId.get(argb);
-        if (provinceId != null) {
-            return provinceId;
-        }
-        
-        // If not found, try using the JSON data
-        if (!provinceData.isEmpty()) {
-            int r = (argb >> 16) & 0xFF;
-            int g = (argb >> 8) & 0xFF;
-            int b = argb & 0xFF;
-            String maskKey = r + "," + g + "," + b;
-            return maskColorToProvinceId.get(maskKey);
-        }
-        
-        return null;
-    }
-
-    private void handleProvinceClick(Point p) {
-        Point mapPoint = screenToMap(p);
-        String provinceId = getProvinceIdAt(mapPoint);
-        if (provinceId != null) {
-            Province clickedProvince = engine.getWorldMap().getProvince(provinceId);
-            if (clickedProvince != null) {
-                showProvinceInfo(clickedProvince);
-            }
-        }
-    }
-
-    private void showProvinceInfo(Province province) {
-        // Get the nation name from JSON data if available
-        String nationName = province.getOwner();
-        ProvinceData provinceDataItem = provinceData.get(province.getId());
-        if (provinceDataItem != null) {
-            nationName = provinceDataItem.getNation();
-        }
-        
-        String info = String.format("<html><b>Province:</b> %s<br><b>Nation:</b> %s<br><b>Owner:</b> %s<br><b>Population:</b> %d<br><b>Development:</b> %.1f<br><b>Terrain:</b> %s<br><b>Trade Goods:</b> %s</html>",
-                province.getName(), nationName, province.getOwner(), province.getPopulation(),
-                province.getDevelopment(), province.getTerrain(),
-                String.join(", ", province.getTradeGoods()));
-        JOptionPane.showMessageDialog(this, info, "Province Information", JOptionPane.INFORMATION_MESSAGE);
-    }
-
     private void setupWaterAnimation() {
         waterAnimTimer = new javax.swing.Timer(40, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -492,6 +432,7 @@ public class MapPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        updateTransform();
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         // 1. Draw enhanced animated ocean background
@@ -515,29 +456,22 @@ public class MapPanel extends JPanel {
         }
         // 2. Province fill (from mask)
         if (provinceColorMap != null) {
-            int panelW = getWidth();
-            int panelH = getHeight();
-            int imgW = provinceColorMap.getWidth();
-            int imgH = provinceColorMap.getHeight();
-            double scale = Math.min(panelW / (double)imgW, panelH / (double)imgH) * zoom;
-            int drawW = (int)(imgW * scale);
-            int drawH = (int)(imgH * scale);
-            int x = (panelW - drawW) / 2 + offsetX;
-            int y = (panelH - drawH) / 2 + offsetY;
+            int drawW = (int)(mapImgWidth * currentScale);
+            int drawH = (int)(mapImgHeight * currentScale);
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
-            g2d.drawImage(provinceColorMap, x, y, drawW, drawH, null);
+            g2d.drawImage(provinceColorMap, currentOffsetX, currentOffsetY, drawW, drawH, null);
             // 3. Land shading overlay
             if (landShading != null) {
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.25f));
-                g2d.drawImage(landShading, x, y, drawW, drawH, null);
+                g2d.drawImage(landShading, currentOffsetX, currentOffsetY, drawW, drawH, null);
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
             }
             // 4. Province borders (cached)
-            updateCachedBorders(imgW, imgH, scale, x, y);
+            updateCachedBorders(mapImgWidth, mapImgHeight, currentScale, currentOffsetX, currentOffsetY);
             g2d.drawImage(cachedBorders, 0, 0, null);
             // 5. Highlight all provinces of selected nation (cached)
             if (selectedNation != null) {
-                updateCachedNationHighlight(selectedNation, imgW, imgH, scale, x, y);
+                updateCachedNationHighlight(selectedNation, mapImgWidth, mapImgHeight, currentScale, currentOffsetX, currentOffsetY);
                 g2d.drawImage(cachedNationHighlight, 0, 0, null);
             }
             // 6. Fog of war: dim provinces not owned by player
@@ -545,14 +479,14 @@ public class MapPanel extends JPanel {
                 String player = engine.getCountryManager().getPlayerCountry().getName();
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.45f));
                 g2d.setColor(new Color(30, 30, 30));
-                for (int yy = 0; yy < imgH; yy++) {
-                    for (int xx = 0; xx < imgW; xx++) {
+                for (int yy = 0; yy < mapImgHeight; yy++) {
+                    for (int xx = 0; xx < mapImgWidth; xx++) {
                         int argb = provinceMask.getRGB(xx, yy) | 0xFF000000;
                         String pid = colorToProvinceId.get(argb);
                         if (pid != null) {
                             Province p = engine.getWorldMap().getProvince(pid);
                             if (p != null && !player.equals(p.getOwner())) {
-                                g2d.fillRect(x + (int)(xx * scale), y + (int)(yy * scale), (int)Math.ceil(scale), (int)Math.ceil(scale));
+                                g2d.fillRect(currentOffsetX + (int)(xx * currentScale), currentOffsetY + (int)(yy * currentScale), (int)Math.ceil(currentScale), (int)Math.ceil(currentScale));
                             }
                         }
                     }
@@ -561,7 +495,7 @@ public class MapPanel extends JPanel {
             }
             // 7. Province highlight with colored glow (hovered, cached)
             if (hoveredProvinceId != null && provinceMask != null) {
-                updateCachedProvinceHighlight(hoveredProvinceId, imgW, imgH, scale, x, y);
+                updateCachedProvinceHighlight(hoveredProvinceId, mapImgWidth, mapImgHeight, currentScale, currentOffsetX, currentOffsetY);
                 g2d.drawImage(cachedProvinceHighlight, 0, 0, null);
                 // Draw tooltip with drop shadow and rounded background
                 Province hovered = engine.getWorldMap().getProvince(hoveredProvinceId);
@@ -582,7 +516,7 @@ public class MapPanel extends JPanel {
                 }
             }
             // 8. Nation labels (draw last, always on top)
-            drawNationLabels(g2d, x, y, scale, imgW, imgH);
+            drawNationLabels(g2d, currentOffsetX, currentOffsetY, currentScale, mapImgWidth, mapImgHeight);
         }
         // 9. UI overlays
         drawUI(g2d);
@@ -710,12 +644,89 @@ public class MapPanel extends JPanel {
 
     private void loadProvinceData() {
         try {
-            provinceData = ProvinceDataLoader.loadProvinceData("province_data.json");
+            provinceData = ProvinceDataLoader.loadProvinceData("src/resources/province_data.json");
             maskColorToProvinceId = ProvinceDataLoader.buildMaskColorToProvinceId(provinceData);
             ownerColorToNation = ProvinceDataLoader.buildOwnerColorToNation(provinceData);
             System.out.println("Loaded " + provinceData.size() + " provinces from province_data.json");
         } catch (Exception e) {
             System.err.println("Warning: Could not load province_data.json: " + e.getMessage());
         }
+    }
+
+    // Call this in paintComponent before drawing anything
+    private void updateTransform() {
+        if (provinceMask == null) return;
+        mapImgWidth = provinceMask.getWidth();
+        mapImgHeight = provinceMask.getHeight();
+        int panelW = getWidth();
+        int panelH = getHeight();
+        currentScale = Math.min(panelW / (double)mapImgWidth, panelH / (double)mapImgHeight) * zoom;
+        int drawW = (int)(mapImgWidth * currentScale);
+        int drawH = (int)(mapImgHeight * currentScale);
+        currentOffsetX = (panelW - drawW) / 2 + offsetX;
+        currentOffsetY = (panelH - drawH) / 2 + offsetY;
+    }
+
+    private Point mapToScreen(int mapX, int mapY) {
+        int x = (int)(mapX * currentScale) + currentOffsetX;
+        int y = (int)(mapY * currentScale) + currentOffsetY;
+        return new Point(x, y);
+    }
+
+    private Point screenToMap(Point p) {
+        if (provinceMask == null) return null;
+        int mapX = (int)((p.x - currentOffsetX) / currentScale);
+        int mapY = (int)((p.y - currentOffsetY) / currentScale);
+        return new Point(mapX, mapY);
+    }
+
+    private String getProvinceIdAt(Point mapPoint) {
+        if (provinceMask == null || mapPoint == null) return null;
+        int x = mapPoint.x, y = mapPoint.y;
+        if (x < 0 || y < 0 || x >= provinceMask.getWidth() || y >= provinceMask.getHeight()) return null;
+        int argb = provinceMask.getRGB(x, y);
+        
+        // First try the old colorToProvinceId mapping
+        String provinceId = colorToProvinceId.get(argb);
+        if (provinceId != null) {
+            return provinceId;
+        }
+        
+        // If not found, try using the JSON data
+        if (!provinceData.isEmpty()) {
+            int r = (argb >> 16) & 0xFF;
+            int g = (argb >> 8) & 0xFF;
+            int b = argb & 0xFF;
+            String maskKey = r + "," + g + "," + b;
+            return maskColorToProvinceId.get(maskKey);
+        }
+        
+        return null;
+    }
+
+    private void handleProvinceClick(Point p) {
+        Point mapPoint = screenToMap(p);
+        String provinceId = getProvinceIdAt(mapPoint);
+        if (provinceId != null) {
+            Province clickedProvince = engine.getWorldMap().getProvince(provinceId);
+            if (clickedProvince != null) {
+                showProvinceInfo(clickedProvince);
+            }
+        }
+    }
+
+    private void showProvinceInfo(Province province) {
+        // Get the nation name from JSON data if available
+        String nationName = province.getOwner();
+        ProvinceData provinceDataItem = provinceData.get(province.getId());
+        if (provinceDataItem != null) {
+            nationName = provinceDataItem.getNation();
+        }
+        
+        String info = String.format("<html><b>Province:</b> %s<br><b>Nation:</b> %s<br><b>Owner:</b> %s<br><b>Population:</b> %d<br><b>Development:</b> %.1f<br><b>Terrain:</b> %s<br><b>Trade Goods:</b> %s</html>",
+                province.getName(), nationName, province.getOwner(), province.getPopulation(),
+                province.getDevelopment(), province.getTerrain(),
+                String.join(", ", province.getTradeGoods()));
+        JOptionPane.showMessageDialog(this, info, "Province Information", JOptionPane.INFORMATION_MESSAGE);
     }
 } 

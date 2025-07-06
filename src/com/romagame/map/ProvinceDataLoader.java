@@ -6,19 +6,17 @@ import java.util.*;
 public class ProvinceDataLoader {
     
     public static Map<String, ProvinceData> loadProvinceData(String path) throws IOException {
+        // path is now expected to be src/resources/province_data.json
         Map<String, ProvinceData> map = new HashMap<>();
-        
         try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
             StringBuilder content = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
                 content.append(line);
             }
-            
             String json = content.toString();
             parseProvinces(json, map);
         }
-        
         return map;
     }
     
@@ -128,5 +126,29 @@ public class ProvinceDataLoader {
         }
         
         return ownerColorToNation;
+    }
+
+    // If you have any other file loads (e.g., for nation.txt), update them to use src/resources/ as well.
+    // Example:
+    public static Map<String, String> loadNationColorToName() throws IOException {
+        Map<String, String> colorToNation = new HashMap<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader("src/resources/nation.txt"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.startsWith("Nation(") && line.endsWith(");")) {
+                    String content = line.substring(7, line.length() - 2);
+                    String[] parts = content.split(",");
+                    if (parts.length == 4) {
+                        int r = Integer.parseInt(parts[0].trim());
+                        int g = Integer.parseInt(parts[1].trim());
+                        int b = Integer.parseInt(parts[2].trim());
+                        String name = parts[3].trim();
+                        colorToNation.put(r + "," + g + "," + b, name);
+                    }
+                }
+            }
+        }
+        return colorToNation;
     }
 } 
