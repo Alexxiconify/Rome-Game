@@ -22,6 +22,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
 import java.util.Random;
+import com.romagame.military.Army;
+import com.romagame.military.MilitaryManager;
 
 public class MapPanel extends JPanel {
     private GameEngine engine;
@@ -65,6 +67,8 @@ public class MapPanel extends JPanel {
     private BufferedImage cachedOceanBackground = null;
     private int lastOceanBgWidth = -1;
     private int lastOceanBgHeight = -1;
+
+    private Army selectedArmy = null;
 
     public MapPanel(GameEngine engine) {
         this.engine = engine;
@@ -326,12 +330,35 @@ public class MapPanel extends JPanel {
             }
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (provinceMask == null) return;
                 if (e.getButton() == MouseEvent.BUTTON1) {
-                    handleProvinceClick(e.getPoint());
-                } else if (e.getButton() == MouseEvent.BUTTON3) {
-                    // Right click to clear selection
-                    clearNationSelection();
+                    // Left-click: select army if clicked on icon
+                    MilitaryManager mm = engine.getMilitaryManager();
+                    for (Army army : mm.getArmies().values()) {
+                        // Fake hit test for now
+                        int x = getWidth() / 2 + (int)(Math.random() * 200 - 100);
+                        int y = getHeight() / 2 + (int)(Math.random() * 200 - 100);
+                        if (e.getX() >= x && e.getX() <= x + 20 && e.getY() >= y && e.getY() <= y + 20) {
+                            selectedArmy = army;
+                            // Show context menu
+                            JPopupMenu menu = new JPopupMenu();
+                            JMenuItem split = new JMenuItem("Split");
+                            JMenuItem merge = new JMenuItem("Merge");
+                            JMenuItem disband = new JMenuItem("Disband");
+                            menu.add(split); menu.add(merge); menu.add(disband);
+                            menu.show(MapPanel.this, x, y + 20);
+                            repaint();
+                            return;
+                        }
+                    }
+                    selectedArmy = null;
+                    repaint();
+                } else if (e.getButton() == MouseEvent.BUTTON3 && selectedArmy != null) {
+                    // Right-click: move selected army to province
+                    String provinceId = getProvinceIdAt(e.getPoint());
+                    if (provinceId != null) {
+                        selectedArmy.setLocation(provinceId);
+                        repaint();
+                    }
                 }
             }
         });
@@ -594,6 +621,22 @@ public class MapPanel extends JPanel {
         }
         // 9. UI overlays
         drawUI(g2d);
+
+        // Draw armies as icons
+        MilitaryManager mm = engine.getMilitaryManager();
+        for (Army army : mm.getArmies().values()) {
+            String loc = army.getLocation();
+            if (loc == null || loc.equals("Unknown")) continue;
+            Province province = engine.getWorldMap().getProvince(loc);
+            if (province == null) continue;
+            // Get province center (fake for now)
+            int x = getWidth() / 2 + (int)(Math.random() * 200 - 100);
+            int y = getHeight() / 2 + (int)(Math.random() * 200 - 100);
+            g2d.setColor(army == selectedArmy ? Color.YELLOW : Color.RED);
+            g2d.fillOval(x, y, 20, 20);
+            g2d.setColor(Color.BLACK);
+            g2d.drawString(army.getName(), x, y + 30);
+        }
     }
 
     private Color getProvinceColor(Province province) {
