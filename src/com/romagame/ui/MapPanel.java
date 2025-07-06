@@ -112,7 +112,7 @@ public class MapPanel extends JPanel {
         for (int y = 0; y < 700; y += 2) {
             for (int x = 0; x < 1200; x += 2) {
                 int v = (int)(Math.random() * 16);
-                g2d.setColor(new Color(24+v, 38+v, 66+v));
+                g2d.setColor(new Color(Math.min(255, 24+v), Math.min(255, 38+v), Math.min(255, 66+v)));
                 g2d.fillRect(x, y, 2, 2);
             }
         }
@@ -196,9 +196,9 @@ public class MapPanel extends JPanel {
                 String[] parts = line.split(",");
                 if (parts.length >= 10) {
                     String provinceId = parts[0].trim();
-                    int r = Integer.parseInt(parts[6].trim());
-                    int g = Integer.parseInt(parts[7].trim());
-                    int b = Integer.parseInt(parts[8].trim());
+                    int r = Math.min(255, Math.max(0, Integer.parseInt(parts[6].trim())));
+                    int g = Math.min(255, Math.max(0, Integer.parseInt(parts[7].trim())));
+                    int b = Math.min(255, Math.max(0, Integer.parseInt(parts[8].trim())));
                     provinceIdToOwnerColor.put(provinceId, new Color(r, g, b));
                 }
             }
@@ -223,7 +223,10 @@ public class MapPanel extends JPanel {
 
                 if (provinceId != null && provinceData.containsKey(provinceId)) {
                     int[] ownerColor = provinceData.get(provinceId).owner_color;
-                    int ownerArgb = (0xFF << 24) | (ownerColor[0] << 16) | (ownerColor[1] << 8) | ownerColor[2];
+                    int ownerR = Math.min(255, Math.max(0, ownerColor[0]));
+                    int ownerG = Math.min(255, Math.max(0, ownerColor[1]));
+                    int ownerB = Math.min(255, Math.max(0, ownerColor[2]));
+                    int ownerArgb = (0xFF << 24) | (ownerR << 16) | (ownerG << 8) | ownerB;
                     provinceColorMap.setRGB(x, y, ownerArgb);
                 } else {
                     // Transparent for unassigned
@@ -469,7 +472,7 @@ public class MapPanel extends JPanel {
                 for (int y = 0; y < getHeight(); y += 2) {
                     for (int x = 0; x < getWidth(); x += 2) {
                         int v = (int)(Math.random() * 12);
-                        gAnim.setColor(new Color(64+v, 128+v, 255+v));
+                        gAnim.setColor(new Color(Math.min(255, 64+v), Math.min(255, 128+v), Math.min(255, 255+v)));
                         gAnim.fillRect(x, y, 2, 2);
                     }
                 }
