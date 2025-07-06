@@ -85,6 +85,33 @@ public class MapPanel extends JPanel {
         setFocusable(true);
         // Enable double buffering for smoother rendering
         setDoubleBuffered(true);
+        
+        // Add keyboard shortcuts
+        setupKeyboardShortcuts();
+    }
+    
+    private void setupKeyboardShortcuts() {
+        // Escape key to clear selection
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "clearSelection");
+        getActionMap().put("clearSelection", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                clearNationSelection();
+            }
+        });
+        
+        // Space key to center on selected nation
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "centerOnSelection");
+        getActionMap().put("centerOnSelection", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (selectedNation != null) {
+                    centerOnNation(selectedNation);
+                }
+            }
+        });
     }
 
     private void loadMapBackground() {
@@ -299,7 +326,12 @@ public class MapPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (provinceMask == null) return;
-                handleProvinceClick(e.getPoint());
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    handleProvinceClick(e.getPoint());
+                } else if (e.getButton() == MouseEvent.BUTTON3) {
+                    // Right click to clear selection
+                    clearNationSelection();
+                }
             }
         });
         addMouseMotionListener(new MouseMotionAdapter() {
@@ -403,8 +435,8 @@ public class MapPanel extends JPanel {
         cachedNationHighlight = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
         cachedNationForHighlight = nation;
         Graphics2D g2d = cachedNationHighlight.createGraphics();
-        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.10f));
-        g2d.setColor(Color.YELLOW);
+        
+        // Enhanced highlighting with border and glow effect
         for (int yy = 0; yy < imgH; yy++) {
             for (int xx = 0; xx < imgW; xx++) {
                 int argb = provinceMask.getRGB(xx, yy) | 0xFF000000;
@@ -412,7 +444,20 @@ public class MapPanel extends JPanel {
                 if (pid != null) {
                     Province p = engine.getWorldMap().getProvince(pid);
                     if (p != null && nation.equals(p.getOwner())) {
-                        g2d.fillRect(x + (int)(xx * scale), y + (int)(yy * scale), (int)Math.ceil(scale), (int)Math.ceil(scale));
+                        int screenX = x + (int)(xx * scale);
+                        int screenY = y + (int)(yy * scale);
+                        int pixelSize = (int)Math.ceil(scale);
+                        
+                        // Inner highlight (brighter)
+                        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.15f));
+                        g2d.setColor(Color.YELLOW);
+                        g2d.fillRect(screenX, screenY, pixelSize, pixelSize);
+                        
+                        // Border highlight
+                        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
+                        g2d.setColor(Color.ORANGE);
+                        g2d.setStroke(new BasicStroke(Math.max(2.0f, (float)scale * 0.5f)));
+                        g2d.drawRect(screenX, screenY, pixelSize, pixelSize);
                     }
                 }
             }
@@ -585,14 +630,20 @@ public class MapPanel extends JPanel {
         }
         for (String owner : centroids.keySet()) {
             int count = counts.get(owner);
-            if (count < 200) continue; // Only label major nations
+            if (count < 100) continue; // Show more nations (lowered threshold)
             double[] c = centroids.get(owner);
             int cx = (int)(c[0] / count);
             int cy = (int)(c[1] / count);
             int sx = x0 + (int)(cx * scale);
             int sy = y0 + (int)(cy * scale);
 
+            // Enhanced font size and styling for selected nation
+            boolean isSelected = owner.equals(selectedNation);
             int fontSize = Math.max(14, Math.min((int)(44 * scale), 48));
+            if (isSelected) {
+                fontSize = Math.max(18, Math.min((int)(52 * scale), 56)); // Larger font for selected nation
+            }
+            
             Font labelFont = new Font("Segoe UI", Font.BOLD, fontSize);
             g2d.setFont(labelFont);
             FontMetrics fm = g2d.getFontMetrics();
@@ -600,6 +651,16 @@ public class MapPanel extends JPanel {
             int lh = fm.getHeight() + 10;
             int lx = sx - lw / 2;
             int ly = sy - lh / 2;
+
+            // Enhanced styling for selected nation
+            if (isSelected) {
+                // Glow effect for selected nation
+                g2d.setColor(new Color(255, 255, 0, 100)); // Yellow glow
+                g2d.fillRoundRect(lx - 4, ly - 4, lw + 8, lh + 8, 22, 22);
+                g2d.setColor(new Color(255, 165, 0, 200)); // Orange border
+                g2d.setStroke(new BasicStroke(3.0f));
+                g2d.drawRoundRect(lx - 4, ly - 4, lw + 8, lh + 8, 22, 22);
+            }
 
             g2d.setColor(new Color(30,30,30,180));
             g2d.fillRoundRect(lx, ly, lw, lh, 18, 18);
@@ -617,14 +678,17 @@ public class MapPanel extends JPanel {
         // Reset transform for UI elements
         g2d.setTransform(new AffineTransform());
         g2d.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        
+        // Main info panel
+        int panelHeight = selectedNation != null ? 140 : 110;
         g2d.setColor(new Color(255, 255, 255, 240));
-        g2d.fillRoundRect(8, 8, 260, 110, 18, 18);
+        g2d.fillRoundRect(8, 8, 260, panelHeight, 18, 18);
         g2d.setColor(new Color(0,0,0,60));
         g2d.setStroke(new BasicStroke(3f));
-        g2d.drawRoundRect(8, 8, 260, 110, 18, 18);
+        g2d.drawRoundRect(8, 8, 260, panelHeight, 18, 18);
         g2d.setColor(Color.DARK_GRAY);
         g2d.setStroke(new BasicStroke(1.2f));
-        g2d.drawRoundRect(8, 8, 260, 110, 18, 18);
+        g2d.drawRoundRect(8, 8, 260, panelHeight, 18, 18);
         g2d.setColor(Color.BLACK);
         g2d.drawString(String.format("Zoom: %.1fx", zoom), 20, 35);
         g2d.drawString("Date: " + engine.getCurrentDate().getFormattedDate(), 20, 60);
@@ -632,6 +696,22 @@ public class MapPanel extends JPanel {
         if (engine.getCountryManager().getPlayerCountry() != null) {
             g2d.drawString("Playing as: " + engine.getCountryManager().getPlayerCountry().getName(), 20, 110);
         }
+        
+        // Selected nation info
+        if (selectedNation != null) {
+            g2d.setColor(new Color(255, 255, 0, 200)); // Yellow highlight
+            g2d.fillRoundRect(8, 8, 260, panelHeight, 18, 18);
+            g2d.setColor(new Color(255, 165, 0, 200)); // Orange border
+            g2d.setStroke(new BasicStroke(2.0f));
+            g2d.drawRoundRect(8, 8, 260, panelHeight, 18, 18);
+            g2d.setColor(Color.BLACK);
+            g2d.drawString("Selected: " + selectedNation, 20, 135);
+        }
+        
+        // Controls hint
+        g2d.setColor(new Color(100, 100, 100, 180));
+        g2d.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        g2d.drawString("ESC: Clear selection | SPACE: Center on selection", 8, getHeight() - 10);
     }
 
     public void centerOnNation(String nation) {
@@ -668,6 +748,22 @@ public class MapPanel extends JPanel {
         offsetY = panelH/2 - cyScreen;
         invalidateOverlayCache();
         repaint();
+    }
+    
+    public void selectNation(String nation) {
+        selectedNation = nation;
+        invalidateOverlayCache();
+        repaint();
+    }
+    
+    public void clearNationSelection() {
+        selectedNation = null;
+        invalidateOverlayCache();
+        repaint();
+    }
+    
+    public String getSelectedNation() {
+        return selectedNation;
     }
 
     private void loadProvinceData() {
@@ -740,7 +836,16 @@ public class MapPanel extends JPanel {
         if (provinceId != null) {
             Province clickedProvince = engine.getWorldMap().getProvince(provinceId);
             if (clickedProvince != null) {
-                showProvinceInfo(clickedProvince);
+                // Select the nation that owns this province
+                String nationName = clickedProvince.getOwner();
+                if (!nationName.equals("Ocean") && !nationName.equals("Uncolonized")) {
+                    selectedNation = nationName;
+                    invalidateOverlayCache();
+                    repaint();
+                    
+                    // Show province info dialog
+                    showProvinceInfo(clickedProvince);
+                }
             }
         }
     }
