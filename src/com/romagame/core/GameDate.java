@@ -14,17 +14,14 @@ public class GameDate {
     }
     
     public void advance() {
-        hour++;
-        if (hour >= 24) {
-            hour = 0;
-            day++;
-            if (day > getDaysInMonth()) {
-                day = 1;
-                month++;
-                if (month > 12) {
-                    month = 1;
-                    year++;
-                }
+        // Advance by one day for grand strategy game pacing
+        day++;
+        if (day > getDaysInMonth()) {
+            day = 1;
+            month++;
+            if (month > 12) {
+                month = 1;
+                year++;
             }
         }
     }
