@@ -1066,4 +1066,11 @@ public class MapPanel extends JPanel {
                 String.join(", ", province.getTradeGoods()));
         JOptionPane.showMessageDialog(this, info, "Province Information", JOptionPane.INFORMATION_MESSAGE);
     }
+
+    public void centerOnCoordinates(int x, int y) {
+        Rectangle viewRect = getVisibleRect();
+        int newX = x - viewRect.width / 2;
+        int newY = y - viewRect.height / 2;
+        scrollRectToVisible(new Rectangle(newX, newY, viewRect.width, viewRect.height));
+    }
 } 
