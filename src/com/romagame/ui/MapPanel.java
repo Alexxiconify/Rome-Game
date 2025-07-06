@@ -289,6 +289,7 @@ public class MapPanel extends JPanel {
             }
             @Override
             public void mouseClicked(MouseEvent e) {
+                if (provinceMask == null) return;
                 handleProvinceClick(e.getPoint());
             }
         });
@@ -302,34 +303,47 @@ public class MapPanel extends JPanel {
                     offsetY += dy;
                     lastMousePos = e.getPoint();
                     invalidateOverlayCache();
+                    // Use repaint() instead of repaint() for smoother dragging
                     repaint();
                 }
             }
             @Override
             public void mouseMoved(MouseEvent e) {
+                if (provinceMask == null) return;
+                Point oldHovered = hoveredProvinceId != null ? new Point(mouseMapPoint) : null;
                 mouseMapPoint = screenToMap(e.getPoint());
                 hoveredProvinceId = getProvinceIdAt(mouseMapPoint);
                 
-                // Update tooltip with nation name
-                if (hoveredProvinceId != null) {
-                    ProvinceData provinceDataItem = provinceData.get(hoveredProvinceId);
-                    if (provinceDataItem != null) {
-                        setToolTipText("Province: " + hoveredProvinceId + " | Nation: " + provinceDataItem.getNation());
+                // Only repaint if hover state changed
+                if ((oldHovered == null) != (hoveredProvinceId == null) || 
+                    (oldHovered != null && hoveredProvinceId != null && !oldHovered.equals(mouseMapPoint))) {
+                    
+                    // Update tooltip with nation name
+                    if (hoveredProvinceId != null) {
+                        ProvinceData provinceDataItem = provinceData.get(hoveredProvinceId);
+                        if (provinceDataItem != null) {
+                            setToolTipText("Province: " + hoveredProvinceId + " | Nation: " + provinceDataItem.getNation());
+                        } else {
+                            setToolTipText("Province: " + hoveredProvinceId);
+                        }
                     } else {
-                        setToolTipText("Province: " + hoveredProvinceId);
+                        setToolTipText(null);
                     }
-                } else {
-                    setToolTipText(null);
+                    
+                    repaint();
                 }
-                
-                repaint();
             }
         });
         addMouseWheelListener(e -> {
+            double oldZoom = zoom;
             double zoomFactor = e.getWheelRotation() > 0 ? 0.9 : 1.1;
             zoom = Math.max(0.1, Math.min(40.0, zoom * zoomFactor));
-            invalidateOverlayCache();
-            repaint();
+            
+            // Only invalidate cache and repaint if zoom actually changed
+            if (Math.abs(zoom - oldZoom) > 0.01) {
+                invalidateOverlayCache();
+                repaint();
+            }
         });
     }
 
@@ -344,17 +358,18 @@ public class MapPanel extends JPanel {
     }
 
     private void setupRepaintTimer() {
-        repaintTimer = new javax.swing.Timer(40, e -> repaint());
-        repaintTimer.start();
+        // Removed constant repaint timer for better performance
+        // repaintTimer = new javax.swing.Timer(40, e -> repaint());
+        // repaintTimer.start();
     }
 
     private void updateCachedBorders(int imgW, int imgH, double scale, int x, int y) {
         if (cachedBorders != null && cachedBorders.getWidth() == getWidth() && cachedBorders.getHeight() == getHeight()) return;
         cachedBorders = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = cachedBorders.createGraphics();
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
         g2d.setStroke(new BasicStroke((float)Math.max(1.0, scale * 1.1), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        g2d.setColor(new Color(255,255,255,180));
+        g2d.setColor(new Color(100,100,100,200));
         for (int yy = 1; yy < imgH-1; yy++) {
             for (int xx = 1; xx < imgW-1; xx++) {
                 int argb = provinceMask.getRGB(xx, yy);
@@ -439,7 +454,7 @@ public class MapPanel extends JPanel {
         if (mapLoaded && mapBackground != null) {
             BufferedImage animBg = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
             Graphics2D gAnim = animBg.createGraphics();
-            GradientPaint gp = new GradientPaint(0, 0, new Color(18, 32, 54), 0, getHeight(), new Color(8, 14, 28));
+            GradientPaint gp = new GradientPaint(0, 0, new Color(64, 128, 255), 0, getHeight(), new Color(32, 64, 128));
             gAnim.setPaint(gp);
             gAnim.fillRect(0, 0, getWidth(), getHeight());
             // Subtle noise/texture
@@ -447,7 +462,7 @@ public class MapPanel extends JPanel {
             for (int y = 0; y < getHeight(); y += 2) {
                 for (int x = 0; x < getWidth(); x += 2) {
                     int v = (int)(Math.random() * 12);
-                    gAnim.setColor(new Color(18+v, 32+v, 54+v));
+                    gAnim.setColor(new Color(64+v, 128+v, 255+v));
                     gAnim.fillRect(x, y, 2, 2);
                 }
             }
@@ -674,7 +689,7 @@ public class MapPanel extends JPanel {
     }
 
     private Point screenToMap(Point p) {
-        if (provinceMask == null) return null;
+        if (provinceMask == null || p == null) return null;
         int mapX = (int)((p.x - currentOffsetX) / currentScale);
         int mapY = (int)((p.y - currentOffsetY) / currentScale);
         return new Point(mapX, mapY);
@@ -705,7 +720,9 @@ public class MapPanel extends JPanel {
     }
 
     private void handleProvinceClick(Point p) {
+        if (provinceMask == null) return;
         Point mapPoint = screenToMap(p);
+        if (mapPoint == null) return;
         String provinceId = getProvinceIdAt(mapPoint);
         if (provinceId != null) {
             Province clickedProvince = engine.getWorldMap().getProvince(provinceId);
