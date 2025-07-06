@@ -3,6 +3,7 @@ package com.romagame.colonization;
 import com.romagame.map.Province;
 import com.romagame.map.WorldMap;
 import com.romagame.map.Country;
+import com.romagame.map.Province.PopType;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
@@ -111,7 +112,8 @@ public class ColonizationManager {
         
         // Update province development
         province.setDevelopment(province.getDevelopment() + 1);
-        province.setPopulation(province.getPopulation() + mission.getColonists());
+        // Add colonists as peasants
+        province.setPop(PopType.PEASANTS, province.getPop(PopType.PEASANTS) + mission.getColonists());
     }
     
     private void applyColonizationEffects(Province province, ColonizationMission mission) {
@@ -132,7 +134,7 @@ public class ColonizationManager {
             province.setDevelopment(province.getDevelopment() + 2);
         }
         if (description.contains("population")) {
-            province.setPopulation(province.getPopulation() + 1000);
+            province.setPop(PopType.PEASANTS, province.getPop(PopType.PEASANTS) + 1000);
         }
         if (description.contains("treasury")) {
             Country country = worldMap.getCountry(province.getOwner());
@@ -161,7 +163,7 @@ public class ColonizationManager {
         String description = event.getDescription();
         
         if (description.contains("population")) {
-            province.setPopulation(Math.max(100, province.getPopulation() - 1000));
+            province.setPop(PopType.PEASANTS, Math.max(100, province.getPop(PopType.PEASANTS) - 1000));
         }
         if (description.contains("stability")) {
             Country country = worldMap.getCountry(province.getOwner());
