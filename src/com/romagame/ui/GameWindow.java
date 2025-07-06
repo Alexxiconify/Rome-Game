@@ -17,6 +17,7 @@ public class GameWindow extends JFrame {
         createComponents();
         layoutComponents();
         setupEventHandlers();
+        setupGameEngineCallback();
     }
     
     private void setupWindow() {
@@ -75,6 +76,11 @@ public class GameWindow extends JFrame {
             KeyStroke.getKeyStroke(KeyEvent.VK_3, 0),
             JComponent.WHEN_IN_FOCUSED_WINDOW
         );
+    }
+    
+    private void setupGameEngineCallback() {
+        // Set up the UI update callback for the game engine
+        engine.setUIUpdateCallback(engineInstance -> updateUI());
     }
     
     public void updateUI() {

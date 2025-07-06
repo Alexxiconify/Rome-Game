@@ -13,6 +13,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class GameEngine {
     private WorldMap worldMap;
@@ -27,6 +28,7 @@ public class GameEngine {
     private GameSpeed gameSpeed;
     private boolean isRunning;
     private ScheduledExecutorService gameLoop;
+    private Consumer<GameEngine> uiUpdateCallback;
     
     public GameEngine() {
         initializeGame();
@@ -61,6 +63,10 @@ public class GameEngine {
         countryManager.setPlayerCountry(countryName);
     }
     
+    public void setUIUpdateCallback(Consumer<GameEngine> callback) {
+        this.uiUpdateCallback = callback;
+    }
+    
     public void start() {
         if (!isRunning) {
             isRunning = true;
@@ -78,11 +84,19 @@ public class GameEngine {
     
     public void setGameSpeed(GameSpeed speed) {
         this.gameSpeed = speed;
+        // Restart the game loop with new speed if running
+        if (isRunning && gameLoop != null) {
+            gameLoop.shutdown();
+            if (speed != GameSpeed.PAUSED) {
+                gameLoop = Executors.newScheduledThreadPool(1);
+                gameLoop.scheduleAtFixedRate(this::update, 0, getUpdateInterval(), TimeUnit.MILLISECONDS);
+            }
+        }
     }
     
     private long getUpdateInterval() {
         return switch (gameSpeed) {
-            case PAUSED -> Long.MAX_VALUE;
+            case PAUSED -> 1000; // 1 second but won't be used when paused
             case SLOW -> 1000; // 1 second
             case NORMAL -> 500; // 0.5 seconds
             case FAST -> 200; // 0.2 seconds
@@ -105,6 +119,11 @@ public class GameEngine {
         // Process events and AI decisions
         processEvents();
         processAI();
+        
+        // Update UI on EDT (Event Dispatch Thread)
+        if (uiUpdateCallback != null) {
+            javax.swing.SwingUtilities.invokeLater(() -> uiUpdateCallback.accept(this));
+        }
     }
     
     private void processEvents() {
