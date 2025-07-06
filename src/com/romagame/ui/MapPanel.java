@@ -737,19 +737,24 @@ public class MapPanel extends JPanel {
         for (int y = 0; y < imgH; y++) {
             for (int x = 0; x < imgW; x++) {
                 int argb = provinceMask.getRGB(x, y);
-                String pid = colorToProvinceId.get(argb);
-                if (pid != null) {
-                    Province p = engine.getWorldMap().getProvince(pid);
-                    if (p != null) {
-                        String owner = p.getOwner();
-                        // Stricter filter: skip all non-nation tiles
-                        if (owner == null || owner.equals("Ocean") || owner.equals("Uncolonized") || owner.startsWith("Unknown") || owner.startsWith("rgb_") || owner.equals("REMOVE_FROM_MAP") || owner.equals("BORDER") || owner.equals("Water") || owner.equals("Sea") || owner.equals("Lake") || owner.equals("River"))
-                            continue;
-                        centroids.putIfAbsent(owner, new double[]{0, 0});
-                        counts.put(owner, counts.getOrDefault(owner, 0) + 1);
-                        centroids.get(owner)[0] += x;
-                        centroids.get(owner)[1] += y;
+                // Compose province ID from color (if you have a color->provinceId map, use it; otherwise, skip)
+                // Here, we skip if not found
+                String colorKey = String.format("%d,%d,%d", (argb >> 16) & 0xFF, (argb >> 8) & 0xFF, argb & 0xFF);
+                String provinceId = null;
+                for (String pid : provinceIdToOwner.keySet()) {
+                    if (pid.endsWith(colorKey)) {
+                        provinceId = pid;
+                        break;
                     }
+                }
+                if (provinceId != null) {
+                    String owner = provinceIdToOwner.get(provinceId);
+                    if (owner == null || owner.equals("Ocean") || owner.equals("Uncolonized") || owner.startsWith("Unknown") || owner.startsWith("rgb_") || owner.equals("REMOVE_FROM_MAP") || owner.equals("BORDER") || owner.equals("Water") || owner.equals("Sea") || owner.equals("Lake") || owner.equals("River"))
+                        continue;
+                    centroids.putIfAbsent(owner, new double[]{0, 0});
+                    counts.put(owner, counts.getOrDefault(owner, 0) + 1);
+                    centroids.get(owner)[0] += x;
+                    centroids.get(owner)[1] += y;
                 }
             }
         }
@@ -761,14 +766,11 @@ public class MapPanel extends JPanel {
             int cy = (int)(c[1] / count);
             int sx = x0 + (int)(cx * scale);
             int sy = y0 + (int)(cy * scale);
-
-            // Enhanced font size and styling for selected nation
             boolean isSelected = owner.equals(selectedNation);
             int fontSize = Math.max(14, Math.min((int)(44 * scale), 48));
             if (isSelected) {
-                fontSize = Math.max(18, Math.min((int)(52 * scale), 56)); // Larger font for selected nation
+                fontSize = Math.max(18, Math.min((int)(52 * scale), 56));
             }
-            
             Font labelFont = new Font("Segoe UI", Font.BOLD, fontSize);
             g2d.setFont(labelFont);
             FontMetrics fm = g2d.getFontMetrics();
@@ -776,25 +778,23 @@ public class MapPanel extends JPanel {
             int lh = fm.getHeight() + 10;
             int lx = sx - lw / 2;
             int ly = sy - lh / 2;
-
-            // Enhanced styling for selected nation
             if (isSelected) {
-                // Glow effect for selected nation
-                g2d.setColor(new Color(255, 255, 0, 100)); // Yellow glow
+                g2d.setColor(new Color(255, 255, 0, 100));
                 g2d.fillRoundRect(lx - 4, ly - 4, lw + 8, lh + 8, 22, 22);
-                g2d.setColor(new Color(255, 165, 0, 200)); // Orange border
+                g2d.setColor(new Color(255, 165, 0, 200));
                 g2d.setStroke(new BasicStroke(3.0f));
                 g2d.drawRoundRect(lx - 4, ly - 4, lw + 8, lh + 8, 22, 22);
             }
-
             g2d.setColor(new Color(30,30,30,180));
             g2d.fillRoundRect(lx, ly, lw, lh, 18, 18);
             g2d.setColor(new Color(0,0,0,120));
             g2d.drawRoundRect(lx, ly, lw, lh, 18, 18);
             g2d.setColor(new Color(0,0,0,180));
             g2d.drawString(owner, sx+3, sy+3);
-            Color col = countryColors.getOrDefault(owner, Color.WHITE);
-            g2d.setColor(new Color(col.getRed(), col.getGreen(), col.getBlue(), 220));
+            String colorStr = nationToColor.getOrDefault(owner, "255,255,255");
+            String[] rgb = colorStr.split(",");
+            Color col = new Color(Integer.parseInt(rgb[0]), Integer.parseInt(rgb[1]), Integer.parseInt(rgb[2]), 220);
+            g2d.setColor(col);
             g2d.drawString(owner, sx, sy);
         }
     }
