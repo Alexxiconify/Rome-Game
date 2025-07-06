@@ -25,8 +25,6 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import com.romagame.military.Army;
 import com.romagame.military.MilitaryManager;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class MapPanel extends JPanel {
     private GameEngine engine;
