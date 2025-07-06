@@ -2,9 +2,11 @@ package com.romagame.ui;
 
 import com.romagame.core.GameEngine;
 import com.romagame.map.Country;
-// import com.romagame.diplomacy.DiplomacyManager;
+import com.romagame.diplomacy.DiplomacyManager;
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
+import java.util.Map;
 
 public class InfoPanel extends JPanel {
     private GameEngine engine;
@@ -130,21 +132,57 @@ public class InfoPanel extends JPanel {
         }
         
         // Diplomatic Relations
-        // Note: DiplomacyManager doesn't have getRelations method, so we'll skip this section
-        // for now until the diplomacy system is more fully implemented
+        DiplomacyManager diplomacyManager = engine.getDiplomacyManager();
         
-        // Active Wars - skipping for now as diplomacy system needs more implementation
-        // var wars = diplomacyManager.getWars();
-        // if (wars != null && !wars.isEmpty()) {
-        //     sb.append("⚔️  ACTIVE WARS:\n");
-        //     for (var war : wars) {
-        //         if (war.getAttacker().equals(country.getName()) || war.getDefender().equals(country.getName())) {
-        //             sb.append("   ").append(war.getAttacker()).append(" vs ").append(war.getDefender())
-        //               .append(" (Score: ").append(String.format("%.1f", war.getWarScore())).append(")\n");
-        //         }
-        //     }
-        //     sb.append("\n");
-        // }
+        // Active Wars
+        List<War> playerWars = diplomacyManager.getWarsInvolving(country.getName());
+        if (!playerWars.isEmpty()) {
+            sb.append("⚔️  ACTIVE WARS:\n");
+            for (War war : playerWars) {
+                String enemy = war.getAttacker().equals(country.getName()) ? war.getDefender() : war.getAttacker();
+                sb.append("   ").append(enemy).append(" (Score: ").append(String.format("%.1f", war.getWarScore())).append(")\n");
+                sb.append("   Duration: ").append(war.getDuration()).append(" months\n");
+            }
+            sb.append("\n");
+        }
+        
+        // Alliances
+        List<String> allies = diplomacyManager.getAllies(country.getName());
+        if (!allies.isEmpty()) {
+            sb.append("🤝 ALLIES:\n");
+            for (String ally : allies) {
+                double relation = diplomacyManager.getRelation(country.getName(), ally);
+                sb.append("   ").append(ally).append(" (Opinion: ").append(String.format("%.1f", relation)).append(")\n");
+            }
+            sb.append("\n");
+        }
+        
+        // Enemies
+        List<String> enemies = diplomacyManager.getEnemies(country.getName());
+        if (!enemies.isEmpty()) {
+            sb.append("⚔️  ENEMIES:\n");
+            for (String enemy : enemies) {
+                double relation = diplomacyManager.getRelation(country.getName(), enemy);
+                sb.append("   ").append(enemy).append(" (Opinion: ").append(String.format("%.1f", relation)).append(")\n");
+            }
+            sb.append("\n");
+        }
+        
+        // Other Relations
+        Map<String, DiplomaticRelation> relations = diplomacyManager.getRelations(country.getName());
+        if (!relations.isEmpty()) {
+            sb.append("🌍 DIPLOMATIC RELATIONS:\n");
+            for (Map.Entry<String, DiplomaticRelation> entry : relations.entrySet()) {
+                String otherCountry = entry.getKey();
+                DiplomaticRelation relation = entry.getValue();
+                
+                if (!allies.contains(otherCountry) && !enemies.contains(otherCountry)) {
+                    sb.append("   ").append(otherCountry).append(": ").append(relation.getStatus())
+                      .append(" (Opinion: ").append(String.format("%.1f", relation.getValue())).append(")\n");
+                }
+            }
+            sb.append("\n");
+        }
         
         // Colonization Missions
         var colonizationManager = engine.getColonizationManager();
