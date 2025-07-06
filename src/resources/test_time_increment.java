@@ -1,7 +1,5 @@
 import com.romagame.core.GameEngine;
 import com.romagame.core.GameDate;
-import com.romagame.core.GameSpeed;
-
 public class test_time_increment {
     public static void main(String[] args) {
         System.out.println("Testing time increment functionality...");
