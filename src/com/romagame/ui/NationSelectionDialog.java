@@ -7,6 +7,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+import java.util.ArrayList;
 
 public class NationSelectionDialog extends JDialog {
     private GameEngine engine;
@@ -126,33 +127,88 @@ public class NationSelectionDialog extends JDialog {
     private void populateCountries() {
         List<Country> countries = engine.getAllCountries();
         
-        // Add major powers first
-        String[] majorPowers = {
-            "Roman Empire", "Parthia", "Armenia", "Dacia", "Sarmatia",
-            "Quadi", "Marcomanni", "Suebi", "Alemanni", "Chatti",
-            "Cherusci", "Hermunduri", "Frisians", "Britons", "Caledonians",
-            "Hibernians", "Picts", "Scoti", "Garamantes", "Nubia",
-            "Axum", "Himyar", "Saba", "Hadramaut", "Oman",
-            "Kushan", "Indo-Parthian"
-        };
-        
-        for (String power : majorPowers) {
-            if (engine.getCountry(power) != null) {
-                countryComboBox.addItem(power);
-            }
-        }
-        
-        // Add other countries
+        // Debug output
+        System.out.println("Available countries from engine: " + countries.size());
         for (Country country : countries) {
-            if (!countryComboBox.getSelectedItem().equals(country.getName())) {
-                countryComboBox.addItem(country.getName());
+            System.out.println("  - " + country.getName());
+        }
+        
+        // Get nations from nation.java file
+        List<String> nationNames = parseNationFile();
+        System.out.println("Nations from nation.java: " + nationNames.size());
+        for (String nationName : nationNames) {
+            System.out.println("  - " + nationName);
+        }
+        
+        // Add nations from nation.java file first
+        for (String nationName : nationNames) {
+            if (isSelectableNation(nationName) && engine.getCountry(nationName) != null) {
+                countryComboBox.addItem(nationName);
+                System.out.println("Added nation: " + nationName);
+            } else {
+                System.out.println("Nation not found in engine or filtered: " + nationName);
             }
         }
+        
+        // Add other countries that might not be in nation.java
+        for (Country country : countries) {
+            String countryName = country.getName();
+            if (isSelectableNation(countryName) && !nationNames.contains(countryName) && !isInComboBox(countryName)) {
+                countryComboBox.addItem(countryName);
+                System.out.println("Added country: " + countryName);
+            }
+        }
+        
+        System.out.println("Total items in combo box: " + countryComboBox.getItemCount());
         
         if (countryComboBox.getItemCount() > 0) {
             countryComboBox.setSelectedIndex(0);
             updateDescription();
         }
+    }
+    
+    private List<String> parseNationFile() {
+        List<String> nationNames = new ArrayList<>();
+        try {
+            java.io.BufferedReader reader = new java.io.BufferedReader(
+                new java.io.FileReader("nation.java")
+            );
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.startsWith("Nation(") && line.endsWith(");")) {
+                    // Extract nation name from Nation(r, g, b, Name);
+                    int lastComma = line.lastIndexOf(',');
+                    int lastParen = line.lastIndexOf(')');
+                    if (lastComma != -1 && lastParen != -1) {
+                        String nationName = line.substring(lastComma + 1, lastParen).trim();
+                        if (!nationName.isEmpty()) {
+                            nationNames.add(nationName);
+                        }
+                    }
+                }
+            }
+            reader.close();
+        } catch (Exception e) {
+            System.err.println("Error reading nation.java file: " + e.getMessage());
+        }
+        return nationNames;
+    }
+    
+    private boolean isInComboBox(String countryName) {
+        for (int i = 0; i < countryComboBox.getItemCount(); i++) {
+            if (countryComboBox.getItemAt(i).equals(countryName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private boolean isSelectableNation(String name) {
+        if (name == null) return false;
+        if (name.equalsIgnoreCase("Ocean") || name.equalsIgnoreCase("Uncolonized")) return false;
+        if (name.startsWith("Unknown")) return false;
+        return true;
     }
     
     private void updateDescription() {
