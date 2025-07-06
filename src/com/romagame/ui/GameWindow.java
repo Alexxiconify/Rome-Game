@@ -21,6 +21,7 @@ public class GameWindow extends JFrame {
     private TechTreePanel techTreePanel;
     private NationalIdeasPanel nationalIdeasPanel;
     private FocusTreePanel focusTreePanel;
+    private AIStatusPanel aiStatusPanel;
     
     public GameWindow(GameEngine engine) {
         this.engine = engine;
@@ -69,6 +70,7 @@ public class GameWindow extends JFrame {
         techTreePanel = new TechTreePanel(engine);
         nationalIdeasPanel = new NationalIdeasPanel(engine);
         focusTreePanel = new FocusTreePanel(engine);
+        aiStatusPanel = new AIStatusPanel(engine);
         
         mainTabbedPane = new JTabbedPane();
         mainTabbedPane.setFont(new Font("Times New Roman", Font.BOLD, 14));
@@ -88,6 +90,7 @@ public class GameWindow extends JFrame {
         mainTabbedPane.addTab("🔬 Technology", new ImageIcon(), techTreePanel, "Technology tree");
         mainTabbedPane.addTab("💡 Ideas", new ImageIcon(), nationalIdeasPanel, "National ideas");
         mainTabbedPane.addTab("🎯 Focus", new ImageIcon(), focusTreePanel, "Focus tree");
+        mainTabbedPane.addTab("🤖 AI Status", new ImageIcon(), aiStatusPanel, "AI nations status");
         
         // Main content area
         add(mainTabbedPane, BorderLayout.CENTER);
@@ -163,5 +166,6 @@ public class GameWindow extends JFrame {
         techTreePanel.updatePanel();
         nationalIdeasPanel.updatePanel();
         focusTreePanel.updatePanel();
+        aiStatusPanel.updatePanel();
     }
 } 

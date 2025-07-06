@@ -10,6 +10,7 @@ import java.util.Random;
 
 public class AIManager {
     private Map<String, AIPersonality> aiPersonalities;
+    private Map<String, Boolean> enabledNations;
     private Random random;
     private DiplomacyManager diplomacyManager;
     private MilitaryManager militaryManager;
@@ -25,11 +26,13 @@ public class AIManager {
     
     public AIManager(DiplomacyManager diplomacyManager, MilitaryManager militaryManager, EconomyManager economyManager) {
         this.aiPersonalities = new HashMap<>();
+        this.enabledNations = new HashMap<>();
         this.random = new Random();
         this.diplomacyManager = diplomacyManager;
         this.militaryManager = militaryManager;
         this.economyManager = economyManager;
         initializePersonalities();
+        loadConfiguration();
     }
     
     private void initializePersonalities() {
@@ -228,5 +231,35 @@ public class AIManager {
     
     public void setPersonality(String countryName, AIPersonality personality) {
         aiPersonalities.put(countryName, personality);
+    }
+    
+    private void loadConfiguration() {
+        try {
+            java.io.BufferedReader reader = new java.io.BufferedReader(
+                new java.io.FileReader("src/resources/ai_config.txt"));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.startsWith("#") || line.isEmpty()) continue;
+                
+                String[] parts = line.split(",");
+                if (parts.length == 3) {
+                    String nationName = parts[0].trim();
+                    AIPersonality personality = AIPersonality.valueOf(parts[1].trim());
+                    boolean enabled = Boolean.parseBoolean(parts[2].trim());
+                    
+                    aiPersonalities.put(nationName, personality);
+                    enabledNations.put(nationName, enabled);
+                }
+            }
+            reader.close();
+        } catch (Exception e) {
+            System.err.println("Failed to load AI configuration: " + e.getMessage());
+            // Fall back to default personalities
+        }
+    }
+    
+    public boolean isNationEnabled(String nationName) {
+        return enabledNations.getOrDefault(nationName, false);
     }
 } 
