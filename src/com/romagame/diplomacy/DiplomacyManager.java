@@ -306,4 +306,13 @@ public class DiplomacyManager {
             }
         }
     }
+
+    public List<String> listAllWars() {
+        List<String> warSummaries = new ArrayList<>();
+        for (War war : activeWars) {
+            String summary = "Attacker: " + war.getAttacker() + ", Defender: " + war.getDefender() + ", Score: " + war.getWarScore();
+            warSummaries.add(summary);
+        }
+        return warSummaries;
+    }
 } 
