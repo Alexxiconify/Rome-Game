@@ -60,7 +60,7 @@ The population system allows provinces to develop infrastructure and construct b
 
 ## 🏛️ World Monuments System
 
-### Overview
+### Overview 1
 
 Famous historical monuments that provide buffs to specific nation types, similar to EU4's wonders.
 
@@ -176,7 +176,6 @@ Dynamic events with multiple choices and consequences, inspired by EU4's event s
 ### Overview 3
 
 EU4-style rulers with monarch points and advisors with specializations.
-
 
 #### Ruler
 
