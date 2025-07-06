@@ -10,6 +10,7 @@ import com.romagame.technology.TechnologyManager;
 import com.romagame.colonization.ColonizationManager;
 import com.romagame.population.PopulationManager;
 import com.romagame.events.EventManager;
+import com.romagame.core.HistoricalTimeline;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -28,6 +29,8 @@ public class GameEngine {
     private ColonizationManager colonizationManager;
     private PopulationManager populationManager;
     private EventManager eventManager;
+    private HistoricalTimeline historicalTimeline;
+    private HistoricalNationSpawner historicalNationSpawner;
     
     private GameDate currentDate;
     private GameSpeed gameSpeed;
@@ -54,6 +57,8 @@ public class GameEngine {
         colonizationManager = new ColonizationManager(worldMap);
         populationManager = new PopulationManager();
         eventManager = new EventManager();
+        historicalTimeline = new HistoricalTimeline(worldMap, countryManager);
+        historicalNationSpawner = new HistoricalNationSpawner(worldMap);
         
         // Initialize country manager with AI support
         countryManager = new CountryManager(worldMap, diplomacyManager, militaryManager, economyManager);
@@ -159,6 +164,12 @@ public class GameEngine {
         countryManager.processAI();
     }
     
+    public void updateHistoricalNations() {
+        if (historicalNationSpawner != null) {
+            historicalNationSpawner.update(currentDate);
+        }
+    }
+    
     // Getters for UI access
     public WorldMap getWorldMap() { return worldMap; }
     public CountryManager getCountryManager() { return countryManager; }
@@ -169,6 +180,7 @@ public class GameEngine {
     public ColonizationManager getColonizationManager() { return colonizationManager; }
     public PopulationManager getPopulationManager() { return populationManager; }
     public EventManager getEventManager() { return eventManager; }
+    public HistoricalNationSpawner getHistoricalNationSpawner() { return historicalNationSpawner; }
     public GameDate getCurrentDate() { return currentDate; }
     public GameSpeed getGameSpeed() { return gameSpeed; }
     public boolean isRunning() { return isRunning; }

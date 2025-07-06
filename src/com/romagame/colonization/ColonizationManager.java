@@ -63,15 +63,20 @@ public class ColonizationManager {
         Province province = worldMap.getProvince(provinceId);
         Country country = worldMap.getCountry(countryName);
         
+        System.out.println("Attempting colonization: " + countryName + " -> " + provinceId + " with " + colonists + " colonists");
+        
         if (province == null || country == null) {
+            System.out.println("Colonization failed: Province or country not found");
             return false;
         }
         
         if (!province.getOwner().equals("Uninhabited")) {
+            System.out.println("Colonization failed: Province already owned by " + province.getOwner());
             return false; // Province already owned
         }
         
         if (colonists < 100 || colonists > 1000) {
+            System.out.println("Colonization failed: Invalid colonist count " + colonists);
             return false; // Invalid colonist count
         }
         
@@ -79,6 +84,7 @@ public class ColonizationManager {
         ColonizationMission mission = new ColonizationMission(countryName, provinceId, colonists);
         activeMissions.add(mission);
         
+        System.out.println("Colonization started successfully: " + countryName + " -> " + provinceId);
         return true;
     }
     

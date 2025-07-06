@@ -80,6 +80,9 @@ public class GameThread extends Thread {
         engine.getColonizationManager().update();
         engine.getPopulationManager().update();
         
+        // Update historical nation spawning
+        engine.updateHistoricalNations();
+        
         // Process AI decisions
         engine.getCountryManager().processAI();
         

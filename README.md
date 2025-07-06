@@ -1,6 +1,88 @@
-# Roma Game - Grand Strategy Game
+# Roma Game
 
-A Java-based grand strategy game inspired by Hearts of Iron 4, Europa Universalis 4/5, and Victoria 2/3, using the Q-BAM province map as reference.
+A grand strategy game inspired by Europa Universalis IV, featuring complex nation management, diplomacy, warfare, and colonization mechanics.
+
+## Features
+
+- **Multi-threaded architecture** with separate UI and game logic threads
+- **Complex nation management** with prestige, legitimacy, stability, and treasury
+- **Military system** with different unit types and technology levels
+- **Diplomatic relations** with opinion decay and war mechanics
+- **Colonization system** with progress tracking
+- **Technology and research** with per-country progress
+- **Laws and reforms** with enactment requirements and progress
+- **Population development** with buildings and monuments
+- **EU4-style events** with rulers and advisors
+- **Fog of war** and real distance calculations
+- **Enhanced UI** with scrollable country information panels
+
+## Starting the Game
+
+### Windows
+
+Double-click `start_game.bat` or run:
+
+```cmd
+.\start_game.bat
+```
+
+### PowerShell (Windows)
+
+```powershell
+.\start_game.ps1
+```
+
+### Unix/Linux/macOS
+
+```bash
+chmod +x start_game.sh
+./start_game.sh
+```
+
+### Manual Compilation
+
+```bash
+javac -cp "src" src/Main.java
+java -cp "src" Main
+```
+
+## Game Controls
+
+- **Mouse**: Navigate map, select provinces, interact with UI
+- **Right-click**: Context menus for armies and provinces
+- **Game Speed Panel**: Control game speed and pause/resume
+- **Info Panel**: Scrollable detailed country information
+- **Various UI Panels**: Access different game systems
+
+## Nation Selection
+
+The game features 34 playable nations including:
+- **Roman Empire** (starting tech level 5)
+- **Parthia** (starting tech level 4)
+- **Eastern Han Empire** (starting tech level 4)
+- **Persia, Armenia, Dacia, Sarmatia, Britons** (starting tech level 3)
+- And many more with unique starting conditions
+
+Each nation has:
+- Unique starting prestige, legitimacy, and stability
+- Varied military forces and resources
+- Nation-specific ideas, laws, and reforms
+- Historical starting rulers and advisors
+
+## System Requirements
+
+- Java 11 or higher
+- Windows/Linux/macOS
+- 4GB RAM recommended
+- 1GB disk space
+
+## Development
+
+The game is built with:
+- **Java Swing** for the UI
+- **Multi-threading** for performance
+- **JSON** for data storage
+- **Modular architecture** with separate managers for different game systems
 
 ## Features
 
