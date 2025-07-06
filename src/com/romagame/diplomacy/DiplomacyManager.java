@@ -181,7 +181,7 @@ public class DiplomacyManager {
         
         System.out.println("War ended: " + war.getAttacker() + " vs " + war.getDefender());
         System.out.println("Winner: " + winner + ", Reparations: " + reparations);
-        
+        System.out.println("Loser: " + loser);
         war.endWar();
     }
     

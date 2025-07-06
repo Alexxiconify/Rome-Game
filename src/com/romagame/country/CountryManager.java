@@ -70,7 +70,7 @@ public class CountryManager {
         
         if (attackerCountry != null && defenderCountry != null) {
             // Create war between countries
-            War war = new War(attackerCountry, defenderCountry);
+            War war= new War(attackerCountry, defenderCountry);
             // Add war to war manager
         }
     }
