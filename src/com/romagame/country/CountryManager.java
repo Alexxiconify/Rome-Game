@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import com.romagame.military.War;
-import java.util.Random;
 
 public class CountryManager {
     private WorldMap worldMap;
