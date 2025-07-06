@@ -59,7 +59,7 @@ public class MapPanel extends JPanel {
     // Province data from JSON
     private Map<String, ProvinceData> provinceData = new HashMap<>();
     private Map<String, String> maskColorToProvinceId = new HashMap<>();
-    private Map<String, String> ownerColorToNation = new HashMap<>();
+    public Map<String, String> ownerColorToNation = new HashMap<>();
 
     // Centralized transform fields
     private double currentScale;
