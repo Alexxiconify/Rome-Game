@@ -7,8 +7,6 @@ import com.romagame.technology.TechnologyManager;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
-import java.util.Map;
-
 public class TechnologyPanel extends JPanel {
     private GameEngine engine;
     private JList<Technology> techList;
@@ -243,7 +241,7 @@ public class TechnologyPanel extends JPanel {
         showTechnologyDetails();
     }
     
-    private void updateTechnologyDetails() {
+    public void updateTechnologyDetails() {
         Country playerCountry = engine.getCountryManager().getPlayerCountry();
         if (playerCountry == null) {
             techDetails.setText("No country selected");
