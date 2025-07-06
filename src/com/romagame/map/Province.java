@@ -2,8 +2,14 @@ package com.romagame.map;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.HashMap;
 
 public class Province {
+    public enum PopType {
+        NOBLES, CITY_FOLK, CRAFTSMEN, PEASANTS, SLAVES, SERFS, SOLDIERS
+    }
     private String id;
     private String name;
     private String owner;
@@ -11,7 +17,6 @@ public class Province {
     private double longitude;
     private String terrain;
     private String climate;
-    private int population;
     private double development;
     private List<String> buildings;
     private List<String> modifiers;
@@ -20,6 +25,10 @@ public class Province {
     private String religion;
     private List<String> tradeGoods;
     private List<Location> locations;
+    private Map<PopType, Integer> pops;
+    private int population; // Deprecated, use pops instead
+    private List<BuildingSlot> buildingSlots;
+    private Map<String, Integer> goods;
     
     public Province(String id, String owner, double lat, double lon, String type) {
         this.id = id;
@@ -29,7 +38,6 @@ public class Province {
         this.longitude = lon;
         this.terrain = determineTerrain(lat, lon);
         this.climate = determineClimate(lat, lon);
-        this.population = 1000; // Base population
         this.development = 1.0;
         this.buildings = new ArrayList<>();
         this.modifiers = new ArrayList<>();
@@ -38,7 +46,11 @@ public class Province {
         this.religion = determineReligion(owner);
         this.tradeGoods = determineTradeGoods(lat, lon);
         this.locations = new ArrayList<>();
+        this.pops = new EnumMap<>(PopType.class);
+        this.goods = new HashMap<>();
         initializeLocations();
+        initializePops();
+        initializeBuildingSlots();
     }
     
     private String determineTerrain(double lat, double lon) {
@@ -112,6 +124,36 @@ public class Province {
         }
     }
 
+    private void initializePops() {
+        // Example starting values, can be customized
+        pops.put(PopType.NOBLES, 100);
+        pops.put(PopType.CITY_FOLK, 2000);
+        pops.put(PopType.CRAFTSMEN, 800);
+        pops.put(PopType.PEASANTS, 5000);
+        pops.put(PopType.SLAVES, 1200);
+        pops.put(PopType.SERFS, 1500);
+        pops.put(PopType.SOLDIERS, 300);
+        updatePopulation();
+    }
+
+    public void updatePopulation() {
+        this.population = pops.values().stream().mapToInt(Integer::intValue).sum();
+    }
+
+    public Map<PopType, Integer> getPops() {
+        return pops;
+    }
+    public void setPop(PopType type, int value) {
+        pops.put(type, value);
+        updatePopulation();
+    }
+    public int getPop(PopType type) {
+        return pops.getOrDefault(type, 0);
+    }
+    public int getPopulation() {
+        return population;
+    }
+
     public List<Location> getLocations() {
         return locations;
     }
@@ -153,8 +195,6 @@ public class Province {
     public double getLongitude() { return longitude; }
     public String getTerrain() { return terrain; }
     public String getClimate() { return climate; }
-    public int getPopulation() { return population; }
-    public void setPopulation(int population) { this.population = population; }
     public double getDevelopment() { return development; }
     public void setDevelopment(double development) { this.development = development; }
     public List<String> getBuildings() { return buildings; }
@@ -175,4 +215,36 @@ public class Province {
             modifiers.add(modifier);
         }
     }
+
+    public static class BuildingSlot {
+        private String type;
+        private int level;
+        public BuildingSlot(String type, int level) {
+            this.type = type;
+            this.level = level;
+        }
+        public String getType() { return type; }
+        public int getLevel() { return level; }
+        public void setType(String type) { this.type = type; }
+        public void setLevel(int level) { this.level = level; }
+    }
+
+    private void initializeBuildingSlots() {
+        buildingSlots = new ArrayList<>();
+        // Example: 3 empty slots
+        for (int i = 0; i < 3; i++) {
+            buildingSlots.add(new BuildingSlot("Empty", 0));
+        }
+    }
+
+    public List<BuildingSlot> getBuildingSlots() { return buildingSlots; }
+    public void setBuildingSlot(int idx, String type, int level) {
+        if (idx >= 0 && idx < buildingSlots.size()) {
+            buildingSlots.get(idx).setType(type);
+            buildingSlots.get(idx).setLevel(level);
+        }
+    }
+
+    public Map<String, Integer> getGoods() { return goods; }
+    public void setGood(String good, int amount) { goods.put(good, amount); }
 } 

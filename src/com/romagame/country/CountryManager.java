@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import com.romagame.military.War;
+import java.util.Random;
 
 public class CountryManager {
     private WorldMap worldMap;
@@ -43,15 +44,44 @@ public class CountryManager {
     }
     
     private void processAIDecisions(Country country) {
-        // Simple AI decision making
-        if (country.getTreasury() > 50) {
-            // Recruit units if treasury is good
-            country.recruitUnit("Infantry", 1);
-        }
-        
-        if (country.getStability() < 0) {
-            // Try to improve stability
-            country.setStability(country.getStability() + 0.1);
+        Random rand = new Random();
+        int actions = 1 + rand.nextInt(3); // 1-3 actions per tick
+        for (int i = 0; i < actions; i++) {
+            int choice = rand.nextInt(4);
+            switch (choice) {
+                case 0: // Economic: Try to increase GDP
+                    if (country.getTreasury() > 30) {
+                        // Build or upgrade a building in a random province
+                        var provinces = country.getProvinces();
+                        if (!provinces.isEmpty()) {
+                            var p = provinces.get(rand.nextInt(provinces.size()));
+                            var slots = p.getBuildingSlots();
+                            for (int s = 0; s < slots.size(); s++) {
+                                if (slots.get(s).getType().equals("Empty")) {
+                                    p.setBuildingSlot(s, "Market", 1);
+                                    country.setTreasury(country.getTreasury() - 20);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case 1: // Well-being: Try to improve pop happiness
+                    if (country.getStability() < 0.5) {
+                        country.setStability(country.getStability() + 0.1);
+                    }
+                    break;
+                case 2: // Army: Recruit if army is weak
+                    if (country.getTreasury() > 50) {
+                        country.recruitUnit("Infantry", 1);
+                        country.setTreasury(country.getTreasury() - 10);
+                    }
+                    break;
+                case 3: // Trade: Increase goods
+                    var goods = country.getGoods();
+                    goods.put("Grain", goods.getOrDefault("Grain", 0) + 5);
+                    break;
+            }
         }
     }
     
