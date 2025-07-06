@@ -198,6 +198,8 @@ public class War {
     public String getAttacker() { return attacker; }
     public String getDefender() { return defender; }
     public double getWarScore() { return warScore; }
+    public double getResult() {return result;}
+    public int getTurn() {return turn;}
     public int getDuration() { return duration; }
     public boolean isActive() { return active; }
     public List<String> getParticipants() { return new ArrayList<>(participants); }
@@ -206,10 +208,7 @@ public class War {
     public List<String> getOccupiedProvinces() { return new ArrayList<>(occupiedProvinces); }
     
     private static class Battle {
-        private String attacker;
-        private String defender;
-        private double result;
-        private int turn;
+        
         
         public Battle(String attacker, String defender, double result, int turn) {
             this.attacker = attacker;
@@ -218,10 +217,5 @@ public class War {
             this.turn = turn;
         }
         
-        // Getters
-        public String getAttacker() { return attacker; }
-        public String getDefender() { return defender; }
-        public double getResult() { return result; }
-        public int getTurn() { return turn; }
     }
 } 
