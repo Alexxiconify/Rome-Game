@@ -1046,15 +1046,6 @@ public class MapPanel extends JPanel {
             return provinceId;
         }
         
-        // If not found, try using the JSON data
-        if (!provinceData.isEmpty()) {
-            int r = (argb >> 16) & 0xFF;
-            int g = (argb >> 8) & 0xFF;
-            int b = argb & 0xFF;
-            String maskKey = r + "," + g + "," + b;
-            return maskColorToProvinceId.get(maskKey);
-        }
-        
         return null;
     }
 
@@ -1084,13 +1075,7 @@ public class MapPanel extends JPanel {
     }
 
     public void showProvinceInfo(Province province) {
-        // Get the nation name from JSON data if available
-        String nationName = province.getOwner();
-        ProvinceData provinceDataItem = provinceData.get(province.getId());
-        if (provinceDataItem != null) {
-            nationName = provinceDataItem.getNation();
-        }
-        
+        String nationName = province.getOwner();        
         String info = String.format("<html><b>Province:</b> %s<br><b>Nation:</b> %s<br><b>Owner:</b> %s<br><b>Population:</b> %d<br><b>Development:</b> %.1f<br><b>Terrain:</b> %s<br><b>Trade Goods:</b> %s</html>",
                 province.getName(), nationName, province.getOwner(), province.getPopulation(),
                 province.getDevelopment(), province.getTerrain(),
