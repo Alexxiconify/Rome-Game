@@ -123,16 +123,6 @@ public class GameEngine {
         }
     }
     
-    private long getUpdateInterval() {
-        return switch (gameSpeed) {
-            case PAUSED -> 1000; // 1 second but won't be used when paused
-            case SLOW -> 1000; // 1 second
-            case NORMAL -> 500; // 0.5 seconds
-            case FAST -> 200; // 0.2 seconds
-            case VERY_FAST -> 100; // 0.1 seconds
-        };
-    }
-    
     public void stop() {
         isRunning = false;
         if (gameThread != null) {
