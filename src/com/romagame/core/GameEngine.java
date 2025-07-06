@@ -9,10 +9,7 @@ import com.romagame.diplomacy.DiplomacyManager;
 import com.romagame.technology.TechnologyManager;
 import com.romagame.colonization.ColonizationManager;
 import com.romagame.population.PopulationManager;
-import com.romagame.monuments.MonumentManager;
 import com.romagame.events.EventManager;
-import com.romagame.government.Ruler;
-import com.romagame.government.Advisor;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -29,7 +26,6 @@ public class GameEngine {
     private TechnologyManager technologyManager;
     private ColonizationManager colonizationManager;
     private PopulationManager populationManager;
-    private MonumentManager monumentManager;
     private EventManager eventManager;
     
     private GameDate currentDate;
@@ -55,7 +51,6 @@ public class GameEngine {
         technologyManager = new TechnologyManager();
         colonizationManager = new ColonizationManager(worldMap);
         populationManager = new PopulationManager();
-        monumentManager = new MonumentManager();
         eventManager = new EventManager();
         
         // Initialize country manager with AI support
@@ -162,7 +157,6 @@ public class GameEngine {
     public TechnologyManager getTechnologyManager() { return technologyManager; }
     public ColonizationManager getColonizationManager() { return colonizationManager; }
     public PopulationManager getPopulationManager() { return populationManager; }
-    public MonumentManager getMonumentManager() { return monumentManager; }
     public EventManager getEventManager() { return eventManager; }
     public GameDate getCurrentDate() { return currentDate; }
     public GameSpeed getGameSpeed() { return gameSpeed; }
