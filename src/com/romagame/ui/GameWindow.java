@@ -30,7 +30,6 @@ public class GameWindow extends JFrame {
         layoutComponents();
         setupEventHandlers();
         setupGameEngineCallback();
-        centerOnPlayerCountry();
     }
     
     private void setupWindow() {
@@ -102,7 +101,7 @@ public class GameWindow extends JFrame {
         add(controlPanel, BorderLayout.SOUTH);
     }
     
-    private void centerOnPlayerCountry() {
+    public void centerOnPlayerCountry() {
         if (engine.getCountryManager().getPlayerCountry() != null) {
             String playerCountry = engine.getCountryManager().getPlayerCountry().getName();
             mapPanel.centerOnNation(playerCountry);

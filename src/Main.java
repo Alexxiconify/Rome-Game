@@ -19,6 +19,8 @@ public class Main {
             // Check if a nation was selected
             if (dialog.getSelectedCountry() != null) {
                 window.setVisible(true);
+                // Center map on selected nation
+                window.centerOnPlayerCountry();
                 engine.start();
             } else {
                 // No nation selected, exit
