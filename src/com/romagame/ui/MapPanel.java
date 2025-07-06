@@ -26,8 +26,6 @@ import com.romagame.military.Army;
 import com.romagame.military.MilitaryManager;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.io.StringReader;
-
 public class MapPanel extends JPanel {
     private GameEngine engine;
     private double zoom = 2.0;
@@ -186,7 +184,7 @@ public class MapPanel extends JPanel {
         }
     }
 
-    private void loadColorToProvinceId() {
+    public void loadColorToProvinceId() {
         try (BufferedReader br = new BufferedReader(new FileReader("src/resources/province_color_map.csv"))) {
             String line;
             boolean firstLine = true;
