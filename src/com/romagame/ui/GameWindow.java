@@ -103,7 +103,7 @@ public class GameWindow extends JFrame {
         mainTabbedPane.addTab("💡 Ideas", new ImageIcon(), nationalIdeasPanel, "National ideas");
         mainTabbedPane.addTab("🎯 Focus", new ImageIcon(), focusTreePanel, "Focus tree");
         mainTabbedPane.addTab("🤖 AI Status", new ImageIcon(), aiStatusPanel, "AI nations status");
-        mainTabbedPane.addTab("🤝 Diplomacy", new ImageIcon(), diplomacyPanel, "Diplomacy");
+        mainTabbedPane.addTab("🤝 Diplomacy", new ImageIcon(), diplomacyPanel, "Diplomacy and war");
         
         // Main content area
         add(mainTabbedPane, BorderLayout.CENTER);
@@ -180,6 +180,6 @@ public class GameWindow extends JFrame {
         nationalIdeasPanel.updatePanel();
         focusTreePanel.updatePanel();
         aiStatusPanel.updatePanel();
-        diplomacyPanel.updatePanel();
+        diplomacyPanel.updateDiplomacy();
     }
 } 
