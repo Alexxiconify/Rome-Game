@@ -330,13 +330,12 @@ public class MapPanel extends JPanel {
                     // Left-click: select army if clicked on icon
                     MilitaryManager mm = engine.getMilitaryManager();
                     Point clickPoint = e.getPoint();
-                    
+                    boolean armyClicked = false;
                     for (Army army : mm.getArmies().values()) {
                         String loc = army.getLocation();
                         if (loc == null || loc.equals("Unknown")) continue;
                         Province province = engine.getWorldMap().getProvince(loc);
                         if (province == null) continue;
-                        
                         // Convert province coordinates to screen coordinates
                         Point2D.Double mapCoords = DistanceCalculator.latLonToMapCoords(
                             province.getLatitude(), province.getLongitude(), 
@@ -345,16 +344,13 @@ public class MapPanel extends JPanel {
                         Point screenCoords = DistanceCalculator.mapToScreen(
                             mapCoords, currentScale, currentOffsetX, currentOffsetY
                         );
-                        
                         // Check if click is within army icon bounds
                         int iconSize = 20;
                         int x = screenCoords.x - iconSize / 2;
                         int y = screenCoords.y - iconSize / 2;
-                        
                         if (clickPoint.x >= x && clickPoint.x <= x + iconSize && 
                             clickPoint.y >= y && clickPoint.y <= y + iconSize) {
                             selectedArmy = army;
-                            
                             // Show context menu
                             JPopupMenu menu = new JPopupMenu();
                             JMenuItem move = new JMenuItem("Move Army");
@@ -362,27 +358,30 @@ public class MapPanel extends JPanel {
                             JMenuItem merge = new JMenuItem("Merge Army");
                             JMenuItem disband = new JMenuItem("Disband Army");
                             JMenuItem details = new JMenuItem("Show Details");
-                            
                             move.addActionListener(evt -> showMoveArmyDialog(army));
                             split.addActionListener(evt -> showSplitArmyDialog(army));
                             merge.addActionListener(evt -> showMergeArmyDialog(army));
                             disband.addActionListener(evt -> showDisbandArmyDialog(army));
                             details.addActionListener(evt -> showArmyDetailsDialog(army));
-                            
                             menu.add(move);
                             menu.add(split);
                             menu.add(merge);
                             menu.add(disband);
                             menu.addSeparator();
                             menu.add(details);
-                            
                             menu.show(MapPanel.this, x, y + iconSize);
                             repaint();
-                            return;
+                            armyClicked = true;
+                            break;
                         }
                     }
-                    selectedArmy = null;
-                    repaint();
+                    if (!armyClicked) {
+                        // Only select province if click is on a valid province pixel
+                        Point mapPoint = screenToMap(e.getPoint());
+                        if (getProvinceIdAt(mapPoint) != null) {
+                            handleProvinceClick(e.getPoint());
+                        }
+                    }
                 } else if (e.getButton() == MouseEvent.BUTTON3) {
                     // Right-click: move selected army to province
                     if (selectedArmy != null) {
@@ -1040,11 +1039,14 @@ public class MapPanel extends JPanel {
             if (clickedProvince != null) {
                 // Select the nation that owns this province
                 String nationName = clickedProvince.getOwner();
-                if (!nationName.equals("Ocean") && !nationName.equals("Uncolonized")) {
+                // Check for ocean, uncolonized, or transparent (black) pixel
+                int x = mapPoint.x, y = mapPoint.y;
+                int argb = provinceMask.getRGB(x, y);
+                boolean isBlack = (argb & 0x00FFFFFF) == 0x000000;
+                if (!nationName.equals("Ocean") && !nationName.equals("Uncolonized") && !isBlack) {
                     selectedNation = nationName;
                     invalidateOverlayCache();
                     repaint();
-                    
                     // Show province info dialog
                     showProvinceInfo(clickedProvince);
                 }
