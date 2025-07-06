@@ -57,6 +57,8 @@ public class Country {
      */
     private int militaryTechLevel;
 
+    private double aggressionDiplo = 0.0;
+
     static {
         // Example group ideas
         GROUP_IDEAS.put(NationType.ROMAN, List.of("Pax Romana", "Legionary Discipline", "Roman Roads", "Imperial Administration"));
@@ -754,5 +756,15 @@ public class Country {
     }
     public void setCulture(String culture) {
         this.culture = culture;
+    }
+
+    public double getAggressionDiplo() {
+        return aggressionDiplo;
+    }
+    public void setAggressionDiplo(double value) {
+        aggressionDiplo = value;
+    }
+    public void addAggressionDiplo(double value) {
+        aggressionDiplo += value;
     }
 } 
