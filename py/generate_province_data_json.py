@@ -14,6 +14,21 @@ import json
 import time
 from multiprocessing import Pool, cpu_count
 
+# Helper to convert numpy types to native Python types
+
+def convert_np(obj):
+    import numpy as np
+    if isinstance(obj, dict):
+        return {k: convert_np(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_np(i) for i in obj]
+    elif isinstance(obj, tuple):
+        return tuple(convert_np(i) for i in obj)
+    elif isinstance(obj, np.generic):
+        return obj.item()
+    else:
+        return obj
+
 # File paths
 start_img_path = "start.png"
 mask_img_path = "province_mask.png"
@@ -102,7 +117,7 @@ def fast_province_data_generation():
     }
     
     with open(output_json_path, "w") as f:
-        json.dump(output, f, indent=2)
+        json.dump(convert_np(output), f, indent=2)
     
     end_time = time.time()
     print(f"Output written to {output_json_path}")
@@ -199,7 +214,7 @@ def ultra_fast_province_data_generation():
     }
     
     with open(output_json_path, "w") as f:
-        json.dump(output, f, indent=2)
+        json.dump(convert_np(output), f, indent=2)
     
     end_time = time.time()
     print(f"Output written to {output_json_path}")
@@ -289,7 +304,7 @@ def simple_province_data_generation():
     }
     
     with open(output_json_path, "w") as f:
-        json.dump(output, f, indent=2)
+        json.dump(convert_np(output), f, indent=2)
     
     end_time = time.time()
     print(f"Output written to {output_json_path}")
@@ -414,13 +429,99 @@ def optimize_province_data_generation():
     }
     
     with open(output_json_path, "w") as f:
-        json.dump(output, f, indent=2)
+        json.dump(convert_np(output), f, indent=2)
     
     end_time = time.time()
     print(f"Output written to {output_json_path}")
     print(f"Total processing time: {end_time - start_time:.2f} seconds")
     print(f"Processed {len(province_data)} provinces and {len(nations)} nations")
 
+def parse_nation_txt(nation_txt_path="nation.txt"):
+    color_to_nation = {}
+    try:
+        with open(nation_txt_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("Nation(") and line.endswith(");"):
+                    content = line[len("Nation("):-2]
+                    parts = [p.strip() for p in content.split(",")]
+                    if len(parts) == 4:
+                        try:
+                            r, g, b = int(parts[0]), int(parts[1]), int(parts[2])
+                            name = parts[3]
+                            color_to_nation[(r, g, b)] = name
+                        except Exception:
+                            continue
+    except Exception as e:
+        print(f"Warning: Could not parse nation.txt: {e}")
+    return color_to_nation
+
+def blazing_fast_province_data_generation():
+    """Blazing fast version using pure NumPy vectorization for province and nation extraction."""
+    print("Loading images...")
+    start_time = time.time()
+
+    # Load images
+    start_img = np.array(Image.open(start_img_path).convert("RGBA"))
+    mask_img = np.array(Image.open(mask_img_path).convert("RGBA"))
+
+    height, width, _ = mask_img.shape
+    print(f"Image loaded: {width}x{height} pixels")
+
+    # Step 1: Find unique mask colors and their first pixel index
+    print("Finding unique mask colors and mapping to owner colors in one pass...")
+    mask_rgb = mask_img[:, :, :3].reshape(-1, 3)
+    start_rgb = start_img[:, :, :3].reshape(-1, 3)
+
+    # Get unique mask colors and the first index where each occurs
+    unique_colors, unique_indices = np.unique(mask_rgb, axis=0, return_index=True)
+
+    # Get the owner color for each province (using the first pixel index for each unique mask color)
+    owner_colors = start_rgb[unique_indices]
+
+    # Parse nation.txt for color-to-nation mapping
+    color_to_nation = parse_nation_txt()
+
+    # Build province_id mapping
+    province_ids = [f"province_{i+1:04d}" for i in range(len(unique_colors))]
+
+    # Build nation_colors dict and nations list
+    nation_colors = {}
+    nations = []
+    for owner_color in map(tuple, map(lambda x: map(int, x), owner_colors)):
+        if owner_color not in nation_colors:
+            nation_name = color_to_nation.get(owner_color, f"nation_{len(nation_colors)+1:04d}")
+            nation_colors[owner_color] = nation_name
+            nations.append({"name": nation_name, "color": owner_color})
+
+    # Build province_data dict, now with 'nation' field
+    province_data = {}
+    for province_id, mask_color, owner_color in zip(province_ids, unique_colors, owner_colors):
+        mask_color_tuple = tuple(map(int, mask_color))
+        owner_color_tuple = tuple(map(int, owner_color))
+        nation_name = nation_colors[owner_color_tuple]
+        province_data[province_id] = {
+            "mask_color": mask_color_tuple,
+            "owner_color": owner_color_tuple,
+            "nation": nation_name
+        }
+
+    print(f"Found {len(province_data)} provinces and {len(nations)} nations.")
+
+    # Output JSON
+    print("Writing output...")
+    output = {
+        "provinces": province_data,
+        "nations": nations
+    }
+    with open(output_json_path, "w") as f:
+        json.dump(convert_np(output), f, indent=2)
+
+    end_time = time.time()
+    print(f"Output written to {output_json_path}")
+    print(f"Total processing time: {end_time - start_time:.2f} seconds")
+    print(f"Processed {len(province_data)} provinces and {len(nations)} nations")
+
 if __name__ == "__main__":
-    # Use the fast version by default for better performance
-    fast_province_data_generation()
+    # Use the blazing fast version by default for best performance
+    blazing_fast_province_data_generation()
