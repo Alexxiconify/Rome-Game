@@ -159,10 +159,9 @@ public class PopulationPanel extends JPanel {
         developButton.addActionListener(e -> developProvince());
     }
     
-    public void migratePopulation() {
+    private void migratePopulation() {
         int selectedIndex = provinceList.getSelectedIndex();
         if (selectedIndex >= 0) {
-            String selectedProvince = provinceList.getSelectedValue();
             String action = (String) actionCombo.getSelectedItem();
             int amount = (Integer) amountSpinner.getValue();
             
