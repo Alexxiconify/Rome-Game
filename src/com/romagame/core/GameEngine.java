@@ -10,11 +10,6 @@ import com.romagame.technology.TechnologyManager;
 import com.romagame.colonization.ColonizationManager;
 import com.romagame.population.PopulationManager;
 import com.romagame.events.EventManager;
-import com.romagame.core.HistoricalTimeline;
-
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.List;
 import java.util.function.Consumer;
 import com.romagame.ui.UIUpdateManager;
@@ -29,7 +24,6 @@ public class GameEngine {
     private ColonizationManager colonizationManager;
     private PopulationManager populationManager;
     private EventManager eventManager;
-    private HistoricalTimeline historicalTimeline;
     private HistoricalNationSpawner historicalNationSpawner;
     
     private GameDate currentDate;
@@ -139,19 +133,6 @@ public class GameEngine {
     
     public UIUpdateManager getUIUpdateManager() {
         return uiUpdateManager;
-    }
-    
-    private void processEvents() {
-        // Handle random events, decisions, etc.
-        Country playerCountry = countryManager.getPlayerCountry();
-        if (playerCountry != null) {
-            eventManager.processRandomEvents(playerCountry);
-        }
-    }
-    
-    private void processAI() {
-        // Process AI decisions for non-player countries
-        countryManager.processAI();
     }
     
     public void updateHistoricalNations() {

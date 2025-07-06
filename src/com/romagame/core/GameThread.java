@@ -1,11 +1,5 @@
 package com.romagame.core;
 
-import com.romagame.country.CountryManager;
-import com.romagame.diplomacy.DiplomacyManager;
-import com.romagame.economy.EconomyManager;
-import com.romagame.military.MilitaryManager;
-import com.romagame.technology.TechnologyManager;
-import com.romagame.colonization.ColonizationManager;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
