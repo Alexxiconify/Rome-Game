@@ -41,7 +41,6 @@ public class MapPanel extends JPanel {
     private float waterAnimPhase = 0f;
     private javax.swing.Timer waterAnimTimer;
     private Map<String, Color> countryColors = new HashMap<>();
-    private Random colorRand = new Random(117); // Seed for reproducibility
     private javax.swing.Timer repaintTimer;
     private Map<String, Color> provinceIdToOwnerColor = new HashMap<>();
     private String selectedNation = null; // Add this field to track selected nation
@@ -60,6 +59,11 @@ public class MapPanel extends JPanel {
     private double currentScale;
     private int currentOffsetX, currentOffsetY;
     private int mapImgWidth, mapImgHeight;
+    
+    // Performance optimization fields
+    private BufferedImage cachedOceanBackground = null;
+    private int lastOceanBgWidth = -1;
+    private int lastOceanBgHeight = -1;
 
     public MapPanel(GameEngine engine) {
         this.engine = engine;
@@ -79,6 +83,8 @@ public class MapPanel extends JPanel {
         setPreferredSize(new Dimension(1600, 900));
         setBackground(new Color(40, 70, 120)); // Deep blue
         setFocusable(true);
+        // Enable double buffering for smoother rendering
+        setDoubleBuffered(true);
     }
 
     private void loadMapBackground() {
@@ -348,7 +354,7 @@ public class MapPanel extends JPanel {
     }
 
     private void setupWaterAnimation() {
-        waterAnimTimer = new javax.swing.Timer(40, new ActionListener() {
+        waterAnimTimer = new javax.swing.Timer(100, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 waterAnimPhase += 0.03f;
                 repaint();
@@ -358,9 +364,7 @@ public class MapPanel extends JPanel {
     }
 
     private void setupRepaintTimer() {
-        // Removed constant repaint timer for better performance
-        // repaintTimer = new javax.swing.Timer(40, e -> repaint());
-        // repaintTimer.start();
+
     }
 
     private void updateCachedBorders(int imgW, int imgH, double scale, int x, int y) {
@@ -442,6 +446,7 @@ public class MapPanel extends JPanel {
         cachedProvinceHighlight = null;
         cachedNationForHighlight = null;
         cachedProvinceForHighlight = null;
+        // Don't invalidate ocean background cache - it's static
     }
 
     @Override
@@ -450,24 +455,29 @@ public class MapPanel extends JPanel {
         updateTransform();
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        // 1. Draw enhanced animated ocean background
+        // 1. Draw enhanced animated ocean background (cached for performance)
         if (mapLoaded && mapBackground != null) {
-            BufferedImage animBg = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-            Graphics2D gAnim = animBg.createGraphics();
-            GradientPaint gp = new GradientPaint(0, 0, new Color(64, 128, 255), 0, getHeight(), new Color(32, 64, 128));
-            gAnim.setPaint(gp);
-            gAnim.fillRect(0, 0, getWidth(), getHeight());
-            // Subtle noise/texture
-            gAnim.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.05f));
-            for (int y = 0; y < getHeight(); y += 2) {
-                for (int x = 0; x < getWidth(); x += 2) {
-                    int v = (int)(Math.random() * 12);
-                    gAnim.setColor(new Color(64+v, 128+v, 255+v));
-                    gAnim.fillRect(x, y, 2, 2);
+            // Cache ocean background to avoid recreating every frame
+            if (cachedOceanBackground == null || lastOceanBgWidth != getWidth() || lastOceanBgHeight != getHeight()) {
+                cachedOceanBackground = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+                Graphics2D gAnim = cachedOceanBackground.createGraphics();
+                GradientPaint gp = new GradientPaint(0, 0, new Color(64, 128, 255), 0, getHeight(), new Color(32, 64, 128));
+                gAnim.setPaint(gp);
+                gAnim.fillRect(0, 0, getWidth(), getHeight());
+                // Subtle noise/texture
+                gAnim.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.05f));
+                for (int y = 0; y < getHeight(); y += 2) {
+                    for (int x = 0; x < getWidth(); x += 2) {
+                        int v = (int)(Math.random() * 12);
+                        gAnim.setColor(new Color(64+v, 128+v, 255+v));
+                        gAnim.fillRect(x, y, 2, 2);
+                    }
                 }
+                gAnim.dispose();
+                lastOceanBgWidth = getWidth();
+                lastOceanBgHeight = getHeight();
             }
-            gAnim.dispose();
-            g2d.drawImage(animBg, 0, 0, null);
+            g2d.drawImage(cachedOceanBackground, 0, 0, null);
         }
         // 2. Province fill (from mask)
         if (provinceColorMap != null) {
