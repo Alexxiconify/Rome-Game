@@ -22,6 +22,7 @@ public class GameWindow extends JFrame {
     private NationalIdeasPanel nationalIdeasPanel;
     private FocusTreePanel focusTreePanel;
     private AIStatusPanel aiStatusPanel;
+    private DiplomacyPanel diplomacyPanel;
     
     public GameWindow(GameEngine engine) {
         this.engine = engine;
@@ -81,6 +82,7 @@ public class GameWindow extends JFrame {
         nationalIdeasPanel = new NationalIdeasPanel(engine);
         focusTreePanel = new FocusTreePanel(engine);
         aiStatusPanel = new AIStatusPanel(engine);
+        diplomacyPanel = new DiplomacyPanel(engine);
         
         mainTabbedPane = new JTabbedPane();
         mainTabbedPane.setFont(new Font("Times New Roman", Font.BOLD, 14));
@@ -101,6 +103,7 @@ public class GameWindow extends JFrame {
         mainTabbedPane.addTab("💡 Ideas", new ImageIcon(), nationalIdeasPanel, "National ideas");
         mainTabbedPane.addTab("🎯 Focus", new ImageIcon(), focusTreePanel, "Focus tree");
         mainTabbedPane.addTab("🤖 AI Status", new ImageIcon(), aiStatusPanel, "AI nations status");
+        mainTabbedPane.addTab("🤝 Diplomacy", new ImageIcon(), diplomacyPanel, "Diplomacy");
         
         // Main content area
         add(mainTabbedPane, BorderLayout.CENTER);
@@ -177,5 +180,6 @@ public class GameWindow extends JFrame {
         nationalIdeasPanel.updatePanel();
         focusTreePanel.updatePanel();
         aiStatusPanel.updatePanel();
+        diplomacyPanel.updatePanel();
     }
 } 
