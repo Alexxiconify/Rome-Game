@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
 import com.romagame.map.Country;
-import com.romagame.country.CountryManager;
 
 public class DiplomacyManager {
     private Map<String, Map<String, DiplomaticRelation>> relations;
