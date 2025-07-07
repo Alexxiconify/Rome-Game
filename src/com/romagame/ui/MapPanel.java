@@ -336,20 +336,25 @@ public class MapPanel extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON1) {
+                    // Left-click: start dragging for map panning
+                    isDragging = true;
+                    lastMousePos = e.getPoint();
+                } else if (e.getButton() == MouseEvent.BUTTON3) {
+                    // Right-click: start dragging for province interaction
                     isDragging = true;
                     lastMousePos = e.getPoint();
                 }
             }
             @Override
             public void mouseReleased(MouseEvent e) {
-                if (e.getButton() == MouseEvent.BUTTON1) {
+                if (e.getButton() == MouseEvent.BUTTON1 || e.getButton() == MouseEvent.BUTTON3) {
                     isDragging = false;
                 }
             }
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON1) {
-                    // Left-click: select army if clicked on icon
+                    // Left-click: select army if clicked on icon, otherwise select province
                     MilitaryManager mm = engine.getMilitaryManager();
                     Point clickPoint = e.getPoint();
                     boolean armyClicked = false;
@@ -401,16 +406,23 @@ public class MapPanel extends JPanel {
                         // Only select province if click is on a valid province pixel
                         Point mapPoint = screenToMap(e.getPoint());
                         if (getProvinceIdAt(mapPoint) != null) {
-                handleProvinceClick(e.getPoint());
+                            handleProvinceClick(e.getPoint());
                         }
                     }
                 } else if (e.getButton() == MouseEvent.BUTTON3) {
-                    // Right-click: move selected army to province
-                    if (selectedArmy != null) {
-                        String provinceId = getProvinceIdAt(e.getPoint());
-                        if (provinceId != null) {
-                            selectedArmy.setLocation(provinceId);
-                            repaint();
+                    // Right-click: move selected army to province or show province context menu
+                    String provinceId = getProvinceIdAt(screenToMap(e.getPoint()));
+                    if (provinceId != null) {
+                        Province clickedProvince = engine.getWorldMap().getProvince(provinceId);
+                        if (clickedProvince != null) {
+                            if (selectedArmy != null) {
+                                // Move selected army to province
+                                selectedArmy.setLocation(provinceId);
+                                repaint();
+                            } else {
+                                // Show province context menu
+                                showProvinceContextMenu(clickedProvince, e.getPoint());
+                            }
                         }
                     }
                 }
@@ -422,12 +434,21 @@ public class MapPanel extends JPanel {
                 if (isDragging && lastMousePos != null) {
                     int dx = e.getX() - lastMousePos.x;
                     int dy = e.getY() - lastMousePos.y;
-                    offsetX += dx;
-                    offsetY += dy;
+                    
+                    // Check if this is a right-click drag (province interaction) or left-click drag (map panning)
+                    if (e.getModifiersEx() == InputEvent.BUTTON3_DOWN_MASK) {
+                        // Right-click drag: province interaction
+                        handleProvinceDrag(e.getPoint(), dx, dy);
+                    } else {
+                        // Left-click drag: map panning
+                        offsetX += dx;
+                        offsetY += dy;
+                        System.out.println("Map dragged: dx=" + dx + ", dy=" + dy + ", offsetX=" + offsetX + ", offsetY=" + offsetY);
+                        invalidateOverlayCache();
+                        repaint();
+                    }
+                    
                     lastMousePos = e.getPoint();
-                    System.out.println("Mouse dragged: dx=" + dx + ", dy=" + dy + ", offsetX=" + offsetX + ", offsetY=" + offsetY);
-                    invalidateOverlayCache();
-                    repaint();
                 }
             }
             @Override
