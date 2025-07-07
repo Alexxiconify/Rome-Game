@@ -5,7 +5,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 import os
 
 # File paths
-province_mask_path = 'src/resources/province_mask.png'
+province_mask_path = 'src/resources/data/province_mask.png'
 province_data_path = 'src/resources/province_data.json'
 output_path = 'province_owners.csv'
 output_owners_path = 'owner_color_name.csv'
