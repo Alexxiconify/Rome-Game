@@ -72,6 +72,7 @@ public class MapPanel extends JPanel {
     private static final int EDGE_SCROLL_SPEED = 30; // px per timer tick
 
     private Map<String, Point> nationToViewpoint = new HashMap<>();
+    private Map<String, Point> provinceIdToCentroid = new HashMap<>();
 
     public MapPanel(GameEngine engine) {
         System.out.println("MapPanel constructor called");
@@ -598,6 +599,19 @@ public class MapPanel extends JPanel {
                 }
             }
         }
+        // Overlay province IDs at their centroids for visual identification
+        if (provinceMask != null && mapBackground != null) {
+            g2d.setFont(new Font("Arial", Font.BOLD, 11));
+            g2d.setColor(new Color(255,255,255,180));
+            java.util.List<Province> provinces = engine.getWorldMap().getAllProvinces();
+            for (Province province : provinces) {
+                Point centroid = provinceIdToCentroid.get(province.getId());
+                if (centroid != null) {
+                    Point screenPt = camera.mapToScreen(centroid.x, centroid.y);
+                    g2d.drawString(province.getId(), screenPt.x + 4, screenPt.y - 4);
+                }
+            }
+        }
         drawUI(g2d);
         drawViewingCoordinates(g2d);
     }
@@ -1031,6 +1045,17 @@ public class MapPanel extends JPanel {
                     colorKeyToProvinceId.put(colorKey, provinceId);
                     provinceIdToOwner.put(provinceId, owner);
                     loadedCount++;
+                    
+                    // Extract centroid
+                    String centroidXStr = extractJsonValue(entry, "centroid_x");
+                    String centroidYStr = extractJsonValue(entry, "centroid_y");
+                    if (centroidXStr != null && centroidYStr != null) {
+                        try {
+                            int cx = Integer.parseInt(centroidXStr);
+                            int cy = Integer.parseInt(centroidYStr);
+                            provinceIdToCentroid.put(provinceId, new Point(cx, cy));
+                        } catch (NumberFormatException ignore) {}
+                    }
                     
                 } catch (Exception e) {
                     // Skip malformed province entries
