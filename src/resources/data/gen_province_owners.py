@@ -1,47 +1,62 @@
 import numpy as np
 from PIL import Image
 import json
+import csv
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import os
 
 # File paths
 province_mask_path = 'src/resources/data/province_mask.png'
-province_data_path = 'src/resources/province_data.json'
+owner_color_csv_path = 'owner_color_name.csv'
 output_path = 'province_owners.csv'
-output_owners_path = 'owner_color_name.csv'
 
-def load_province_data():
-    with open(province_data_path, 'r') as f:
-        province_data = json.load(f)['provinces']
-    color_to_pid = {}
-    color_to_owner = {}
-    color_to_owner_color = {}
-    for pid, data in province_data.items():
-        color = tuple(data['mask_color'])
-        color_to_pid[color] = pid
-        color_to_owner[color] = data['nation']
-        color_to_owner_color[color] = tuple(data['owner_color'])
-    return color_to_pid, color_to_owner, color_to_owner_color
+def load_owner_color_mapping():
+    """Load owner color to name mapping from CSV"""
+    mapping = {}
+    if not os.path.exists(owner_color_csv_path):
+        print(f"Warning: {owner_color_csv_path} not found")
+        return mapping
+        
+    with open(owner_color_csv_path, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            color_str = row['owner_color']
+            name = row['owner_name']
+            # Parse color string like "(130, 175, 255)" to RGB tuple
+            color_str = color_str.strip('()')
+            rgb = tuple(int(x.strip()) for x in color_str.split(','))
+            mapping[rgb] = name
+    return mapping
 
 def process_chunk(args):
-    chunk, color_to_pid, color_to_owner, color_to_owner_color = args
+    chunk, color_to_owner = args
     flat_chunk = chunk.reshape(-1, 3)
     results = []
     for rgb in flat_chunk:
         color = tuple(rgb)
-        pid = color_to_pid.get(color)
         owner = color_to_owner.get(color)
-        if pid and owner:
-            results.append((pid, owner))
+        if owner:
+            # Generate province ID based on color
+            province_id = f"province_{hash(color) % 10000:04d}"
+            results.append((province_id, owner))
     return results
 
 def main():
     # Load province mask as numpy array
+    if not os.path.exists(province_mask_path):
+        print(f"Error: {province_mask_path} not found")
+        return
+        
     mask_img = np.array(Image.open(province_mask_path).convert('RGB'))
     h, w, _ = mask_img.shape
 
-    # Load province data
-    color_to_pid, color_to_owner, color_to_owner_color = load_province_data()
+    # Load owner color mapping from CSV
+    color_to_owner = load_owner_color_mapping()
+    if not color_to_owner:
+        print("Error: No owner color mappings found")
+        return
+
+    print(f"Loaded {len(color_to_owner)} owner color mappings")
 
     # Split image into chunks for parallel processing
     num_workers = os.cpu_count() or 4
@@ -53,7 +68,7 @@ def main():
         chunks.append(mask_img[start:end])
 
     # Prepare args for each worker
-    worker_args = [(chunk, color_to_pid, color_to_owner, color_to_owner_color) for chunk in chunks]
+    worker_args = [(chunk, color_to_owner) for chunk in chunks]
 
     # Process in parallel
     results = []
@@ -64,21 +79,13 @@ def main():
 
     # Remove duplicates and write output
     unique_results = list(set(results))
-    with open(output_path, 'w') as f:
+    with open(output_path, 'w', newline='', encoding='utf-8') as f:
         f.write('province_id,owner_name\n')
         for pid, owner in unique_results:
             f.write(f'{pid},{owner}\n')
 
-    # Output owner color/name pairs
-    owner_color_name = set()
-    for color, owner in color_to_owner.items():
-        owner_color_name.add((color_to_owner_color[color], owner))
-    with open(output_owners_path, 'w') as f:
-        f.write('owner_color,owner_name\n')
-        for color, owner in owner_color_name:
-            f.write(f'"{color}",{owner}\n')
-
-    print(f"Wrote {output_path} and {output_owners_path}")
+    print(f"Generated {len(unique_results)} province owners in {output_path}")
+    print(f"Using owner names from {owner_color_csv_path}")
 
 if __name__ == '__main__':
     main()
