@@ -195,7 +195,8 @@ public class MapPanel extends JPanel {
 
     private void loadProvinceMask() {
         try {
-            File maskFile = new File("src/resources/img/0.png");
+            // Load the original province_mask.png for province detection and tooltips
+            File maskFile = new File("src/resources/img/province_mask.png");
             if (maskFile.exists()) {
                 provinceMask = ImageIO.read(maskFile);
                 updateProvinceColorMap();
@@ -210,7 +211,7 @@ public class MapPanel extends JPanel {
                     System.err.println("ERROR: Province mask is null after loading!");
                 }
             } else {
-                System.err.println("ERROR: Province mask not found at src/resources/img/0.png");
+                System.err.println("ERROR: Province mask not found at src/resources/img/province_mask.png");
             }
         } catch (IOException e) {
             System.err.println("Could not load province mask image: " + e.getMessage());
@@ -491,7 +492,7 @@ public class MapPanel extends JPanel {
         cachedNationForHighlight = nation;
         Graphics2D g2d = cachedNationHighlight.createGraphics();
         
-        // Enhanced highlighting with border and glow effect for white pixels (province interiors)
+        // Enhanced highlighting with border and glow effect for provinces belonging to the selected nation
         for (int yy = 0; yy < imgH; yy++) {
             for (int xx = 0; xx < imgW; xx++) {
                 int argb = provinceMask.getRGB(xx, yy);
@@ -499,24 +500,32 @@ public class MapPanel extends JPanel {
                 int g = (argb >> 8) & 0xFF;
                 int b = argb & 0xFF;
                 
-                // Check for white pixels (province interiors) in 0.png
-                if (r > 200 && g > 200 && b > 200) { // White or near-white
-                    // For now, highlight all white pixels when a nation is selected
-                    // In a full implementation, you'd need to map white regions to specific provinces
-                    int screenX = x + (int)(xx * scale);
-                    int screenY = y + (int)(yy * scale);
-                    int pixelSize = (int)Math.ceil(scale);
-                    
-                    // Inner highlight (brighter)
-                    g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.15f));
-                    g2d.setColor(Color.YELLOW);
-                    g2d.fillRect(screenX, screenY, pixelSize, pixelSize);
-                    
-                    // Border highlight
-                    g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
-                    g2d.setColor(Color.ORANGE);
-                    g2d.setStroke(new BasicStroke(Math.max(2.0f, (float)scale * 0.5f)));
-                    g2d.drawRect(screenX, screenY, pixelSize, pixelSize);
+                // Skip black pixels (ocean/background)
+                if (r == 0 && g == 0 && b == 0) {
+                    continue;
+                }
+                
+                // Check if this pixel belongs to a province owned by the selected nation
+                String colorKey = String.format("%d,%d,%d", r, g, b);
+                String provinceId = colorKeyToProvinceId.get(colorKey);
+                if (provinceId != null) {
+                    Province province = engine.getWorldMap().getProvince(provinceId);
+                    if (province != null && nation.equals(province.getOwner())) {
+                        int screenX = x + (int)(xx * scale);
+                        int screenY = y + (int)(yy * scale);
+                        int pixelSize = (int)Math.ceil(scale);
+                        
+                        // Inner highlight (brighter)
+                        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.15f));
+                        g2d.setColor(Color.YELLOW);
+                        g2d.fillRect(screenX, screenY, pixelSize, pixelSize);
+                        
+                        // Border highlight
+                        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
+                        g2d.setColor(Color.ORANGE);
+                        g2d.setStroke(new BasicStroke(Math.max(2.0f, (float)scale * 0.5f)));
+                        g2d.drawRect(screenX, screenY, pixelSize, pixelSize);
+                    }
                 }
             }
         }
@@ -1052,44 +1061,32 @@ public class MapPanel extends JPanel {
         int g = (argb >> 8) & 0xFF;
         int b = argb & 0xFF;
         
-        // In 0.png:
-        // - Black (0,0,0): Province borders - not clickable
-        // - Blue: Ocean borders - not clickable  
-        // - White (255,255,255): Province interiors - clickable
+        // In province_mask.png:
+        // - Black (0,0,0): Ocean/background - not clickable
+        // - Each province has a unique color (RGB values)
         
-        // Skip black pixels (province borders)
+        // Skip black pixels (ocean/background)
         if (r == 0 && g == 0 && b == 0) {
             return null;
         }
         
-        // Skip blue pixels (ocean borders) - approximate blue detection
-        if (b > r && b > g && b > 100) {
-            return null;
+        // Try the colorKeyToProvinceId mapping first (from JSON data)
+        String colorKey = String.format("%d,%d,%d", r, g, b);
+        String provinceId = colorKeyToProvinceId.get(colorKey);
+        if (provinceId != null) {
+            return provinceId;
         }
         
-        // White pixels (255,255,255) represent province interiors
-        // We need to find which province this white pixel belongs to
-        if (r > 200 && g > 200 && b > 200) { // White or near-white
-            // Use flood fill to find the province ID for this white region
-            return findProvinceIdForWhitePixel(x, y);
+        // Fallback to old colorToProvinceId mapping
+        provinceId = colorToProvinceId.get(argb);
+        if (provinceId != null) {
+            return provinceId;
         }
         
         return null;
     }
     
-    private String findProvinceIdForWhitePixel(int startX, int startY) {
-        // Simple flood fill to find the province ID for a white pixel
-        // This is a basic implementation - you might want to improve it
-        if (provinceMask == null) return null;
-        
-        int width = provinceMask.getWidth();
-        int height = provinceMask.getHeight();
-        
-        // For now, return a generic province ID based on coordinates
-        // This is a placeholder - you'll need to implement proper province detection
-        int provinceIndex = (startX / 50) + (startY / 50) * (width / 50);
-        return "province_" + String.format("%04d", provinceIndex);
-    }
+
 
     public void handleProvinceClick(Point p) {
         if (provinceMask == null) return;
