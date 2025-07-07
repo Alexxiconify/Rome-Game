@@ -8,12 +8,10 @@ import java.util.ArrayList;
 public class WorldMap {
     private Map<String, Province> provinces;
     private Map<String, Country> countries;
-    private List<SeaZone> seaZones;
 
     public WorldMap() {
         provinces = new HashMap<>();
         countries = new HashMap<>();
-        seaZones = new ArrayList<>();
         initializeProvinces();
     }
 
@@ -23,7 +21,6 @@ public class WorldMap {
             System.out.println("Falling back to hardcoded province data...");
             ProvinceCreationSnippets.createAllProvinces(this);
         }
-        initializeSeaZones();
     }
     
     private boolean loadProvincesFromJson() {
