@@ -116,22 +116,26 @@ public class MapPanel extends JPanel {
 
     private void loadMapBackground() {
         try {
-            // Try the data directory first
-            File mapFile = new File("src/resources/data/start.png");
+            // Use start1.png as the main background
+            File mapFile = new File("src/resources/img/start1.png");
             if (!mapFile.exists()) {
-                // Fallback to resources directory
-                mapFile = new File("src/resources/map_background.png");
+                // Fallback to previous locations
+                mapFile = new File("src/resources/data/start.png");
+                if (!mapFile.exists()) {
+                    mapFile = new File("src/resources/map_background.png");
+                }
             }
-            
             if (mapFile.exists()) {
                 mapBackground = ImageIO.read(mapFile);
                 mapLoaded = true;
                 System.out.println("Loaded map background from: " + mapFile.getPath());
             } else {
                 createGradientBackground();
+                System.out.println("No map background found, using gradient.");
             }
         } catch (IOException e) {
             createGradientBackground();
+            System.out.println("Could not load map background image: " + e.getMessage());
         }
     }
 
@@ -179,13 +183,9 @@ public class MapPanel extends JPanel {
 
     private void loadProvinceMask() {
         try {
-            // Try the data directory first
-            File maskFile = new File("src/resources/data/province_mask.png");
             if (!maskFile.exists()) {
-                // Fallback to resources directory
-                maskFile = new File("src/resources/province_mask.png");
+                maskFile = new File("src/resources/img/province_mask.png");
             }
-            
             if (maskFile.exists()) {
                 provinceMask = ImageIO.read(maskFile);
                 updateProvinceColorMap();
@@ -194,6 +194,11 @@ public class MapPanel extends JPanel {
                 createLandShading();
                 repaint();
                 System.out.println("Loaded province mask from: " + maskFile.getPath());
+                if (provinceMask != null) {
+                    System.out.println("Province mask loaded: " + provinceMask.getWidth() + "x" + provinceMask.getHeight());
+                } else {
+                    System.out.println("Province mask is null after loading!");
+                }
             } else {
                 System.out.println("Province mask not found in either location");
             }
