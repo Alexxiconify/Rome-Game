@@ -1404,7 +1404,7 @@ public class MapPanel extends JPanel {
                 shouldLog = true;
             }
             if (shouldLog) {
-                System.out.println(String.format("Viewing - Top Left: (%d, %d), Top Right: (%d, %d), Center: (%d, %d)", 
+                System.out.println(String.format("[DEBUG] View TL:(%d,%d) TR:(%d,%d) C:(%d,%d)", 
                     topLeft.x, topLeft.y, bottomRight.x, bottomRight.y, center.x, center.y));
                 lastTopLeftX = topLeft.x;
                 lastTopLeftY = topLeft.y;

@@ -178,7 +178,7 @@ public class MapRenderer {
     private void renderMapLayers(Graphics2D g2d, Rectangle visibleRect) {
         // 1. Background (start.png - with borders)
         if (mapBackground != null) {
-            System.out.println("[DEBUG] Rendering map background: " + mapBackground.getWidth() + "x" + mapBackground.getHeight());
+            System.out.println("[DEBUG] Render: bg " + mapBackground.getWidth() + "x" + mapBackground.getHeight() + ", overlay " + borderlessOverlay.getWidth() + "x" + borderlessOverlay.getHeight());
             g2d.drawImage(mapBackground, 0, 0, null);
         } else {
             System.out.println("[DEBUG] Map background is null!");
