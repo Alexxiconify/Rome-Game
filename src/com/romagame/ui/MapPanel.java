@@ -237,29 +237,46 @@ public class MapPanel extends JPanel {
         if (provinceMask == null) return;
         int w = provinceMask.getWidth(), h = provinceMask.getHeight();
         provinceColorMap = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
                 int argb = provinceMask.getRGB(x, y);
                 int r = (argb >> 16) & 0xFF;
                 int g = (argb >> 8) & 0xFF;
                 int b = argb & 0xFF;
+                
+                // Skip black pixels (ocean)
+                if (r == 0 && g == 0 && b == 0) {
+                    provinceColorMap.setRGB(x, y, 0x00000000);
+                    continue;
+                }
+                
                 String colorKey = String.format("%d,%d,%d", r, g, b);
                 String provinceId = colorKeyToProvinceId.get(colorKey);
+                
                 if (provinceId != null) {
                     String owner = provinceIdToOwner.get(provinceId);
-                    String colorStr = nationToColor.get(owner);
-                    if (colorStr != null) {
-                        String[] rgb = colorStr.split(",");
-                        int ownerR = Integer.parseInt(rgb[0]);
-                        int ownerG = Integer.parseInt(rgb[1]);
-                        int ownerB = Integer.parseInt(rgb[2]);
-                        int ownerArgb = (0xFF << 24) | (ownerR << 16) | (ownerG << 8) | ownerB;
-                        provinceColorMap.setRGB(x, y, ownerArgb);
+                    if (owner != null && !owner.startsWith("Unknown") && !owner.startsWith("Color_")) {
+                        // Use owner color from the province data
+                        String colorStr = nationToColor.get(owner);
+                        if (colorStr != null) {
+                            String[] rgb = colorStr.split(",");
+                            int ownerR = Integer.parseInt(rgb[0]);
+                            int ownerG = Integer.parseInt(rgb[1]);
+                            int ownerB = Integer.parseInt(rgb[2]);
+                            int ownerArgb = (0xFF << 24) | (ownerR << 16) | (ownerG << 8) | ownerB;
+                            provinceColorMap.setRGB(x, y, ownerArgb);
+                        } else {
+                            // Use the original color if no nation color is found
+                            provinceColorMap.setRGB(x, y, argb);
+                        }
                     } else {
-                        provinceColorMap.setRGB(x, y, 0x00000000);
+                        // Use the original color for unknown/color provinces
+                        provinceColorMap.setRGB(x, y, argb);
                     }
                 } else {
-                    provinceColorMap.setRGB(x, y, 0x00000000);
+                    // No province mapping found, use original color
+                    provinceColorMap.setRGB(x, y, argb);
                 }
             }
         }
@@ -963,33 +980,67 @@ public class MapPanel extends JPanel {
 
     private void loadNationsAndProvinces() {
         try {
-            String jsonText = new String(Files.readAllBytes(Paths.get("src/resources/nations_and_provinces.json")));
-            // Parse nations
-            String nationsBlock = jsonText.split("\"nations\"\\s*:\\s*\\[", 2)[1].split("],", 2)[0];
-            String[] nationEntries = nationsBlock.split("\\},\\s*\\{");
-            for (String entry : nationEntries) {
-                String name = entry.split("\"name\"\\s*:\\s*\"")[1].split("\"")[0];
-                String colorStr = entry.split("\"color\"\\s*:\\s*\\[")[1].split("]")[0].replaceAll("\\s", "");
-                nationToColor.put(name, colorStr.replace(",", ","));
-                nationList.add(name);
+            String jsonText = new String(Files.readAllBytes(Paths.get("src/resources/data/nations_and_provinces.json")));
+            
+            // Parse nations (if they exist in the JSON)
+            if (jsonText.contains("\"nations\"")) {
+                String nationsBlock = jsonText.split("\"nations\"\\s*:\\s*\\[", 2)[1].split("],", 2)[0];
+                String[] nationEntries = nationsBlock.split("\\},\\s*\\{");
+                for (String entry : nationEntries) {
+                    try {
+                        String name = entry.split("\"name\"\\s*:\\s*\"")[1].split("\"")[0];
+                        String colorStr = entry.split("\"color\"\\s*:\\s*\\[")[1].split("]")[0].replaceAll("\\s", "");
+                        nationToColor.put(name, colorStr.replace(",", ","));
+                        nationList.add(name);
+                    } catch (Exception e) {
+                        // Skip malformed nation entries
+                    }
+                }
             }
 
-            // Parse provinces
+            // Parse provinces with improved error handling
             String provincesBlock = jsonText.split("\"provinces\"\\s*:\\s*\\[", 2)[1].split("]")[0];
             String[] provinceEntries = provincesBlock.split("\\},\\s*\\{");
+            
+            int loadedCount = 0;
             for (String entry : provinceEntries) {
-                String provinceId = entry.split("\"province_id\"\\s*:\\s*\"")[1].split("\"")[0];
-                String owner = entry.split("\"owner_name\"\\s*:\\s*\"")[1].split("\"")[0];
-                String colorStr = entry.split("\"mask_color\"\\s*:\\s*\\[")[1].split("]")[0].replaceAll("\\s", "");
-                String[] rgb = colorStr.split(",");
-                String colorKey = String.format("%s,%s,%s", rgb[0], rgb[1], rgb[2]);
-                colorKeyToProvinceId.put(colorKey, provinceId);
-                provinceIdToOwner.put(provinceId, owner);
+                try {
+                    // Extract province_id
+                    String provinceId = entry.split("\"province_id\"\\s*:\\s*\"")[1].split("\"")[0];
+                    
+                    // Extract owner (try both "owner" and "owner_name" fields)
+                    String owner;
+                    if (entry.contains("\"owner_name\"")) {
+                        owner = entry.split("\"owner_name\"\\s*:\\s*\"")[1].split("\"")[0];
+                    } else {
+                        owner = entry.split("\"owner\"\\s*:\\s*\"")[1].split("\"")[0];
+                    }
+                    
+                    // Extract color (try both "mask_color" and "owner_color" fields)
+                    String colorStr;
+                    if (entry.contains("\"mask_color\"")) {
+                        colorStr = entry.split("\"mask_color\"\\s*:\\s*\\[")[1].split("]")[0].replaceAll("\\s", "");
+                    } else {
+                        colorStr = entry.split("\"owner_color\"\\s*:\\s*\\[")[1].split("]")[0].replaceAll("\\s", "");
+                    }
+                    
+                    String[] rgb = colorStr.split(",");
+                    String colorKey = String.format("%s,%s,%s", rgb[0], rgb[1], rgb[2]);
+                    colorKeyToProvinceId.put(colorKey, provinceId);
+                    provinceIdToOwner.put(provinceId, owner);
+                    loadedCount++;
+                    
+                } catch (Exception e) {
+                    // Skip malformed province entries
+                    System.err.println("Skipping malformed province entry: " + e.getMessage());
+                }
             }
 
-            System.out.println("Loaded nations and provinces from nations_and_provinces.json (basic parser)");
+            System.out.println("Loaded " + loadedCount + " provinces from nations_and_provinces.json");
+            System.out.println("Loaded " + nationList.size() + " nations from nations_and_provinces.json");
         } catch (Exception e) {
             System.err.println("Failed to load nations_and_provinces.json: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -1026,8 +1077,25 @@ public class MapPanel extends JPanel {
         if (x < 0 || y < 0 || x >= provinceMask.getWidth() || y >= provinceMask.getHeight()) return null;
         int argb = provinceMask.getRGB(x, y);
         
-        // First try the old colorToProvinceId mapping
-        String provinceId = colorToProvinceId.get(argb);
+        // Extract RGB values from ARGB
+        int r = (argb >> 16) & 0xFF;
+        int g = (argb >> 8) & 0xFF;
+        int b = argb & 0xFF;
+        
+        // Skip black pixels (ocean)
+        if (r == 0 && g == 0 && b == 0) {
+            return null;
+        }
+        
+        // Try the new colorKeyToProvinceId mapping first
+        String colorKey = String.format("%d,%d,%d", r, g, b);
+        String provinceId = colorKeyToProvinceId.get(colorKey);
+        if (provinceId != null) {
+            return provinceId;
+        }
+        
+        // Fallback to old colorToProvinceId mapping
+        provinceId = colorToProvinceId.get(argb);
         if (provinceId != null) {
             return provinceId;
         }
