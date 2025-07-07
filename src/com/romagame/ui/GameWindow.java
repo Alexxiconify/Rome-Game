@@ -68,6 +68,10 @@ public class GameWindow extends JFrame {
         // Set viewport size to be smaller than the map to ensure scrolling is possible
         mapScrollPane.getViewport().setPreferredSize(new Dimension(1200, 800));
         
+        // Disable scroll pane mouse wheel handling so MapPanel can handle it
+        mapScrollPane.getVerticalScrollBar().setUnitIncrement(0);
+        mapScrollPane.getHorizontalScrollBar().setUnitIncrement(0);
+        
         // Create tabbed panels for different game aspects
         soldiersPanel = new SoldiersPanel(engine);
         populationPanel = new PopulationPanel(engine);

@@ -407,8 +407,8 @@ public class MapPanel extends JPanel {
                     offsetX += dx;
                     offsetY += dy;
                     lastMousePos = e.getPoint();
+                    System.out.println("Mouse dragged: dx=" + dx + ", dy=" + dy + ", offsetX=" + offsetX + ", offsetY=" + offsetY);
                     invalidateOverlayCache();
-                    // Use repaint() instead of repaint() for smoother dragging
                     repaint();
                 }
             }
