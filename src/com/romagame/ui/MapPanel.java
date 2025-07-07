@@ -23,6 +23,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import com.romagame.ui.Camera;
 import com.romagame.ui.MapRenderer;
+import javax.swing.Timer;
+import java.awt.MouseInfo;
+import java.awt.PointerInfo;
+import javax.swing.SwingUtilities;
 
 /**
  * Optimized MapPanel with modern camera system and performance improvements.
@@ -47,7 +51,7 @@ public class MapPanel extends JPanel {
     private Province selectedProvince = null;
     
     // Hold-to-drag settings
-    private static final long HOLD_THRESHOLD_MS = 200; // 200ms hold required
+    private static final long HOLD_THRESHOLD_MS = 50; // 200ms hold required
     private static final int HOLD_DISTANCE_THRESHOLD = 5; // 5 pixels max movement during hold
     
     // Data mappings
@@ -61,6 +65,11 @@ public class MapPanel extends JPanel {
     
     private BufferedImage provinceMask;
     private BufferedImage mapBackground;
+
+    // HOI4-style edge scrolling
+    private Timer edgeScrollTimer;
+    private static final int EDGE_SCROLL_ZONE = 20; // px from edge
+    private static final int EDGE_SCROLL_SPEED = 30; // px per timer tick
 
     public MapPanel(GameEngine engine) {
         System.out.println("MapPanel constructor called");
@@ -81,6 +90,8 @@ public class MapPanel extends JPanel {
         
         // Start at coordinates (0,0)
         camera.centerOn(0, 0);
+        // Start edge scrolling timer
+        startEdgeScrollTimer();
     }
 
     private void setupPanel() {
@@ -125,6 +136,70 @@ public class MapPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 centerOnRome();
+            }
+        });
+        
+        // + key to zoom in
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, 0), "zoomIn");
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_ADD, 0), "zoomIn"); // Numpad +
+        getActionMap().put("zoomIn", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                camera.zoomBy(1.1); // Zoom in by 10%
+                repaint();
+            }
+        });
+        
+        // - key to zoom out
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, 0), "zoomOut");
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, 0), "zoomOut"); // Numpad -
+        getActionMap().put("zoomOut", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                camera.zoomBy(0.9); // Zoom out by 10%
+                repaint();
+            }
+        });
+        
+        // Arrow keys and WASD for panning
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("LEFT"), "panLeft");
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('A'), "panLeft");
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("RIGHT"), "panRight");
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('D'), "panRight");
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("UP"), "panUp");
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('W'), "panUp");
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("DOWN"), "panDown");
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke('S'), "panDown");
+        getActionMap().put("panLeft", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                camera.moveBy(-50, 0); // Pan left
+                repaint();
+            }
+        });
+        getActionMap().put("panRight", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                camera.moveBy(50, 0); // Pan right
+                repaint();
+            }
+        });
+        getActionMap().put("panUp", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                camera.moveBy(0, -50); // Pan up
+                repaint();
+            }
+        });
+        getActionMap().put("panDown", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                camera.moveBy(0, 50); // Pan down
+                repaint();
             }
         });
     }
@@ -378,21 +453,6 @@ public class MapPanel extends JPanel {
                     }
                     repaint();
                 }
-            }
-        });
-        addMouseWheelListener(e -> {
-            System.out.println("Mouse wheel event received: " + e.getWheelRotation());
-            double oldZoom = camera.getZoom();
-            double zoomIncrement = 0.25; // Increment by 0.25
-            double newZoom = e.getWheelRotation() > 0 ? 
-                oldZoom - zoomIncrement : oldZoom + zoomIncrement;
-            camera.setZoom(Math.max(0.5, Math.min(10.0, newZoom)));
-            
-            System.out.println("Zoom changed from " + oldZoom + " to " + camera.getZoom());
-            
-            // Only repaint if zoom actually changed
-            if (Math.abs(camera.getZoom() - oldZoom) > 0.01) {
-                repaint();
             }
         });
     }
@@ -1390,5 +1450,36 @@ public class MapPanel extends JPanel {
             "Offering peace to " + province.getName(), 
             "Offer Peace", 
             JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    // HOI4-style edge scrolling
+    private void startEdgeScrollTimer() {
+        edgeScrollTimer = new Timer(20, e -> {
+            PointerInfo pi = MouseInfo.getPointerInfo();
+            if (pi == null) return;
+            Point mouseLoc = pi.getLocation();
+            SwingUtilities.convertPointFromScreen(mouseLoc, this);
+            int w = getWidth();
+            int h = getHeight();
+            boolean moved = false;
+            if (mouseLoc.x >= 0 && mouseLoc.x < w && mouseLoc.y >= 0 && mouseLoc.y < h) {
+                if (mouseLoc.x < EDGE_SCROLL_ZONE) {
+                    camera.moveBy(-EDGE_SCROLL_SPEED, 0);
+                    moved = true;
+                } else if (mouseLoc.x > w - EDGE_SCROLL_ZONE) {
+                    camera.moveBy(EDGE_SCROLL_SPEED, 0);
+                    moved = true;
+                }
+                if (mouseLoc.y < EDGE_SCROLL_ZONE) {
+                    camera.moveBy(0, -EDGE_SCROLL_SPEED);
+                    moved = true;
+                } else if (mouseLoc.y > h - EDGE_SCROLL_ZONE) {
+                    camera.moveBy(0, EDGE_SCROLL_SPEED);
+                    moved = true;
+                }
+            }
+            if (moved) repaint();
+        });
+        edgeScrollTimer.start();
     }
 } 
