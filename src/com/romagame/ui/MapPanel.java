@@ -360,7 +360,6 @@ public class MapPanel extends JPanel {
                 holdStartTime = 0;
                 lastMousePos = null;
             }
-            }
         });
         
         addMouseMotionListener(new MouseMotionAdapter() {
@@ -517,7 +516,6 @@ public class MapPanel extends JPanel {
                 }
             }
         }
-    }
     }
 
 
@@ -884,23 +882,10 @@ public class MapPanel extends JPanel {
         int romeX = 2210;
         int romeY = 300;
         
-        int panelW = getWidth() > 0 ? getWidth() : 1600;
-        int panelH = getHeight() > 0 ? getHeight() : 900;
+        camera.centerOn(romeX, romeY);
         
-        // Apply zoom scaling
-        double scaledX = romeX * zoom;
-        double scaledY = romeY * zoom;
+        System.out.println("Centering on Rome: romeX=" + romeX + ", romeY=" + romeY);
         
-        offsetX = panelW/2 - (int)scaledX;
-        offsetY = panelH/2 - (int)scaledY;
-        
-        // Cap movement within bounds
-        capMovementWithinBounds(offsetX, offsetY);
-        
-        System.out.println("Centering on Rome: romeX=" + romeX + ", romeY=" + romeY + 
-                          ", offsetX=" + offsetX + ", offsetY=" + offsetY);
-        
-        invalidateOverlayCache();
         repaint();
     }
     
@@ -914,23 +899,10 @@ public class MapPanel extends JPanel {
         int europeX = 2400;
         int europeY = 300;
         
-        int panelW = getWidth() > 0 ? getWidth() : 1600;
-        int panelH = getHeight() > 0 ? getHeight() : 900;
+        camera.centerOn(europeX, europeY);
         
-        // Apply zoom scaling
-        double scaledX = europeX * zoom;
-        double scaledY = europeY * zoom;
+        System.out.println("Centering on Europe: europeX=" + europeX + ", europeY=" + europeY);
         
-        offsetX = panelW/2 - (int)scaledX;
-        offsetY = panelH/2 - (int)scaledY;
-        
-        // Cap movement within bounds
-        capMovementWithinBounds(offsetX, offsetY);
-        
-        System.out.println("Centering on Europe: europeX=" + europeX + ", europeY=" + europeY + 
-                          ", offsetX=" + offsetX + ", offsetY=" + offsetY);
-        
-        invalidateOverlayCache();
         repaint();
     }
     
