@@ -100,15 +100,7 @@ public class WorldMap {
                     loadedCount++;
                 }
             }
-            System.out.println("DEBUG:" + loadedCount + " " + countries.size() + " owners");
-            if (!countries.isEmpty()) {
-                System.out.println("Created countries: " + String.join(", ", countries.keySet()));
-            }
             return loadedCount > 0;
-        } catch (Exception e) {
-            System.err.println("Failed to load provinces from JSON: " + e.getMessage());
-            e.printStackTrace();
-            return false;
         }
     }
     
