@@ -234,22 +234,17 @@ public class NationSelectionDialog extends JDialog {
     
     private String extractOwnerNameFromCSV(String line) {
         try {
-            // Find the second quoted value (owner_name column)
-            int firstQuote = line.indexOf('"');
-            if (firstQuote == -1) return null;
-            
-            int secondQuote = line.indexOf('"', firstQuote + 1);
-            if (secondQuote == -1) return null;
-            
-            // Find the third quoted value (owner_name column)
-            int thirdQuote = line.indexOf('"', secondQuote + 1);
-            if (thirdQuote == -1) return null;
-            
-            int fourthQuote = line.indexOf('"', thirdQuote + 1);
-            if (fourthQuote == -1) return null;
-            
-            // Extract the owner name (second quoted value)
-            return line.substring(thirdQuote + 1, fourthQuote).trim();
+            // Skip empty or header lines
+            if (line.trim().isEmpty() || line.startsWith("owner_color")) return null;
+            // Find the last comma (handles quoted color with commas)
+            int lastComma = line.lastIndexOf(',');
+            if (lastComma == -1) return null;
+            String ownerName = line.substring(lastComma + 1).trim();
+            // Remove quotes if present
+            if (ownerName.startsWith("\"") && ownerName.endsWith("\"")) {
+                ownerName = ownerName.substring(1, ownerName.length() - 1);
+            }
+            return ownerName;
         } catch (Exception e) {
             System.err.println("Error parsing CSV line: " + line + " - " + e.getMessage());
             return null;
