@@ -25,6 +25,8 @@ import com.romagame.military.Army;
 import com.romagame.military.MilitaryManager;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import com.romagame.ui.Camera;
+import com.romagame.ui.MapRenderer;
 
 /**
  * Optimized MapPanel with modern camera system and performance improvements.
@@ -65,6 +67,9 @@ public class MapPanel extends JPanel {
     private Map<String, String> nationToColor = new HashMap<>();
     private List<String> nationList = new ArrayList<>();
     private Map<String, String> colorKeyToProvinceId = new HashMap<>();
+    
+    private BufferedImage provinceMask;
+    private BufferedImage mapBackground;
 
     public MapPanel(GameEngine engine) {
         System.out.println("MapPanel constructor called");
@@ -146,18 +151,19 @@ public class MapPanel extends JPanel {
                 System.out.println("[DEBUG] Fallback absolute path: " + mapFile.getAbsolutePath());
             }
             if (mapFile.exists()) {
-                BufferedImage mapBackground = ImageIO.read(mapFile);
-                if (mapBackground != null) {
+                BufferedImage loadedMapBackground = ImageIO.read(mapFile);
+                if (loadedMapBackground != null) {
                     // Update preferred size to match the actual map dimensions
-                    setPreferredSize(new Dimension(mapBackground.getWidth(), mapBackground.getHeight()));
+                    setPreferredSize(new Dimension(loadedMapBackground.getWidth(), loadedMapBackground.getHeight()));
                     revalidate(); // Notify layout manager of size change
-                    System.out.println("Loaded map background from: " + mapFile.getPath() + " | Size: " + mapBackground.getWidth() + "x" + mapBackground.getHeight());
+                    System.out.println("Loaded map background from: " + mapFile.getPath() + " | Size: " + loadedMapBackground.getWidth() + "x" + loadedMapBackground.getHeight());
                     
                     // Set map dimensions in camera
-                    camera.setMapDimensions(mapBackground.getWidth(), mapBackground.getHeight());
+                    camera.setMapDimensions(loadedMapBackground.getWidth(), loadedMapBackground.getHeight());
                     
                     // Set background in renderer
-                    renderer.setMapBackground(mapBackground);
+                    renderer.setMapBackground(loadedMapBackground);
+                    this.mapBackground = loadedMapBackground;
                 } else {
                     System.err.println("[ERROR] mapBackground is null after ImageIO.read! | Path: " + mapFile.getPath());
                     createGradientBackground();
@@ -216,6 +222,7 @@ public class MapPanel extends JPanel {
                 BufferedImage provinceMask = ImageIO.read(maskFile);
                 updateProvinceColorMap();
                 renderer.setProvinceMask(provinceMask);
+                this.provinceMask = provinceMask;
                 repaint();
                 System.out.println("Loaded province mask from: " + maskFile.getPath());
                 if (provinceMask != null) {
@@ -280,51 +287,6 @@ public class MapPanel extends JPanel {
 
     private void updateProvinceColorMap() {
         // No-op: do not recolor provinces, just use the background image
-    }
-
-    private void updateBorderOverlay() {
-        if (provinceMask == null) return;
-        // Use edge detection to highlight province borders (white, strong)
-        float[] kernel = {
-            -1, -1, -1,
-            -1,  8, -1,
-            -1, -1, -1
-        };
-        ConvolveOp edgeOp = new ConvolveOp(new Kernel(3, 3, kernel));
-        BufferedImage edge = edgeOp.filter(provinceMask, null);
-        // Convert all non-black pixels to white for clear borders
-        borderOverlay = new BufferedImage(edge.getWidth(), edge.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        for (int y = 0; y < edge.getHeight(); y++) {
-            for (int x = 0; x < edge.getWidth(); x++) {
-                int v = edge.getRGB(x, y) & 0xFFFFFF;
-                if (v != 0) {
-                    borderOverlay.setRGB(x, y, 0xFFFFFFFF); // white
-                } else {
-                    borderOverlay.setRGB(x, y, 0x00000000); // transparent
-                }
-            }
-        }
-    }
-
-    private void updateLandShading() {
-        if (provinceMask == null) return;
-        int w = provinceMask.getWidth(), h = provinceMask.getHeight();
-        landShading = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2 = landShading.createGraphics();
-        for (int y = 0; y < h; y++) {
-            for (int x = 0; x < w; x++) {
-                int argb = provinceMask.getRGB(x, y);
-                if ((argb & 0xFFFFFF) != 0) {
-                    double dx = (x - w/2) / (double)w;
-                    double dy = (y - h/2) / (double)h;
-                    double dist = Math.sqrt(dx*dx + dy*dy);
-                    int shade = (int)(60 * (1.0 - dist));
-                    int c = Math.max(0, Math.min(255, 180 + shade));
-                    landShading.setRGB(x, y, new Color(c, c, c, 40).getRGB());
-                }
-            }
-        }
-        g2.dispose();
     }
 
     private void setupMouseListeners() {
@@ -401,9 +363,8 @@ public class MapPanel extends JPanel {
             }
             @Override
             public void mouseMoved(MouseEvent e) {
-                if (provinceMask == null) return;
                 String oldHoveredProvinceId = hoveredProvinceId;
-                mouseMapPoint = screenToMap(e.getPoint());
+                mouseMapPoint = camera.screenToMap(e.getX(), e.getY());
                 hoveredProvinceId = getProvinceIdAt(mouseMapPoint);
                 
                 // Only repaint if hover state changed
@@ -422,10 +383,6 @@ public class MapPanel extends JPanel {
                     } else {
                         setToolTipText(null);
                     }
-                    
-                    // Invalidate hover cache and repaint
-                    cachedHoverHighlight = null;
-                    cachedHoverForHighlight = null;
                     repaint();
                 }
             }
@@ -510,167 +467,11 @@ public class MapPanel extends JPanel {
                         selectedArmy.setLocation(provinceId);
                         repaint();
                     } else {
-                        // Show province context menu
                         showProvinceContextMenu(clickedProvince, e.getPoint());
                     }
                 }
             }
         }
-    }
-
-
-    public void updateCachedBorders(int imgW, int imgH, double scale, int x, int y) {
-        if (cachedBorders != null && cachedBorders.getWidth() == getWidth() && cachedBorders.getHeight() == getHeight()) return;
-        cachedBorders = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2d = cachedBorders.createGraphics();
-        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-        g2d.setStroke(new BasicStroke((float)Math.max(1.0, scale * 1.1), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        g2d.setColor(new Color(100,100,100,200));
-        for (int yy = 1; yy < imgH-1; yy++) {
-            for (int xx = 1; xx < imgW-1; xx++) {
-                int argb = provinceMask.getRGB(xx, yy);
-                if (argb != 0xFF000000) {
-                    boolean border = false;
-                    int[] dx = {-1,1,0,0};
-                    int[] dy = {0,0,-1,1};
-                    for (int d = 0; d < 4; d++) {
-                        int nx = xx+dx[d], ny = yy+dy[d];
-                        if (nx < 0 || nx >= imgW || ny < 0 || ny >= imgH) continue;
-                        if (provinceMask.getRGB(nx, ny) == 0xFF000000) border = true;
-                    }
-                    if (border) {
-                        g2d.drawLine(x + (int)(xx * scale), y + (int)(yy * scale), x + (int)(xx * scale), y + (int)(yy * scale));
-                    }
-                }
-            }
-        }
-        g2d.dispose();
-    }
-
-    private void updateCachedNationHighlight(String nation, int imgW, int imgH, double scale, int x, int y) {
-        if (cachedNationHighlight != null && nation.equals(cachedNationForHighlight) && cachedNationHighlight.getWidth() == getWidth() && cachedNationHighlight.getHeight() == getHeight()) return;
-        cachedNationHighlight = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
-        cachedNationForHighlight = nation;
-        Graphics2D g2d = cachedNationHighlight.createGraphics();
-        
-        // Enhanced highlighting with border and glow effect for provinces belonging to the selected nation
-        for (int yy = 0; yy < imgH; yy++) {
-            for (int xx = 0; xx < imgW; xx++) {
-                int argb = provinceMask.getRGB(xx, yy);
-                int r = (argb >> 16) & 0xFF;
-                int g = (argb >> 8) & 0xFF;
-                int b = argb & 0xFF;
-                
-                // Skip black pixels (ocean/background)
-                if (r == 0 && g == 0 && b == 0) {
-                    continue;
-                }
-                
-                // Check if this pixel belongs to a province owned by the selected nation
-                String colorKey = String.format("%d,%d,%d", r, g, b);
-                String provinceId = colorKeyToProvinceId.get(colorKey);
-                if (provinceId != null) {
-                    Province province = engine.getWorldMap().getProvince(provinceId);
-                    if (province != null && nation.equals(province.getOwner())) {
-                        int screenX = x + (int)(xx * scale);
-                        int screenY = y + (int)(yy * scale);
-                        int pixelSize = (int)Math.ceil(scale);
-                        
-                        // Inner highlight (brighter)
-                        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.15f));
-                        g2d.setColor(Color.YELLOW);
-                        g2d.fillRect(screenX, screenY, pixelSize, pixelSize);
-                        
-                        // Border highlight
-                        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
-                        g2d.setColor(Color.ORANGE);
-                        g2d.setStroke(new BasicStroke(Math.max(2.0f, (float)scale * 0.5f)));
-                        g2d.drawRect(screenX, screenY, pixelSize, pixelSize);
-                    }
-                }
-            }
-        }
-        g2d.dispose();
-    }
-
-    public void updateCachedProvinceHighlight(String provinceId, int imgW, int imgH, double scale, int x, int y) {
-        if (cachedProvinceHighlight != null && provinceId.equals(cachedProvinceForHighlight) && cachedProvinceHighlight.getWidth() == getWidth() && cachedProvinceHighlight.getHeight() == getHeight()) return;
-        cachedProvinceHighlight = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
-        cachedProvinceForHighlight = provinceId;
-        Province hovered = engine.getWorldMap().getProvince(provinceId);
-        if (hovered == null) return;
-        Color glow = getProvinceColor(hovered);
-        Graphics2D g2d = cachedProvinceHighlight.createGraphics();
-        for (int r = 8; r >= 2; r -= 2) {
-            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.10f * (10 - r)));
-            for (int yy = 0; yy < imgH; yy++) {
-                for (int xx = 0; xx < imgW; xx++) {
-                    int argb = provinceMask.getRGB(xx, yy) | 0xFF000000;
-                    if (colorToProvinceId.get(argb) != null && colorToProvinceId.get(argb).equals(provinceId)) {
-                        g2d.setColor(glow);
-                        g2d.fillOval(x + (int)(xx * scale) - r, y + (int)(yy * scale) - r, (int)Math.ceil(scale) + 2*r, (int)Math.ceil(scale) + 2*r);
-                    }
-                }
-            }
-        }
-        g2d.dispose();
-    }
-    
-    private void updateCachedHoverHighlight(String provinceId, int imgW, int imgH, double scale, int x, int y) {
-        if (cachedHoverHighlight != null && provinceId.equals(cachedHoverForHighlight) && cachedHoverHighlight.getWidth() == getWidth() && cachedHoverHighlight.getHeight() == getHeight()) return;
-        cachedHoverHighlight = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
-        cachedHoverForHighlight = provinceId;
-        Province hovered = engine.getWorldMap().getProvince(provinceId);
-        if (hovered == null) return;
-        
-        Graphics2D g2d = cachedHoverHighlight.createGraphics();
-        
-        // Enhanced hover highlighting with bright border and glow effect
-        for (int yy = 0; yy < imgH; yy++) {
-            for (int xx = 0; xx < imgW; xx++) {
-                int argb = provinceMask.getRGB(xx, yy);
-                int r = (argb >> 16) & 0xFF;
-                int g = (argb >> 8) & 0xFF;
-                int b = argb & 0xFF;
-                
-                // Skip black pixels (ocean/background)
-                if (r == 0 && g == 0 && b == 0) {
-                    continue;
-                }
-                
-                // Check if this pixel belongs to the hovered province
-                String colorKey = String.format("%d,%d,%d", r, g, b);
-                String pixelProvinceId = colorKeyToProvinceId.get(colorKey);
-                if (pixelProvinceId != null && pixelProvinceId.equals(provinceId)) {
-                    int screenX = x + (int)(xx * scale);
-                    int screenY = y + (int)(yy * scale);
-                    int pixelSize = (int)Math.ceil(scale);
-                    
-                    // Inner highlight (bright white glow)
-                    g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
-                    g2d.setColor(Color.WHITE);
-                    g2d.fillRect(screenX, screenY, pixelSize, pixelSize);
-                    
-                    // Border highlight (bright cyan border)
-                    g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.9f));
-                    g2d.setColor(Color.CYAN);
-                    g2d.setStroke(new BasicStroke(Math.max(3.0f, (float)scale * 0.8f)));
-                    g2d.drawRect(screenX, screenY, pixelSize, pixelSize);
-                }
-            }
-        }
-        g2d.dispose();
-    }
-
-    private void invalidateOverlayCache() {
-        cachedBorders = null;
-        cachedNationHighlight = null;
-        cachedProvinceHighlight = null;
-        cachedHoverHighlight = null;
-        cachedNationForHighlight = null;
-        cachedProvinceForHighlight = null;
-        cachedHoverForHighlight = null;
-        // Don't invalidate ocean background cache - it's static
     }
 
     @Override
@@ -684,7 +485,7 @@ public class MapPanel extends JPanel {
         
         // Use renderer to draw the map
         if (renderer != null) {
-            renderer.render(g2d, camera);
+            renderer.render(g2d, camera, getVisibleRect());
         } else {
             // Fallback if renderer is not available
             g2d.setColor(Color.BLUE);
@@ -698,7 +499,7 @@ public class MapPanel extends JPanel {
         drawViewingCoordinates(g2d);
     }
 
-    private Color getProvinceColor(Province province) {
+    public Color getProvinceColor(Province province) {
         String owner = province.getOwner();
         if (!countryColors.containsKey(owner)) {
             // Assign a unique, non-magenta color for each country
@@ -710,7 +511,7 @@ public class MapPanel extends JPanel {
         return countryColors.get(owner);
     }
 
-    private void drawNationLabels(Graphics2D g2d, int x0, int y0, double scale, int imgW, int imgH) {
+    public void drawNationLabels(Graphics2D g2d, int x0, int y0, double scale, int imgW, int imgH) {
         Map<String, double[]> centroids = new HashMap<>();
         Map<String, Integer> counts = new HashMap<>();
         
@@ -929,13 +730,11 @@ public class MapPanel extends JPanel {
     
     public void selectNation(String nation) {
         selectedNation = nation;
-        invalidateOverlayCache();
         repaint();
     }
     
     public void clearNationSelection() {
         selectedNation = null;
-        invalidateOverlayCache();
         repaint();
     }
     
@@ -1173,31 +972,13 @@ public class MapPanel extends JPanel {
         return null;
     }
 
-    // Call this in paintComponent before drawing anything
-    private void updateTransform() {
-        if (provinceMask == null) return;
-        mapImgWidth = provinceMask.getWidth();
-        mapImgHeight = provinceMask.getHeight();
-        int panelW = getWidth();
-        int panelH = getHeight();
-        currentScale = Math.min(panelW / (double)mapImgWidth, panelH / (double)mapImgHeight) * zoom;
-        int drawW = (int)(mapImgWidth * currentScale);
-        int drawH = (int)(mapImgHeight * currentScale);
-        currentOffsetX = (panelW - drawW) / 2 + offsetX;
-        currentOffsetY = (panelH - drawH) / 2 + offsetY;
-    }
-
     public Point mapToScreen(int mapX, int mapY) {
-        int x = (int)(mapX * currentScale) + currentOffsetX;
-        int y = (int)(mapY * currentScale) + currentOffsetY;
-        return new Point(x, y);
+        return camera.mapToScreen(mapX, mapY);
     }
 
     private Point screenToMap(Point p) {
         if (provinceMask == null || p == null) return null;
-        int mapX = (int)((p.x - currentOffsetX) / currentScale);
-        int mapY = (int)((p.y - currentOffsetY) / currentScale);
-        return new Point(mapX, mapY);
+        return camera.screenToMap(p.x, p.y);
     }
 
     private String getProvinceIdAt(Point mapPoint) {
@@ -1299,7 +1080,6 @@ public class MapPanel extends JPanel {
                     selectedNation = nationName;
                     selectedProvince = clickedProvince; // Set selected province for info display
                     lastProvinceClickTime = System.currentTimeMillis(); // Track click time for faster response
-                    invalidateOverlayCache();
                     repaint();
                     // Show province info dialog (popup)
                     showProvinceInfo(clickedProvince);
@@ -1417,27 +1197,19 @@ public class MapPanel extends JPanel {
         int panelW = getWidth() > 0 ? getWidth() : 1600;
         int panelH = getHeight() > 0 ? getHeight() : 900;
         
-        // Apply zoom scaling
-        double scaledX = centerX * zoom;
-        double scaledY = centerY * zoom;
-        
-        offsetX = panelW/2 - (int)scaledX;
-        offsetY = panelH/2 - (int)scaledY;
-        
-        // Cap movement within bounds
-        capMovementWithinBounds(offsetX, offsetY);
+        // Center camera on the province coordinates
+        camera.centerOn(centerX, centerY);
         
         System.out.println("Centering on province " + provinceId + ": centerX=" + centerX + 
-                          ", centerY=" + centerY + ", offsetX=" + offsetX + ", offsetY=" + offsetY);
+                          ", centerY=" + centerY);
         
-        invalidateOverlayCache();
         repaint();
     }
     
     private void capMovementWithinBounds(int newOffsetX, int newOffsetY) {
         if (mapBackground == null) {
-            offsetX = newOffsetX;
-            offsetY = newOffsetY;
+            camera.setOffsetX(newOffsetX);
+            camera.setOffsetY(newOffsetY);
             return;
         }
         
@@ -1447,8 +1219,8 @@ public class MapPanel extends JPanel {
         int panelH = getHeight() > 0 ? getHeight() : 900;
         
         // Calculate the scaled map dimensions
-        double scaledMapWidth = mapWidth * zoom;
-        double scaledMapHeight = mapHeight * zoom;
+        double scaledMapWidth = mapWidth * camera.getZoom();
+        double scaledMapHeight = mapHeight * camera.getZoom();
         
         // Calculate boundaries
         // The map should not be dragged beyond the point where the entire map is visible
@@ -1466,13 +1238,13 @@ public class MapPanel extends JPanel {
         }
         
         // Apply boundary constraints
-        offsetX = Math.max(minOffsetX, Math.min(maxOffsetX, newOffsetX));
-        offsetY = Math.max(minOffsetY, Math.min(maxOffsetY, newOffsetY));
+        camera.setOffsetX(Math.max(minOffsetX, Math.min(maxOffsetX, newOffsetX)));
+        camera.setOffsetY(Math.max(minOffsetY, Math.min(maxOffsetY, newOffsetY)));
         
         // Debug output for boundary checking
-        if (newOffsetX != offsetX || newOffsetY != offsetY) {
+        if (newOffsetX != camera.getOffsetX() || newOffsetY != camera.getOffsetY()) {
             System.out.println("Movement capped: requested(" + newOffsetX + "," + newOffsetY + 
-                              ") -> actual(" + offsetX + "," + offsetY + ")");
+                              ") -> actual(" + camera.getOffsetX() + "," + camera.getOffsetY() + ")");
             // Could add visual feedback here (e.g., brief border flash)
         }
     }
@@ -1488,8 +1260,8 @@ public class MapPanel extends JPanel {
         int panelW = getWidth() > 0 ? getWidth() : 1600;
         int panelH = getHeight() > 0 ? getHeight() : 900;
         
-        double scaledMapWidth = mapWidth * zoom;
-        double scaledMapHeight = mapHeight * zoom;
+        double scaledMapWidth = mapWidth * camera.getZoom();
+        double scaledMapHeight = mapHeight * camera.getZoom();
         
         int minOffsetX = panelW - (int)scaledMapWidth;
         int maxOffsetX = 0;
@@ -1506,11 +1278,11 @@ public class MapPanel extends JPanel {
         System.out.println("Map Boundaries:");
         System.out.println("  Map size: " + mapWidth + "x" + mapHeight);
         System.out.println("  Panel size: " + panelW + "x" + panelH);
-        System.out.println("  Zoom: " + zoom);
+        System.out.println("  Zoom: " + camera.getZoom());
         System.out.println("  Scaled map: " + (int)scaledMapWidth + "x" + (int)scaledMapHeight);
         System.out.println("  X bounds: " + minOffsetX + " to " + maxOffsetX);
         System.out.println("  Y bounds: " + minOffsetY + " to " + maxOffsetY);
-        System.out.println("  Current offset: " + offsetX + ", " + offsetY);
+        System.out.println("  Current offset: " + camera.getOffsetX() + ", " + camera.getOffsetY());
     }
     
     private void drawViewingCoordinates(Graphics2D g2d) {
@@ -1522,12 +1294,12 @@ public class MapPanel extends JPanel {
         int panelH = getHeight();
         
         // Calculate the visible area of the map
-        double scaledMapWidth = mapWidth * zoom;
-        double scaledMapHeight = mapHeight * zoom;
+        double scaledMapWidth = mapWidth * camera.getZoom();
+        double scaledMapHeight = mapHeight * camera.getZoom();
         
         // Calculate the top-left corner of the visible map area
-        int visibleX = -offsetX;
-        int visibleY = -offsetY;
+        int visibleX = -camera.getOffsetX();
+        int visibleY = -camera.getOffsetY();
         
         // Convert screen coordinates to map coordinates
         Point topLeft = screenToMap(new Point(0, 0));
