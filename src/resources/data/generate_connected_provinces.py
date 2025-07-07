@@ -90,46 +90,50 @@ def find_connected_regions(image, color_mapping, min_size=10):
     
     return provinces
 
-def generate_provinces_from_image():
-    """Generate provinces from start.png image using connected regions"""
+def generate_provinces_from_mask():
+    """Generate provinces from province_mask.png using connected regions"""
     
-    # Try different paths for the image
-    image_paths = [
-        "start.png",
-        "../img/start.png",
-        "../../img/start.png",
-        "C:/Users/taylo/Documents/projects/Roma Game/src/resources/img/start.png"
+    # Try different paths for the province mask
+    mask_paths = [
+        "province_mask.png",
+        "../img/province_mask.png",
+        "../../img/province_mask.png",
+        "C:/Users/taylo/Documents/projects/Roma Game/src/resources/img/province_mask.png"
     ]
     
-    start_path = None
-    for path in image_paths:
+    mask_path = None
+    for path in mask_paths:
         if Path(path).exists():
-            start_path = path
+            mask_path = path
             break
     
-    if start_path is None:
-        print("Error: start.png not found in any of the expected locations")
+    if mask_path is None:
+        print("Error: province_mask.png not found in any of the expected locations")
         print("Searched in:")
-        for path in image_paths:
+        for path in mask_paths:
             print(f"  - {path}")
         return None
     
-    print(f"Loading image from: {start_path}")
+    print(f"Loading province mask from: {mask_path}")
     
-    # Load image
-    start = cv2.imread(start_path)
-    if start is None:
-        print(f"Error: Could not load {start_path}")
+    # Load province mask image
+    mask_image = cv2.imread(mask_path)
+    if mask_image is None:
+        print(f"Error: Could not load {mask_path}")
         return None
     
     # Convert BGR to RGB
-    start_rgb = cv2.cvtColor(start, cv2.COLOR_BGR2RGB)
-    height, width = start_rgb.shape[:2]
+    mask_rgb = cv2.cvtColor(mask_image, cv2.COLOR_BGR2RGB)
+    height, width = mask_rgb.shape[:2]
     
-    print(f"Image loaded: {width}x{height} pixels")
+    print(f"Province mask loaded: {width}x{height} pixels")
     
-    # Find connected regions - increase min_size to filter out tiny regions and speed up processing
-    provinces = find_connected_regions(start_rgb, min_size=20)
+    # Load owner color mapping
+    color_mapping = load_owner_color_mapping()
+    print(f"Loaded {len(color_mapping)} owner color mappings")
+    
+    # Find connected regions from province mask
+    provinces = find_connected_regions(mask_rgb, color_mapping, min_size=20)
     
     print(f"Generated {len(provinces)} provinces from connected regions")
     
@@ -186,10 +190,10 @@ def generate_province_files(provinces):
     print(f"- province_color_map.csv ({len(provinces)} provinces)")
 
 def main():
-    print("Generating provinces from start.png using connected regions...")
+    print("Generating provinces from province_mask.png using connected regions...")
     
-    # Generate provinces from image
-    provinces = generate_provinces_from_image()
+    # Generate provinces from mask
+    provinces = generate_provinces_from_mask()
     if not provinces:
         return
     
