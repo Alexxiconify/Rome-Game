@@ -46,4 +46,4 @@ Thumbs.db
 /dist/
 /nbdist/
 /.nb-gradle/
-tmp/
+/tmp/
