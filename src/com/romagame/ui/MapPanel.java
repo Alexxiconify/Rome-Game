@@ -25,56 +25,55 @@ import com.romagame.military.Army;
 import com.romagame.military.MilitaryManager;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+
+/**
+ * Optimized MapPanel with modern camera system and performance improvements.
+ * Uses Camera and MapRenderer for better separation of concerns and performance.
+ */
 public class MapPanel extends JPanel {
+    // Core components
     private GameEngine engine;
-    private double zoom = 1.0;
-    private int offsetX = 0;
-    private int offsetY = 0;
+    private Camera camera;
+    private MapRenderer renderer;
+    
+    // UI state
     private boolean isDragging = false;
+    private boolean isHolding = false;
     private Point lastMousePos;
-    private BufferedImage mapBackground;
-    private BufferedImage borderlessOverlay; // Borderless version to hide same-color borders
-    private BufferedImage provinceMask;
-    private BufferedImage borderOverlay = null;
-    private Map<Integer, String> colorToProvinceId = new HashMap<>(); // ARGB -> provinceId
+    private Point holdStartPos = null;
+    private long holdStartTime = 0;
     private Point mouseMapPoint = null;
     private String hoveredProvinceId = null;
-    private BufferedImage landShading = null;
+    private String selectedNation = null;
+    private Army selectedArmy = null;
+    private Province selectedProvince = null;
+    
+    // Hold-to-drag settings
+    private static final long HOLD_THRESHOLD_MS = 200; // 200ms hold required
+    private static final int HOLD_DISTANCE_THRESHOLD = 5; // 5 pixels max movement during hold
+    
+    // Performance tracking
+    private long lastProvinceClickTime = 0;
+    private long lastRepaintTime = 0;
+    private static final long REPAINT_THROTTLE_MS = 16; // ~60 FPS
+    
+    // Data mappings
+    private Map<Integer, String> colorToProvinceId = new HashMap<>();
     private Map<String, Color> countryColors = new HashMap<>();
     private Map<String, Color> provinceIdToOwnerColor = new HashMap<>();
-    private String selectedNation = null; // Add this field to track selected nation
-    private BufferedImage cachedBorders = null;
-    private BufferedImage cachedNationHighlight = null;
-    private String cachedNationForHighlight = null;
-    private BufferedImage cachedProvinceHighlight = null;
-    private String cachedProvinceForHighlight = null;
-    private BufferedImage cachedHoverHighlight = null;
-    private String cachedHoverForHighlight = null;
-    
-    // Province data from JSON
     private Map<String, String> provinceIdToOwner = new HashMap<>();
     private Map<String, String> nationToColor = new HashMap<>();
     private List<String> nationList = new ArrayList<>();
-
-    // Centralized transform fields
-    private double currentScale;
-    private int currentOffsetX, currentOffsetY;
-    private int mapImgWidth, mapImgHeight;
-    
-    // Performance optimization fields
-    public BufferedImage cachedOceanBackground = null;
-    public int lastOceanBgWidth = -1;
-    public int lastOceanBgHeight = -1;
-
-    private Army selectedArmy = null;
-    private Province selectedProvince = null; // Track selected province for info display
-    public long lastProvinceClickTime = 0; // For faster response
-
     private Map<String, String> colorKeyToProvinceId = new HashMap<>();
 
     public MapPanel(GameEngine engine) {
         System.out.println("MapPanel constructor called");
         this.engine = engine;
+        
+        // Initialize camera and renderer
+        this.camera = new Camera();
+        this.renderer = new MapRenderer();
+        
         setupPanel();
         System.out.println("Calling loadMapBackground()");
         loadMapBackground();
@@ -83,9 +82,9 @@ public class MapPanel extends JPanel {
         System.out.println("Calling loadNationsAndProvinces()");
         loadNationsAndProvinces();
         setupMouseListeners();
+        
         // Start at coordinates (0,0)
-        offsetX = 0;
-        offsetY = 0;
+        camera.centerOn(0, 0);
     }
 
     private void setupPanel() {
@@ -147,12 +146,18 @@ public class MapPanel extends JPanel {
                 System.out.println("[DEBUG] Fallback absolute path: " + mapFile.getAbsolutePath());
             }
             if (mapFile.exists()) {
-                mapBackground = ImageIO.read(mapFile);
+                BufferedImage mapBackground = ImageIO.read(mapFile);
                 if (mapBackground != null) {
                     // Update preferred size to match the actual map dimensions
                     setPreferredSize(new Dimension(mapBackground.getWidth(), mapBackground.getHeight()));
                     revalidate(); // Notify layout manager of size change
                     System.out.println("Loaded map background from: " + mapFile.getPath() + " | Size: " + mapBackground.getWidth() + "x" + mapBackground.getHeight());
+                    
+                    // Set map dimensions in camera
+                    camera.setMapDimensions(mapBackground.getWidth(), mapBackground.getHeight());
+                    
+                    // Set background in renderer
+                    renderer.setMapBackground(mapBackground);
                 } else {
                     System.err.println("[ERROR] mapBackground is null after ImageIO.read! | Path: " + mapFile.getPath());
                     createGradientBackground();
@@ -165,9 +170,10 @@ public class MapPanel extends JPanel {
             // Load start1.png as the borderless overlay
             File borderlessFile = new File("src/resources/img/start1.png");
             if (borderlessFile.exists()) {
-                borderlessOverlay = ImageIO.read(borderlessFile);
+                BufferedImage borderlessOverlay = ImageIO.read(borderlessFile);
                 if (borderlessOverlay != null) {
                     System.out.println("Loaded borderless overlay from: " + borderlessFile.getPath() + " | Size: " + borderlessOverlay.getWidth() + "x" + borderlessOverlay.getHeight());
+                    renderer.setBorderlessOverlay(borderlessOverlay);
                 } else {
                     System.err.println("[ERROR] borderlessOverlay is null after ImageIO.read! | Path: " + borderlessFile.getPath());
                 }
@@ -181,7 +187,7 @@ public class MapPanel extends JPanel {
     }
 
     private void createGradientBackground() {
-        mapBackground = new BufferedImage(1200, 700, BufferedImage.TYPE_INT_RGB);
+        BufferedImage mapBackground = new BufferedImage(1200, 700, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = mapBackground.createGraphics();
         GradientPaint gp = new GradientPaint(0, 0, new Color(24, 38, 66), 0, 700, new Color(10, 18, 36));
         g2d.setPaint(gp);
@@ -196,29 +202,10 @@ public class MapPanel extends JPanel {
             }
         }
         g2d.dispose();
-        createLandShading();
-    }
-
-    private void createLandShading() {
-        if (provinceMask == null) return;
-        int w = provinceMask.getWidth(), h = provinceMask.getHeight();
-        landShading = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2 = landShading.createGraphics();
-        // Simple radial gradient for land relief
-        for (int y = 0; y < h; y++) {
-            for (int x = 0; x < w; x++) {
-                int argb = provinceMask.getRGB(x, y);
-                if (argb != 0xFF000000) {
-                    double dx = (x - w/2) / (double)w;
-                    double dy = (y - h/2) / (double)h;
-                    double dist = Math.sqrt(dx*dx + dy*dy);
-                    int shade = (int)(60 * (1.0 - dist));
-                    int c = Math.max(0, Math.min(255, 180 + shade));
-                    landShading.setRGB(x, y, new Color(c, c, c, 40).getRGB());
-                }
-            }
-        }
-        g2.dispose();
+        
+        // Set in renderer and camera
+        renderer.setMapBackground(mapBackground);
+        camera.setMapDimensions(1200, 700);
     }
 
     private void loadProvinceMask() {
@@ -226,11 +213,9 @@ public class MapPanel extends JPanel {
             // Load the original province_mask.png for province detection and tooltips
             File maskFile = new File("src/resources/img/province_mask.png");
             if (maskFile.exists()) {
-                provinceMask = ImageIO.read(maskFile);
+                BufferedImage provinceMask = ImageIO.read(maskFile);
                 updateProvinceColorMap();
-                updateBorderOverlay();
-                updateLandShading();
-                createLandShading();
+                renderer.setProvinceMask(provinceMask);
                 repaint();
                 System.out.println("Loaded province mask from: " + maskFile.getPath());
                 if (provinceMask != null) {
@@ -346,98 +331,200 @@ public class MapPanel extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (e.getButton() == MouseEvent.BUTTON1) {
-                    // Left-click: start dragging for map panning
-                    isDragging = true;
-                    lastMousePos = e.getPoint();
-                } else if (e.getButton() == MouseEvent.BUTTON3) {
-                    // Right-click: start dragging for province interaction
-                    isDragging = true;
-                    lastMousePos = e.getPoint();
-                }
+                // Start hold detection for both left and right clicks
+                isHolding = true;
+                holdStartPos = e.getPoint();
+                holdStartTime = System.currentTimeMillis();
+                lastMousePos = e.getPoint();
             }
             @Override
             public void mouseReleased(MouseEvent e) {
-                if (e.getButton() == MouseEvent.BUTTON1 || e.getButton() == MouseEvent.BUTTON3) {
-                    isDragging = false;
+                // Check if this was a hold-and-drag or just a click
+                long holdDuration = System.currentTimeMillis() - holdStartTime;
+                int holdDistance = holdStartPos != null ? 
+                    (int)Math.sqrt(Math.pow(e.getX() - holdStartPos.x, 2) + Math.pow(e.getY() - holdStartPos.y, 2)) : 0;
+                
+                if (holdDuration >= HOLD_THRESHOLD_MS && holdDistance <= HOLD_DISTANCE_THRESHOLD) {
+                    // This was a hold - start dragging
+                    isDragging = true;
+                    System.out.println("Hold detected - dragging enabled");
+                } else if (holdDuration < HOLD_THRESHOLD_MS && holdDistance <= HOLD_DISTANCE_THRESHOLD) {
+                    // This was a quick click - handle as click
+                    handleMouseClick(e);
+                }
+                
+                // Reset hold state
+                isHolding = false;
+                isDragging = false;
+                holdStartPos = null;
+                holdStartTime = 0;
+                lastMousePos = null;
+            }
+            }
+        });
+        
+        addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (isDragging && lastMousePos != null) {
+                    int dx = e.getX() - lastMousePos.x;
+                    int dy = e.getY() - lastMousePos.y;
+                    
+                    // Check if this is a right-click drag (province interaction) or left-click drag (map panning)
+                    if (e.getModifiersEx() == InputEvent.BUTTON3_DOWN_MASK) {
+                        // Right-click drag: province interaction
+                        handleProvinceDrag(e.getPoint(), dx, dy);
+                    } else {
+                        // Left-click drag: map panning using camera
+                        camera.moveBy(-dx, -dy);
+                        
+                        System.out.println("Map dragged: dx=" + dx + ", dy=" + dy);
+                        repaint();
+                    }
+                    
+                    lastMousePos = e.getPoint();
+                } else if (isHolding && holdStartPos != null) {
+                    // Check if hold is being maintained
+                    int holdDistance = (int)Math.sqrt(Math.pow(e.getX() - holdStartPos.x, 2) + Math.pow(e.getY() - holdStartPos.y, 2));
+                    long holdDuration = System.currentTimeMillis() - holdStartTime;
+                    
+                    if (holdDistance > HOLD_DISTANCE_THRESHOLD) {
+                        // Hold broken by movement - cancel hold
+                        isHolding = false;
+                        holdStartPos = null;
+                        holdStartTime = 0;
+                    } else if (holdDuration >= HOLD_THRESHOLD_MS) {
+                        // Hold threshold reached - start dragging
+                        isDragging = true;
+                        System.out.println("Hold threshold reached - dragging enabled");
+                    }
                 }
             }
             @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getButton() == MouseEvent.BUTTON1) {
-                    // Left-click: select army if clicked on icon, otherwise select province
-                    MilitaryManager mm = engine.getMilitaryManager();
-                    Point clickPoint = e.getPoint();
-                    boolean armyClicked = false;
-                    for (Army army : mm.getArmies().values()) {
-                        String loc = army.getLocation();
-                        if (loc == null || loc.equals("Unknown")) continue;
-                        Province province = engine.getWorldMap().getProvince(loc);
-                        if (province == null) continue;
-                        // Convert province coordinates to screen coordinates
-                        Point2D.Double mapCoords = DistanceCalculator.latLonToMapCoords(
-                            province.getLatitude(), province.getLongitude(), 
-                            mapImgWidth, mapImgHeight
-                        );
-                        Point screenCoords = DistanceCalculator.mapToScreen(
-                            mapCoords, currentScale, currentOffsetX, currentOffsetY
-                        );
-                        // Check if click is within army icon bounds
-                        int iconSize = 20;
-                        int x = screenCoords.x - iconSize / 2;
-                        int y = screenCoords.y - iconSize / 2;
-                        if (clickPoint.x >= x && clickPoint.x <= x + iconSize && 
-                            clickPoint.y >= y && clickPoint.y <= y + iconSize) {
-                            selectedArmy = army;
-                            // Show context menu
-                            JPopupMenu menu = new JPopupMenu();
-                            JMenuItem move = new JMenuItem("Move Army");
-                            JMenuItem split = new JMenuItem("Split Army");
-                            JMenuItem merge = new JMenuItem("Merge Army");
-                            JMenuItem disband = new JMenuItem("Disband Army");
-                            JMenuItem details = new JMenuItem("Show Details");
-                            move.addActionListener(evt -> showMoveArmyDialog(army));
-                            split.addActionListener(evt -> showSplitArmyDialog(army));
-                            merge.addActionListener(evt -> showMergeArmyDialog(army));
-                            disband.addActionListener(evt -> showDisbandArmyDialog(army));
-                            details.addActionListener(evt -> showArmyDetailsDialog(army));
-                            menu.add(move);
-                            menu.add(split);
-                            menu.add(merge);
-                            menu.add(disband);
-                            menu.addSeparator();
-                            menu.add(details);
-                            menu.show(MapPanel.this, x, y + iconSize);
+            public void mouseMoved(MouseEvent e) {
+                if (provinceMask == null) return;
+                String oldHoveredProvinceId = hoveredProvinceId;
+                mouseMapPoint = screenToMap(e.getPoint());
+                hoveredProvinceId = getProvinceIdAt(mouseMapPoint);
+                
+                // Only repaint if hover state changed
+                if ((oldHoveredProvinceId == null) != (hoveredProvinceId == null) || 
+                    (oldHoveredProvinceId != null && hoveredProvinceId != null && !oldHoveredProvinceId.equals(hoveredProvinceId))) {
+                    
+                    // Update tooltip with nation name
+                    if (hoveredProvinceId != null) {
+                        String owner = provinceIdToOwner.get(hoveredProvinceId);
+                        String color = nationToColor.get(owner);
+                        if (color != null) {
+                            setToolTipText("Province: " + hoveredProvinceId + " | Nation: " + owner);
+                        } else {
+                            setToolTipText("Province: " + hoveredProvinceId);
+                        }
+                    } else {
+                        setToolTipText(null);
+                    }
+                    
+                    // Invalidate hover cache and repaint
+                    cachedHoverHighlight = null;
+                    cachedHoverForHighlight = null;
+                    repaint();
+                }
+            }
+        });
+        addMouseWheelListener(e -> {
+            System.out.println("Mouse wheel event received: " + e.getWheelRotation());
+            double oldZoom = zoom;
+            double zoomFactor = e.getWheelRotation() > 0 ? 0.7 : 1.4; // Much faster zoom
+            zoom = Math.max(1.0, Math.min(10.0, zoom * zoomFactor));
+            
+            System.out.println("Zoom changed from " + oldZoom + " to " + zoom);
+            
+            // Only invalidate cache and repaint if zoom actually changed
+            if (Math.abs(zoom - oldZoom) > 0.01) {
+                // Cap movement within bounds after zoom change
+                capMovementWithinBounds(offsetX, offsetY);
+                invalidateOverlayCache();
+                repaint();
+            }
+        });
+    }
+    
+    // Add the handleMouseClick method
+    private void handleMouseClick(MouseEvent e) {
+            if (e.getButton() == MouseEvent.BUTTON1) {
+                // Left-click: select army if clicked on icon, otherwise select province
+                MilitaryManager mm = engine.getMilitaryManager();
+                Point clickPoint = e.getPoint();
+                boolean armyClicked = false;
+                for (Army army : mm.getArmies().values()) {
+                    String loc = army.getLocation();
+                    if (loc == null || loc.equals("Unknown")) continue;
+                    Province province = engine.getWorldMap().getProvince(loc);
+                    if (province == null) continue;
+                    // Convert province coordinates to screen coordinates
+                    Point2D.Double mapCoords = DistanceCalculator.latLonToMapCoords(
+                        province.getLatitude(), province.getLongitude(), 
+                        mapImgWidth, mapImgHeight
+                    );
+                    Point screenCoords = DistanceCalculator.mapToScreen(
+                        mapCoords, currentScale, currentOffsetX, currentOffsetY
+                    );
+                    // Check if click is within army icon bounds
+                    int iconSize = 20;
+                    int x = screenCoords.x - iconSize / 2;
+                    int y = screenCoords.y - iconSize / 2;
+                    if (clickPoint.x >= x && clickPoint.x <= x + iconSize && 
+                        clickPoint.y >= y && clickPoint.y <= y + iconSize) {
+                        selectedArmy = army;
+                        // Show context menu
+                        JPopupMenu menu = new JPopupMenu();
+                        JMenuItem move = new JMenuItem("Move Army");
+                        JMenuItem split = new JMenuItem("Split Army");
+                        JMenuItem merge = new JMenuItem("Merge Army");
+                        JMenuItem disband = new JMenuItem("Disband Army");
+                        JMenuItem details = new JMenuItem("Show Details");
+                        move.addActionListener(evt -> showMoveArmyDialog(army));
+                        split.addActionListener(evt -> showSplitArmyDialog(army));
+                        merge.addActionListener(evt -> showMergeArmyDialog(army));
+                        disband.addActionListener(evt -> showDisbandArmyDialog(army));
+                        details.addActionListener(evt -> showArmyDetailsDialog(army));
+                        menu.add(move);
+                        menu.add(split);
+                        menu.add(merge);
+                        menu.add(disband);
+                        menu.addSeparator();
+                        menu.add(details);
+                        menu.show(MapPanel.this, x, y + iconSize);
+                        repaint();
+                        armyClicked = true;
+                        break;
+                    }
+                }
+                if (!armyClicked) {
+                    // Only select province if click is on a valid province pixel
+                    Point mapPoint = screenToMap(e.getPoint());
+                    if (getProvinceIdAt(mapPoint) != null) {
+                        handleProvinceClick(e.getPoint());
+                    }
+                }
+            } else if (e.getButton() == MouseEvent.BUTTON3) {
+                // Right-click: move selected army to province or show province context menu
+                String provinceId = getProvinceIdAt(screenToMap(e.getPoint()));
+                if (provinceId != null) {
+                    Province clickedProvince = engine.getWorldMap().getProvince(provinceId);
+                    if (clickedProvince != null) {
+                        if (selectedArmy != null) {
+                            // Move selected army to province
+                            selectedArmy.setLocation(provinceId);
                             repaint();
-                            armyClicked = true;
-                            break;
-                        }
-                    }
-                    if (!armyClicked) {
-                        // Only select province if click is on a valid province pixel
-                        Point mapPoint = screenToMap(e.getPoint());
-                        if (getProvinceIdAt(mapPoint) != null) {
-                            handleProvinceClick(e.getPoint());
-                        }
-                    }
-                } else if (e.getButton() == MouseEvent.BUTTON3) {
-                    // Right-click: move selected army to province or show province context menu
-                    String provinceId = getProvinceIdAt(screenToMap(e.getPoint()));
-                    if (provinceId != null) {
-                        Province clickedProvince = engine.getWorldMap().getProvince(provinceId);
-                        if (clickedProvince != null) {
-                            if (selectedArmy != null) {
-                                // Move selected army to province
-                                selectedArmy.setLocation(provinceId);
-                                repaint();
-                            } else {
-                                // Show province context menu
-                                showProvinceContextMenu(clickedProvince, e.getPoint());
-                            }
+                        } else {
+                            // Show province context menu
+                            showProvinceContextMenu(clickedProvince, e.getPoint());
                         }
                     }
                 }
             }
+        }
         });
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
@@ -451,19 +538,29 @@ public class MapPanel extends JPanel {
                         // Right-click drag: province interaction
                         handleProvinceDrag(e.getPoint(), dx, dy);
                     } else {
-                        // Left-click drag: map panning
-                        int newOffsetX = offsetX + dx;
-                        int newOffsetY = offsetY + dy;
+                        // Left-click drag: map panning using camera
+                        camera.moveBy(-dx, -dy);
                         
-                        // Cap movement within map boundaries
-                        capMovementWithinBounds(newOffsetX, newOffsetY);
-                        
-                        System.out.println("Map dragged: dx=" + dx + ", dy=" + dy + ", offsetX=" + offsetX + ", offsetY=" + offsetY);
-                        invalidateOverlayCache();
+                        System.out.println("Map dragged: dx=" + dx + ", dy=" + dy);
                         repaint();
                     }
                     
                     lastMousePos = e.getPoint();
+                } else if (isHolding && holdStartPos != null) {
+                    // Check if hold is being maintained
+                    int holdDistance = (int)Math.sqrt(Math.pow(e.getX() - holdStartPos.x, 2) + Math.pow(e.getY() - holdStartPos.y, 2));
+                    long holdDuration = System.currentTimeMillis() - holdStartTime;
+                    
+                    if (holdDistance > HOLD_DISTANCE_THRESHOLD) {
+                        // Hold broken by movement - cancel hold
+                        isHolding = false;
+                        holdStartPos = null;
+                        holdStartTime = 0;
+                    } else if (holdDuration >= HOLD_THRESHOLD_MS) {
+                        // Hold threshold reached - start dragging
+                        isDragging = true;
+                        System.out.println("Hold threshold reached - dragging enabled");
+                    }
                 }
             }
             @Override
