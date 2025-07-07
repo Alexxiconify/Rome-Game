@@ -474,7 +474,7 @@ public class MapPanel extends JPanel {
     // Add the handleMouseClick method
     private void handleMouseClick(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON1) {
-            System.out.println("[DEBUG] Left click at " + e.getX() + "," + e.getY());
+            // System.out.println("[DEBUG] Left click at " + e.getX() + "," + e.getY());
             // Left-click: select army if clicked on icon, otherwise select province
             MilitaryManager mm = engine.getMilitaryManager();
             Point clickPoint = e.getPoint();
@@ -519,14 +519,26 @@ public class MapPanel extends JPanel {
                 }
             }
             if (!armyClicked) {
-                // Only select province if click is on a valid province pixel
+                // Always use the color at the clicked location in provinceMask to map to provinceId
                 Point mapPoint = camera.screenToMap(e.getX(), e.getY());
-                String provinceId = getProvinceIdAt(mapPoint);
-                System.out.println("[DEBUG] Province at click: " + provinceId);
-                if (provinceId != null) {
-                    handleProvinceClick(e.getPoint());
-                } else {
-                    System.out.println("[DEBUG] No province found at click location.");
+                if (provinceMask != null && mapPoint != null) {
+                    int x = mapPoint.x, y = mapPoint.y;
+                    if (x >= 0 && y >= 0 && x < provinceMask.getWidth() && y < provinceMask.getHeight()) {
+                        int argb = provinceMask.getRGB(x, y);
+                        int r = (argb >> 16) & 0xFF;
+                        int g = (argb >> 8) & 0xFF;
+                        int b = argb & 0xFF;
+                        String colorKey = String.format("%d,%d,%d", r, g, b);
+                        String provinceId = colorKeyToProvinceId.get(colorKey);
+                        if (provinceId == null) {
+                            provinceId = colorToProvinceId.get(argb);
+                        }
+                        if (provinceId != null) {
+                            handleProvinceClick(e.getPoint());
+                        } else {
+                            // No province found at click location
+                        }
+                    }
                 }
             }
         } else if (e.getButton() == MouseEvent.BUTTON3) {
@@ -1204,7 +1216,7 @@ public class MapPanel extends JPanel {
             }
         } else {
             // Only print debug info on click if no province found
-            System.out.println("[DEBUG] No provinceId found for color at click " + mapPoint.x + "," + mapPoint.y + " (" + (provinceMask.getRGB(mapPoint.x, mapPoint.y) >> 16 & 0xFF) + "," + (provinceMask.getRGB(mapPoint.x, mapPoint.y) >> 8 & 0xFF) + "," + (provinceMask.getRGB(mapPoint.x, mapPoint.y) & 0xFF) + ")");
+            // System.out.println("[DEBUG] No province found at click location.");
         }
     }
 
