@@ -72,9 +72,6 @@ public class WorldMap {
                     entry = entry.replaceFirst("\\s*\\}\\s*$", "");
                 }
                 
-                if (i < 5) {
-                    System.out.println("DEBUG: Province entry [" + i + "]: " + entry.substring(0, Math.min(200, entry.length())));
-                }
                 try {
                     // Extract province_id
                     String provinceId = extractJsonValue(entry, "province_id");
@@ -94,6 +91,20 @@ public class WorldMap {
                         System.out.println("DEBUG: Skipping entry [" + i + "]: missing owner_color");
                         continue;
                     }
+                    
+                    // Single-line debug output for first 5 entries
+                    if (i < 5) {
+                        String pixelCount = extractJsonValue(entry, "pixel_count");
+                        String centroidX = extractJsonValue(entry, "centroid_x");
+                        String centroidY = extractJsonValue(entry, "centroid_y");
+                        
+                        System.out.println("DEBUG: Province[" + i + "] id=" + provinceId + " owner=" + owner + 
+                                         " color=[" + rgb[0] + "," + rgb[1] + "," + rgb[2] + "]" +
+                                         (pixelCount != null ? " px=" + pixelCount : "") +
+                                         (centroidX != null ? " cx=" + centroidX : "") +
+                                         (centroidY != null ? " cy=" + centroidY : ""));
+                    }
+                    
                     createProvince(provinceId, owner, rgb[0], rgb[1], rgb[2]);
                     loadedCount++;
                 } catch (Exception e) {

@@ -188,6 +188,10 @@ class UnifiedDataManager:
                     "region_id": region_id
                 }
                 provinces.append(province)
+                
+                # Single-line debug output
+                print(f"DEBUG: Province[{province_id-1}] id={province['province_id']} owner={owner_name} color={[int(c) for c in color]} px={region_size} cx={centroid_x} cy={centroid_y}")
+                
                 province_id += 1
                 
                 # Progress indicator
@@ -243,6 +247,10 @@ class UnifiedDataManager:
                                 "centroid_y": centroid_y
                             }
                             provinces.append(province)
+                            
+                            # Single-line debug output
+                            print(f"DEBUG: Province[{province_id-1}] id={province['province_id']} owner={owner_name} color={list(color)} px={len(region_pixels)} cx={centroid_x} cy={centroid_y}")
+                            
                             province_id += 1
         
         return provinces
@@ -301,10 +309,7 @@ class UnifiedDataManager:
                 pixel_count = province['pixel_count']
                 writer.writerow([province_id, mask_color[0], mask_color[1], mask_color[2], owner, pixel_count])
         
-        print("Generated province files:")
-        print(f"- province_owners.csv ({len(provinces)} provinces)")
-        print(f"- province_ownership_report.csv ({len(owner_counts)} owners)")
-        print(f"- province_color_map.csv ({len(provinces)} provinces)")
+        print("Generated province files:", (f"- province_owners.csv ({len(provinces)} provinces)", f"- province_ownership_report.csv ({len(owner_counts)} owners)"), f"- province_color_map.csv ({len(provinces)} provinces)")
     
     def update_json_data(self, provinces):
         """Update nations_and_provinces.json with new province data"""
