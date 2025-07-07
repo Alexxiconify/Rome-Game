@@ -36,52 +36,56 @@ public class WorldMap {
             
             String jsonText = new String(java.nio.file.Files.readAllBytes(jsonPath));
             
-            // Parse provinces from JSON
-            String provincesBlock = jsonText.split("\"provinces\"\\s*:\\s*\\[", 2)[1].split("]")[0];
+            // Parse provinces from JSON with more robust parsing
+            int provincesStart = jsonText.indexOf("\"provinces\"");
+            if (provincesStart == -1) {
+                System.out.println("Could not find provinces section in JSON");
+                return false;
+            }
+            
+            int arrayStart = jsonText.indexOf("[", provincesStart);
+            if (arrayStart == -1) {
+                System.out.println("Could not find provinces array in JSON");
+                return false;
+            }
+            
+            int arrayEnd = findMatchingBracket(jsonText, arrayStart);
+            if (arrayEnd == -1) {
+                System.out.println("Could not find end of provinces array in JSON");
+                return false;
+            }
+            
+            String provincesBlock = jsonText.substring(arrayStart + 1, arrayEnd);
+            
+            // Split by province objects more carefully
             String[] provinceEntries = provincesBlock.split("\\},\\s*\\{");
             
             int loadedCount = 0;
-            for (String entry : provinceEntries) {
+            for (int i = 0; i < provinceEntries.length; i++) {
+                String entry = provinceEntries[i];
+                
+                // Clean up the entry
+                if (i == 0) {
+                    entry = entry.replaceFirst("^\\s*\\{\\s*", "");
+                }
+                if (i == provinceEntries.length - 1) {
+                    entry = entry.replaceFirst("\\s*\\}\\s*$", "");
+                }
+                
                 try {
                     // Extract province_id
-                    String provinceId = entry.split("\"province_id\"\\s*:\\s*\"")[1].split("\"")[0];
+                    String provinceId = extractJsonValue(entry, "province_id");
+                    if (provinceId == null) continue;
                     
-                    // Extract owner (try both "owner" and "owner_name" fields)
-                    String owner;
-                    if (entry.contains("\"owner_name\"")) {
-                        owner = entry.split("\"owner_name\"\\s*:\\s*\"")[1].split("\"")[0];
-                    } else {
-                        owner = entry.split("\"owner\"\\s*:\\s*\"")[1].split("\"")[0];
-                    }
+                    // Extract owner
+                    String owner = extractJsonValue(entry, "owner");
+                    if (owner == null) continue;
                     
-                    // Extract color (try both "mask_color" and "owner_color" fields)
-                    String colorStr;
-                    if (entry.contains("\"mask_color\"")) {
-                        colorStr = entry.split("\"mask_color\"\\s*:\\s*\\[")[1].split("]")[0].replaceAll("\\s", "");
-                    } else {
-                        colorStr = entry.split("\"owner_color\"\\s*:\\s*\\[")[1].split("]")[0].replaceAll("\\s", "");
-                    }
+                    // Extract color array
+                    int[] rgb = extractColorArray(entry, "owner_color");
+                    if (rgb == null) continue;
                     
-                    String[] rgb = colorStr.split(",");
-                    int r = Integer.parseInt(rgb[0]);
-                    int g = Integer.parseInt(rgb[1]);
-                    int b = Integer.parseInt(rgb[2]);
-                    
-                    // Create province with actual coordinates if available
-                    double lat = 0.0, lon = 0.0;
-                    if (entry.contains("\"centroid_x\"") && entry.contains("\"centroid_y\"")) {
-                        String centroidXStr = entry.split("\"centroid_x\"\\s*:\\s*")[1].split(",")[0];
-                        String centroidYStr = entry.split("\"centroid_y\"\\s*:\\s*")[1].split(",")[0];
-                        int centroidX = Integer.parseInt(centroidXStr);
-                        int centroidY = Integer.parseInt(centroidYStr);
-                        
-                        // Convert pixel coordinates to lat/lon (approximate)
-                        // This is a rough conversion - you might want to refine this
-                        lat = (centroidY - 1000) / 1000.0 * 90.0; // Rough conversion
-                        lon = (centroidX - 2000) / 2000.0 * 180.0; // Rough conversion
-                    }
-                    
-                    createProvince(provinceId, owner, r, g, b);
+                    createProvince(provinceId, owner, rgb[0], rgb[1], rgb[2]);
                     loadedCount++;
                     
                 } catch (Exception e) {
@@ -98,6 +102,43 @@ public class WorldMap {
             e.printStackTrace();
             return false;
         }
+    }
+    
+    private int findMatchingBracket(String text, int start) {
+        int count = 0;
+        for (int i = start; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == '[') count++;
+            else if (c == ']') {
+                count--;
+                if (count == 0) return i;
+            }
+        }
+        return -1;
+    }
+    
+    private String extractJsonValue(String json, String key) {
+        String pattern = "\"" + key + "\"\\s*:\\s*\"([^\"]+)\"";
+        java.util.regex.Pattern p = java.util.regex.Pattern.compile(pattern);
+        java.util.regex.Matcher m = p.matcher(json);
+        if (m.find()) {
+            return m.group(1);
+        }
+        return null;
+    }
+    
+    private int[] extractColorArray(String json, String key) {
+        String pattern = "\"" + key + "\"\\s*:\\s*\\[\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\]";
+        java.util.regex.Pattern p = java.util.regex.Pattern.compile(pattern);
+        java.util.regex.Matcher m = p.matcher(json);
+        if (m.find()) {
+            return new int[]{
+                Integer.parseInt(m.group(1)),
+                Integer.parseInt(m.group(2)),
+                Integer.parseInt(m.group(3))
+            };
+        }
+        return null;
     }
     
     private void initializeSeaZones() {
