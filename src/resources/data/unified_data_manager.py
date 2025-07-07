@@ -178,7 +178,9 @@ class UnifiedDataManager:
                 
                 province = {
                     "province_id": f"province_{province_id:04d}",
+                    "mask_color": [int(c) for c in color],
                     "owner_color": [int(c) for c in color],
+                    "owner_name": owner_name,
                     "owner": owner_name,
                     "pixel_count": int(region_size),
                     "centroid_x": centroid_x,
@@ -232,7 +234,9 @@ class UnifiedDataManager:
                             
                             province = {
                                 "province_id": f"province_{province_id:04d}",
+                                "mask_color": list(color),
                                 "owner_color": list(color),
+                                "owner_name": owner_name,
                                 "owner": owner_name,
                                 "pixel_count": len(region_pixels),
                                 "centroid_x": centroid_x,
@@ -292,10 +296,10 @@ class UnifiedDataManager:
             writer.writerow(['province_id', 'r', 'g', 'b', 'owner', 'pixel_count'])
             for province in provinces:
                 province_id = province['province_id']
-                owner_color = province['owner_color']
+                mask_color = province['mask_color']
                 owner = province['owner']
                 pixel_count = province['pixel_count']
-                writer.writerow([province_id, owner_color[0], owner_color[1], owner_color[2], owner, pixel_count])
+                writer.writerow([province_id, mask_color[0], mask_color[1], mask_color[2], owner, pixel_count])
         
         print("Generated province files:")
         print(f"- province_owners.csv ({len(provinces)} provinces)")
