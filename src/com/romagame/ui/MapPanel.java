@@ -1076,12 +1076,22 @@ public class MapPanel extends JPanel {
         String colorKey = String.format("%d,%d,%d", r, g, b);
         String provinceId = colorKeyToProvinceId.get(colorKey);
         if (provinceId != null) {
+            // Check if this province is uncivilized - if so, return null (not clickable)
+            String owner = provinceIdToOwner.get(provinceId);
+            if (owner != null && owner.equals("Uncivilized")) {
+                return null;
+            }
             return provinceId;
         }
         
         // Fallback to old colorToProvinceId mapping
         provinceId = colorToProvinceId.get(argb);
         if (provinceId != null) {
+            // Check if this province is uncivilized - if so, return null (not clickable)
+            String owner = provinceIdToOwner.get(provinceId);
+            if (owner != null && owner.equals("Uncivilized")) {
+                return null;
+            }
             return provinceId;
         }
         
@@ -1100,16 +1110,17 @@ public class MapPanel extends JPanel {
             if (clickedProvince != null) {
                 // Select the nation that owns this province
                 String nationName = clickedProvince.getOwner();
-                // Check for ocean, uncolonized, or transparent (black) pixel
+                // Check for ocean, uncolonized, uncivilized, or transparent (black) pixel
                 int x = mapPoint.x, y = mapPoint.y;
                 int argb = provinceMask.getRGB(x, y);
                 boolean isBlack = (argb & 0x00FFFFFF) == 0x000000;
-                if (!nationName.equals("Ocean") && !nationName.equals("Uncolonized") && !isBlack) {
+                if (!nationName.equals("Ocean") && !nationName.equals("Uncolonized") && 
+                    !nationName.equals("Uncivilized") && !isBlack) {
                     selectedNation = nationName;
                     invalidateOverlayCache();
                     repaint();
                     // Show province info dialog
-                showProvinceInfo(clickedProvince);
+                    showProvinceInfo(clickedProvince);
                 }
             }
         }
