@@ -170,8 +170,9 @@ public class MapPanel extends JPanel {
             if (borderlessFile.exists()) {
                 BufferedImage borderlessOverlay = ImageIO.read(borderlessFile);
                 if (borderlessOverlay != null) {
-                    System.out.println("Loaded borderless overlay from: " + borderlessFile.getPath() + " | Size: " + borderlessOverlay.getWidth() + "x" + borderlessOverlay.getHeight());
+                    System.out.println("[DEBUG] Loaded borderless overlay from: " + borderlessFile.getPath() + " | Size: " + borderlessOverlay.getWidth() + "x" + borderlessOverlay.getHeight());
                     renderer.setBorderlessOverlay(borderlessOverlay);
+                    System.out.println("[DEBUG] Borderless overlay set in renderer");
                 } else {
                     System.err.println("[ERROR] borderlessOverlay is null after ImageIO.read! | Path: " + borderlessFile.getPath());
                 }

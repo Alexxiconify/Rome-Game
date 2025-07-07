@@ -173,31 +173,35 @@ public class MapRenderer {
     }
     
     /**
-     * Render all map layers
+     * Render all map layers with proper blending
      */
     private void renderMapLayers(Graphics2D g2d, Rectangle visibleRect) {
-        // 1. Background
+        // 1. Background (start.png - with borders)
         if (mapBackground != null) {
+            System.out.println("[DEBUG] Rendering map background: " + mapBackground.getWidth() + "x" + mapBackground.getHeight());
             g2d.drawImage(mapBackground, 0, 0, null);
+        } else {
+            System.out.println("[DEBUG] Map background is null!");
         }
         
-        // 2. Land shading
+        // 2. Borderless overlay (start1.png - without borders) blended to create smooth borders
+        if (borderlessOverlay != null) {
+            System.out.println("[DEBUG] Rendering borderless overlay: " + borderlessOverlay.getWidth() + "x" + borderlessOverlay.getHeight());
+            
+            // Create a composite that blends the borderless overlay to smooth out borders
+            // Use SRC_OVER with 0.7 alpha to blend the borderless version over the bordered version
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.7f));
+            g2d.drawImage(borderlessOverlay, 0, 0, null);
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+        } else {
+            System.out.println("[DEBUG] Borderless overlay is null!");
+        }
+        
+        // 3. Land shading (optional - for terrain relief)
         if (landShading != null) {
-            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
+            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.2f));
             g2d.drawImage(landShading, 0, 0, null);
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
-        }
-        
-        // 3. Border overlay
-        if (borderOverlay != null) {
-            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
-            g2d.drawImage(borderOverlay, 0, 0, null);
-            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
-        }
-        
-        // 4. Borderless overlay (if different from background)
-        if (borderlessOverlay != null) {
-            g2d.drawImage(borderlessOverlay, 0, 0, null);
         }
     }
     
