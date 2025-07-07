@@ -86,6 +86,7 @@ public class GameWindow extends JFrame {
         
         // Create main content area with tabs
         mainTabbedPane.addTab("🗺 Map", new ImageIcon(), mapPanel, "Main map view");
+        mainTabbedPane.addTab("🏳 Country Info", new ImageIcon(), infoPanel, "Player country information");
         mainTabbedPane.addTab("⚔ Soldiers", new ImageIcon(), soldiersPanel, "Military management");
         mainTabbedPane.addTab("👥 Population", new ImageIcon(), populationPanel, "Population management");
         mainTabbedPane.addTab("💰 Trade", new ImageIcon(), tradePanel, "Trade and economy");
@@ -105,9 +106,6 @@ public class GameWindow extends JFrame {
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.add(mainTabbedPane, BorderLayout.CENTER);
         add(topPanel, BorderLayout.CENTER);
-        
-        // Right panel for country info
-        add(infoPanel, BorderLayout.EAST);
     }
     
     

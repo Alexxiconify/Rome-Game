@@ -163,9 +163,6 @@ public class MapRenderer {
         AffineTransform transform = camera.getTransform();
         g2d.setTransform(transform);
         
-        // Get visible rectangle
-        Rectangle visibleRect = camera.getVisibleMapRect();
-        
         // Check if we need to redraw (dirty rectangle optimization)
         if (ENABLE_DIRTY_RECTANGLES && !hasVisibleRectChanged(visibleRect, camera.getZoom())) {
             // Use cached rendering if available
