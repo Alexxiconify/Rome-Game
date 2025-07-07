@@ -98,11 +98,7 @@ public class WorldMap {
                         String centroidX = extractJsonValue(entry, "centroid_x");
                         String centroidY = extractJsonValue(entry, "centroid_y");
                         
-                        System.out.println("DEBUG: Province[" + i + "] id=" + provinceId + " owner=" + owner + 
-                                         " color=[" + rgb[0] + "," + rgb[1] + "," + rgb[2] + "]" +
-                                         (pixelCount != null ? " px=" + pixelCount : "") +
-                                         (centroidX != null ? " cx=" + centroidX : "") +
-                                         (centroidY != null ? " cy=" + centroidY : ""));
+                        System.out.println("DEBUG: Province[" + i + "] id=" + provinceId + " owner=" + owner +   " color=[" + rgb[0] + "," + rgb[1] + "," + rgb[2] + "]" + (pixelCount != null ? " px=" + pixelCount : "") + (centroidX != null ? " cx=" + centroidX : "") + (centroidY != null ? " cy=" + centroidY : ""));
                     }
                     
                     createProvince(provinceId, owner, rgb[0], rgb[1], rgb[2]);
