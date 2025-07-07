@@ -95,7 +95,9 @@ public class WorldMap {
                         String centroidX = extractJsonValue(entry, "centroid_x");
                         String centroidY = extractJsonValue(entry, "centroid_y");
                         
-                        System.out.println("DEBUG: Province[" + i + "] id=" + provinceId + " owner=" + owner +   " color=[" + rgb[0] + "," + rgb[1] + "," + rgb[2] + "]" + (pixelCount != null ? " px=" + pixelCount : "") + (centroidX != null ? " cx=" + centroidX : "") + (centroidY != null ? " cy=" + centroidY : ""));}
+                        // Comment out or remove per-province debug
+                        // System.out.println("DEBUG: Province[" + i + "] id=" + provinceId + " owner=" + owner +   " color=[" + rgb[0] + "," + rgb[1] + "," + rgb[2] + "]" + (pixelCount != null ? " px=" + pixelCount : "") + (centroidX != null ? " centroid=" + centroidX + "," + centroidY : ""));
+                    }
                     
                     createProvince(provinceId, owner, rgb[0], rgb[1], rgb[2]);
                     loadedCount++;
@@ -103,7 +105,7 @@ public class WorldMap {
                     System.err.println("DEBUG: Exception parsing entry [" + i + "]: " + e.getMessage());
                 }
             }
-            System.out.println("Loaded " + loadedCount + " provinces from JSON");
+            System.out.println("[DEBUG] Loaded " + loadedCount + " provinces for " + countries.size() + " owners from JSON");
             // Print all created countries in a single line
             if (!countries.isEmpty()) {
                 System.out.println("Created countries: " + String.join(", ", countries.keySet()));

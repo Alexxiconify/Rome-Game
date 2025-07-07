@@ -145,19 +145,15 @@ public class NationSelectionDialog extends JDialog {
         List<String> filteredNations = new ArrayList<>();
         
         try {
-            // Load nations from owner_color_name.csv
             java.nio.file.Path csvPath = java.nio.file.Paths.get("src/resources/data/owner_color_name.csv");
             if (java.nio.file.Files.exists(csvPath)) {
                 List<String> lines = java.nio.file.Files.readAllLines(csvPath);
                 
-                // Skip header line
                 for (int i = 1; i < lines.size(); i++) {
                     String line = lines.get(i);
                     
-                    // Parse CSV with quoted values properly
                     String ownerName = extractOwnerNameFromCSV(line);
                     if (ownerName != null) {
-                        // Filter out unwanted nations
                         if (isSelectableNation(ownerName)) {
                             selectableCountries.add(ownerName);
                             addedNations.add(ownerName);
@@ -166,18 +162,7 @@ public class NationSelectionDialog extends JDialog {
                         }
                     }
                 }
-                
-                // Output all added nations in a single line
-                if (!addedNations.isEmpty()) {
-                    System.out.println("Added nations from CSV: " + String.join(", ", addedNations));
-                }
-                
-                // Output all filtered nations in a single line
-                if (!filteredNations.isEmpty()) {
-                    System.out.println("Filtered out nations from CSV: " + String.join(", ", filteredNations));
-                }
-                
-                System.out.println("Loaded " + selectableCountries.size() + " nations from owner_color_name.csv");
+                System.out.println("[DEBUG] Loaded " + selectableCountries.size() + " selectable nations (" + filteredNations.size() + " filtered)");
             } else {
                 System.out.println("owner_color_name.csv not found, falling back to engine countries");
                 // Fallback to engine countries
@@ -200,18 +185,12 @@ public class NationSelectionDialog extends JDialog {
                 }
             }
         }
-        
-        // Sort the country names alphabetically
+
         selectableCountries.sort(String::compareToIgnoreCase);
-        
-        // Add sorted countries to the combo box
+
         for (String countryName : selectableCountries) {
             countryComboBox.addItem(countryName);
         }
-        
-        System.out.println("Total items in combo box: " + countryComboBox.getItemCount());
-        
-        // Set default selection to Rome if present
         int defaultIdx = 0;
         for (int i = 0; i < countryComboBox.getItemCount(); i++) {
             if (countryComboBox.getItemAt(i).equalsIgnoreCase(DEFAULT_NATION)) {
