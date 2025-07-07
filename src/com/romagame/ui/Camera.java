@@ -16,8 +16,8 @@ public class Camera {
     private double zoom = 1.0;
     
     // Zoom constraints
-    private static final double MIN_ZOOM = 1.0;
-    private static final double MAX_ZOOM = 2.0;
+    private static final double MIN_ZOOM = 0.5;
+    private static final double MAX_ZOOM = 10.0;
     
     // Map bounds (set when map is loaded)
     private int mapWidth = 0;
