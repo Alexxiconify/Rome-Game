@@ -1139,12 +1139,12 @@ public class MapPanel extends JPanel {
 
     private String getProvinceIdAt(Point mapPoint) {
         if (provinceMask == null || mapPoint == null) {
-            System.out.println("[DEBUG] provinceMask or mapPoint is null in getProvinceIdAt");
+            // System.out.println("[DEBUG] provinceMask or mapPoint is null in getProvinceIdAt");
             return null;
         }
         int x = mapPoint.x, y = mapPoint.y;
         if (x < 0 || y < 0 || x >= provinceMask.getWidth() || y >= provinceMask.getHeight()) {
-            System.out.println("[DEBUG] Click out of provinceMask bounds: " + x + "," + y);
+            // System.out.println("[DEBUG] Click out of provinceMask bounds: " + x + "," + y);
             return null;
         }
         int argb = provinceMask.getRGB(x, y);
@@ -1159,7 +1159,7 @@ public class MapPanel extends JPanel {
             // Check if this province is uncivilized - if so, return null (not clickable)
             String owner = provinceIdToOwner.get(provinceId);
             if (owner != null && owner.equals("Uncivilized")) {
-                System.out.println("[DEBUG] Clicked on uncivilized province at " + x + "," + y);
+                // System.out.println("[DEBUG] Clicked on uncivilized province at " + x + "," + y);
                 return null;
             }
             return provinceId;
@@ -1170,12 +1170,12 @@ public class MapPanel extends JPanel {
             // Check if this province is uncivilized - if so, return null (not clickable)
             String owner = provinceIdToOwner.get(provinceId);
             if (owner != null && owner.equals("Uncivilized")) {
-                System.out.println("[DEBUG] Clicked on uncivilized province at " + x + "," + y);
+                // System.out.println("[DEBUG] Clicked on uncivilized province at " + x + "," + y);
                 return null;
             }
             return provinceId;
         }
-        System.out.println("[DEBUG] No provinceId found for color at " + x + "," + y + " (" + r + "," + g + "," + b + ")");
+        // System.out.println("[DEBUG] No provinceId found for color at " + x + "," + y + " (" + r + "," + g + "," + b + ")");
         return null;
     }
     
@@ -1202,6 +1202,9 @@ public class MapPanel extends JPanel {
                     showProvinceInfo(clickedProvince);
                 }
             }
+        } else {
+            // Only print debug info on click if no province found
+            System.out.println("[DEBUG] No provinceId found for color at click " + mapPoint.x + "," + mapPoint.y + " (" + (provinceMask.getRGB(mapPoint.x, mapPoint.y) >> 16 & 0xFF) + "," + (provinceMask.getRGB(mapPoint.x, mapPoint.y) >> 8 & 0xFF) + "," + (provinceMask.getRGB(mapPoint.x, mapPoint.y) & 0xFF) + ")");
         }
     }
 
