@@ -560,6 +560,44 @@ public class MapPanel extends JPanel {
             g2d.setColor(Color.BLUE);
             g2d.fillRect(0, 0, getWidth(), getHeight());
         }
+        // Highlight hovered province with a soft white transparent glow
+        if (hoveredProvinceId != null && provinceMask != null) {
+            // Find the color of the hovered province in the mask
+            String owner = provinceIdToOwner.get(hoveredProvinceId);
+            int highlightAlpha = 70; // Soft glow
+            Color glow = new Color(255, 255, 255, highlightAlpha);
+            // Find the colorKey for this province
+            String provinceColorKey = null;
+            for (Map.Entry<String, String> entry : colorKeyToProvinceId.entrySet()) {
+                if (entry.getValue().equals(hoveredProvinceId)) {
+                    provinceColorKey = entry.getKey();
+                    break;
+                }
+            }
+            if (provinceColorKey != null) {
+                String[] rgb = provinceColorKey.split(",");
+                int r = Integer.parseInt(rgb[0]);
+                int gCol = Integer.parseInt(rgb[1]);
+                int b = Integer.parseInt(rgb[2]);
+                // Scan the visible area only for performance
+                Rectangle visible = getVisibleRect();
+                for (int y = visible.y; y < visible.y + visible.height; y++) {
+                    for (int x = visible.x; x < visible.x + visible.width; x++) {
+                        int argb = provinceMask.getRGB(x, y);
+                        int pr = (argb >> 16) & 0xFF;
+                        int pg = (argb >> 8) & 0xFF;
+                        int pb = argb & 0xFF;
+                        if (pr == r && pg == gCol && pb == b) {
+                            // Convert map pixel to screen coordinates
+                            Point screenPt = camera.mapToScreen(x, y);
+                            // Draw a soft white oval (glow)
+                            g2d.setColor(glow);
+                            g2d.fillOval(screenPt.x - 2, screenPt.y - 2, 5, 5);
+                        }
+                    }
+                }
+            }
+        }
         drawUI(g2d);
         drawViewingCoordinates(g2d);
     }
