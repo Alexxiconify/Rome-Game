@@ -31,7 +31,6 @@ public class MapRenderer {
     // Performance settings
     private static final int MAX_CACHE_SIZE = 50;
     private static final boolean ENABLE_CACHING = false;
-    private static final boolean ENABLE_DIRTY_RECTANGLES = false;
     
     // Rendering quality settings
     private RenderingHints renderingHints;
@@ -213,14 +212,14 @@ public class MapRenderer {
     /**
      * Check if visible rectangle has changed
      */
-    private boolean hasVisibleRectChanged(Rectangle newRect, double newZoom) {
+    public boolean hasVisibleRectChanged(Rectangle newRect, double newZoom) {
         return !lastVisibleRect.equals(newRect) || Math.abs(lastZoom - newZoom) > 0.01;
     }
     
     /**
      * Get cached render for current view
      */
-    private BufferedImage getCachedRender(Rectangle visibleRect, double zoom) {
+    public BufferedImage getCachedRender(Rectangle visibleRect, double zoom) {
         String key = generateCacheKey(visibleRect, zoom);
         return renderCache.get(key);
     }
