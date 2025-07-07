@@ -78,6 +78,8 @@ public class MapPanel extends JPanel {
         loadMapBackground();
         System.out.println("Calling loadProvinceMask()");
         loadProvinceMask();
+        System.out.println("Calling loadNationsAndProvinces()");
+        loadNationsAndProvinces();
         setupMouseListeners();
     }
 
