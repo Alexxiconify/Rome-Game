@@ -382,8 +382,10 @@ public class MapPanel extends JPanel {
         addMouseWheelListener(e -> {
             System.out.println("Mouse wheel event received: " + e.getWheelRotation());
             double oldZoom = camera.getZoom();
-            double zoomFactor = e.getWheelRotation() > 0 ? 0.7 : 1.4; // Much faster zoom
-            camera.setZoom(Math.max(1.0, Math.min(10.0, oldZoom * zoomFactor)));
+            double zoomIncrement = 0.25; // Increment by 0.25
+            double newZoom = e.getWheelRotation() > 0 ? 
+                oldZoom - zoomIncrement : oldZoom + zoomIncrement;
+            camera.setZoom(Math.max(0.5, Math.min(10.0, newZoom)));
             
             System.out.println("Zoom changed from " + oldZoom + " to " + camera.getZoom());
             
