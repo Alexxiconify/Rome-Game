@@ -23,3 +23,4 @@ Thumbs.db
 /nbdist/
 /.nb-gradle/
 /tmp/
+/out/
