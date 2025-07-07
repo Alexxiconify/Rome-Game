@@ -74,6 +74,13 @@ public class MapPanel extends JPanel {
     private Map<String, Point> nationToViewpoint = new HashMap<>();
     private Map<String, Point> provinceIdToCentroid = new HashMap<>();
 
+    private static int lastTopLeftX = Integer.MIN_VALUE;
+    private static int lastTopLeftY = Integer.MIN_VALUE;
+    private static int lastBottomRightX = Integer.MIN_VALUE;
+    private static int lastBottomRightY = Integer.MIN_VALUE;
+    private static int lastCenterX = Integer.MIN_VALUE;
+    private static int lastCenterY = Integer.MIN_VALUE;
+
     public MapPanel(GameEngine engine) {
         System.out.println("MapPanel constructor called");
         this.engine = engine;
@@ -1390,8 +1397,22 @@ public class MapPanel extends JPanel {
             g2d.drawString(String.format("Center: (%d, %d)", center.x, center.y), panelX + 10, panelY + 80);
             
             // Also display in console for debugging
-            System.out.println(String.format("Viewing - Top Left: (%d, %d), Top Right: (%d, %d), Center: (%d, %d)", 
-                topLeft.x, topLeft.y, bottomRight.x, bottomRight.y, center.x, center.y));
+            boolean shouldLog = false;
+            if (Math.abs(topLeft.x - lastTopLeftX) >= 100 || Math.abs(topLeft.y - lastTopLeftY) >= 100 ||
+                Math.abs(bottomRight.x - lastBottomRightX) >= 100 || Math.abs(bottomRight.y - lastBottomRightY) >= 100 ||
+                Math.abs(center.x - lastCenterX) >= 100 || Math.abs(center.y - lastCenterY) >= 100) {
+                shouldLog = true;
+            }
+            if (shouldLog) {
+                System.out.println(String.format("Viewing - Top Left: (%d, %d), Top Right: (%d, %d), Center: (%d, %d)", 
+                    topLeft.x, topLeft.y, bottomRight.x, bottomRight.y, center.x, center.y));
+                lastTopLeftX = topLeft.x;
+                lastTopLeftY = topLeft.y;
+                lastBottomRightX = bottomRight.x;
+                lastBottomRightY = bottomRight.y;
+                lastCenterX = center.x;
+                lastCenterY = center.y;
+            }
         }
     }
     
