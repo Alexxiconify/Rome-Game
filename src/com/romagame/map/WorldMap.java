@@ -18,8 +18,86 @@ public class WorldMap {
     }
 
     private void initializeProvinces() {
-        ProvinceCreationSnippets.createAllProvinces(this);
+        // Try to load provinces from JSON first, fallback to hardcoded if needed
+        if (!loadProvincesFromJson()) {
+            System.out.println("Falling back to hardcoded province data...");
+            ProvinceCreationSnippets.createAllProvinces(this);
+        }
         initializeSeaZones();
+    }
+    
+    private boolean loadProvincesFromJson() {
+        try {
+            java.nio.file.Path jsonPath = java.nio.file.Paths.get("src/resources/data/nations_and_provinces.json");
+            if (!java.nio.file.Files.exists(jsonPath)) {
+                System.out.println("JSON file not found: " + jsonPath);
+                return false;
+            }
+            
+            String jsonText = new String(java.nio.file.Files.readAllBytes(jsonPath));
+            
+            // Parse provinces from JSON
+            String provincesBlock = jsonText.split("\"provinces\"\\s*:\\s*\\[", 2)[1].split("]")[0];
+            String[] provinceEntries = provincesBlock.split("\\},\\s*\\{");
+            
+            int loadedCount = 0;
+            for (String entry : provinceEntries) {
+                try {
+                    // Extract province_id
+                    String provinceId = entry.split("\"province_id\"\\s*:\\s*\"")[1].split("\"")[0];
+                    
+                    // Extract owner (try both "owner" and "owner_name" fields)
+                    String owner;
+                    if (entry.contains("\"owner_name\"")) {
+                        owner = entry.split("\"owner_name\"\\s*:\\s*\"")[1].split("\"")[0];
+                    } else {
+                        owner = entry.split("\"owner\"\\s*:\\s*\"")[1].split("\"")[0];
+                    }
+                    
+                    // Extract color (try both "mask_color" and "owner_color" fields)
+                    String colorStr;
+                    if (entry.contains("\"mask_color\"")) {
+                        colorStr = entry.split("\"mask_color\"\\s*:\\s*\\[")[1].split("]")[0].replaceAll("\\s", "");
+                    } else {
+                        colorStr = entry.split("\"owner_color\"\\s*:\\s*\\[")[1].split("]")[0].replaceAll("\\s", "");
+                    }
+                    
+                    String[] rgb = colorStr.split(",");
+                    int r = Integer.parseInt(rgb[0]);
+                    int g = Integer.parseInt(rgb[1]);
+                    int b = Integer.parseInt(rgb[2]);
+                    
+                    // Create province with actual coordinates if available
+                    double lat = 0.0, lon = 0.0;
+                    if (entry.contains("\"centroid_x\"") && entry.contains("\"centroid_y\"")) {
+                        String centroidXStr = entry.split("\"centroid_x\"\\s*:\\s*")[1].split(",")[0];
+                        String centroidYStr = entry.split("\"centroid_y\"\\s*:\\s*")[1].split(",")[0];
+                        int centroidX = Integer.parseInt(centroidXStr);
+                        int centroidY = Integer.parseInt(centroidYStr);
+                        
+                        // Convert pixel coordinates to lat/lon (approximate)
+                        // This is a rough conversion - you might want to refine this
+                        lat = (centroidY - 1000) / 1000.0 * 90.0; // Rough conversion
+                        lon = (centroidX - 2000) / 2000.0 * 180.0; // Rough conversion
+                    }
+                    
+                    createProvince(provinceId, owner, r, g, b);
+                    loadedCount++;
+                    
+                } catch (Exception e) {
+                    // Skip malformed province entries
+                    System.err.println("Skipping malformed province entry: " + e.getMessage());
+                }
+            }
+            
+            System.out.println("Loaded " + loadedCount + " provinces from JSON");
+            return loadedCount > 0;
+            
+        } catch (Exception e) {
+            System.err.println("Failed to load provinces from JSON: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
     
     private void initializeSeaZones() {
