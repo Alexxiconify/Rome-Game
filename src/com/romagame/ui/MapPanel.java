@@ -1206,48 +1206,7 @@ public class MapPanel extends JPanel {
         repaint();
     }
     
-    private void capMovementWithinBounds(int newOffsetX, int newOffsetY) {
-        if (mapBackground == null) {
-            camera.setOffsetX(newOffsetX);
-            camera.setOffsetY(newOffsetY);
-            return;
-        }
-        
-        int mapWidth = mapBackground.getWidth();
-        int mapHeight = mapBackground.getHeight();
-        int panelW = getWidth() > 0 ? getWidth() : 1600;
-        int panelH = getHeight() > 0 ? getHeight() : 900;
-        
-        // Calculate the scaled map dimensions
-        double scaledMapWidth = mapWidth * camera.getZoom();
-        double scaledMapHeight = mapHeight * camera.getZoom();
-        
-        // Calculate boundaries
-        // The map should not be dragged beyond the point where the entire map is visible
-        int minOffsetX = panelW - (int)scaledMapWidth;
-        int maxOffsetX = 0;
-        int minOffsetY = panelH - (int)scaledMapHeight;
-        int maxOffsetY = 0;
-        
-        // If the scaled map is smaller than the panel, center it
-        if (scaledMapWidth < panelW) {
-            minOffsetX = maxOffsetX = (panelW - (int)scaledMapWidth) / 2;
-        }
-        if (scaledMapHeight < panelH) {
-            minOffsetY = maxOffsetY = (panelH - (int)scaledMapHeight) / 2;
-        }
-        
-        // Apply boundary constraints
-        camera.setOffsetX(Math.max(minOffsetX, Math.min(maxOffsetX, newOffsetX)));
-        camera.setOffsetY(Math.max(minOffsetY, Math.min(maxOffsetY, newOffsetY)));
-        
-        // Debug output for boundary checking
-        if (newOffsetX != camera.getOffsetX() || newOffsetY != camera.getOffsetY()) {
-            System.out.println("Movement capped: requested(" + newOffsetX + "," + newOffsetY + 
-                              ") -> actual(" + camera.getOffsetX() + "," + camera.getOffsetY() + ")");
-            // Could add visual feedback here (e.g., brief border flash)
-        }
-    }
+    // Camera handles bounds checking internally, so this method is no longer needed
     
     public void printMapBoundaries() {
         if (mapBackground == null) {
@@ -1282,7 +1241,7 @@ public class MapPanel extends JPanel {
         System.out.println("  Scaled map: " + (int)scaledMapWidth + "x" + (int)scaledMapHeight);
         System.out.println("  X bounds: " + minOffsetX + " to " + maxOffsetX);
         System.out.println("  Y bounds: " + minOffsetY + " to " + maxOffsetY);
-        System.out.println("  Current offset: " + camera.getOffsetX() + ", " + camera.getOffsetY());
+        System.out.println("  Current center: " + camera.getCenter());
     }
     
     private void drawViewingCoordinates(Graphics2D g2d) {
@@ -1296,11 +1255,7 @@ public class MapPanel extends JPanel {
         // Calculate the visible area of the map
         double scaledMapWidth = mapWidth * camera.getZoom();
         double scaledMapHeight = mapHeight * camera.getZoom();
-        
-        // Calculate the top-left corner of the visible map area
-        int visibleX = -camera.getOffsetX();
-        int visibleY = -camera.getOffsetY();
-        
+                
         // Convert screen coordinates to map coordinates
         Point topLeft = screenToMap(new Point(0, 0));
         Point bottomRight = screenToMap(new Point(panelW, panelH));
