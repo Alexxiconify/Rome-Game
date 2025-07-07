@@ -7,8 +7,6 @@ Replaces multiple scattered Python files with a single comprehensive solution.
 
 import json
 import csv
-import numpy as np
-from PIL import Image
 from pathlib import Path
 import argparse
 import sys

@@ -655,6 +655,14 @@ public class MapPanel extends JPanel {
             // Draw the map background
             g2d.drawImage(mapBackground, 0, 0, null);
             
+            // Draw borderless overlay to hide borders between provinces of the same color
+            if (borderlessOverlay != null) {
+                // Create a composite that only shows the borderless overlay where provinces have the same color
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
+                g2d.drawImage(borderlessOverlay, 0, 0, null);
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+            }
+            
             // Draw province highlights if nation is selected
             if (selectedNation != null && provinceMask != null) {
                 updateCachedNationHighlight(selectedNation, mapImgWidth, mapImgHeight, currentScale, currentOffsetX, currentOffsetY);
@@ -1244,6 +1252,8 @@ public class MapPanel extends JPanel {
                     lastProvinceClickTime = System.currentTimeMillis(); // Track click time for faster response
                     invalidateOverlayCache();
                     repaint();
+                    // Show province info dialog (popup)
+                    showProvinceInfo(clickedProvince);
                 }
             }
         }
