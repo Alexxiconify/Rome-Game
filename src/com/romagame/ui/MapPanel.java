@@ -88,8 +88,6 @@ public class MapPanel extends JPanel {
         setupPanel();
         loadMapBackground();
         loadProvinceMask();
-        loadColorToProvinceId();
-        loadProvinceOwnerColors();
         loadNationsAndProvinces();
         System.out.println("[DEBUG] Loaded " + colorToProvinceId.size() + " province mappings, " + nationList.size() + " nations");
         setupMouseListeners();
@@ -291,49 +289,6 @@ public class MapPanel extends JPanel {
                 } else {
                 }
             } else {
-            }
-        } catch (IOException e) {
-        }
-    }
-
-    public void loadColorToProvinceId() {
-        try (BufferedReader br = new BufferedReader(new FileReader("src/resources/province_color_map.csv"))) {
-            String line;
-            boolean firstLine = true;
-            while ((line = br.readLine()) != null) {
-                if (firstLine) {
-                    firstLine = false;
-                    continue; // skip header
-                }
-                String[] parts = line.split(",");
-                if (parts.length >= 3) {
-                    try {
-                        long longValue = Long.parseLong(parts[0].trim());
-                        int argb = (int) longValue;
-                        String provinceId = parts[2].trim();
-                        colorToProvinceId.put(argb, provinceId);
-                    } catch (NumberFormatException e) {
-                    }
-                }
-            }
-        } catch (IOException e) {
-        }
-    }
-
-    public void loadProvinceOwnerColors() {
-        try (BufferedReader br = new BufferedReader(new FileReader("src/resources/province_ownership_report.csv"))) {
-            String line;
-            boolean firstLine = true;
-            while ((line = br.readLine()) != null) {
-                if (firstLine) { firstLine = false; continue; }
-                String[] parts = line.split(",");
-                if (parts.length >= 10) {
-                    String provinceId = parts[0].trim();
-                    int r = Math.min(255, Math.max(0, Integer.parseInt(parts[6].trim())));
-                    int g = Math.min(255, Math.max(0, Integer.parseInt(parts[7].trim())));
-                    int b = Math.min(255, Math.max(0, Integer.parseInt(parts[8].trim())));
-                    provinceIdToOwnerColor.put(provinceId, new Color(r, g, b));
-                }
             }
         } catch (IOException e) {
         }

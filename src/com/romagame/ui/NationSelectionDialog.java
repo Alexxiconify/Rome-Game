@@ -145,37 +145,16 @@ public class NationSelectionDialog extends JDialog {
         List<String> filteredNations = new ArrayList<>();
         
         try {
-            java.nio.file.Path csvPath = java.nio.file.Paths.get("src/resources/data/owner_color_name.csv");
-            if (java.nio.file.Files.exists(csvPath)) {
-                List<String> lines = java.nio.file.Files.readAllLines(csvPath);
-                
-                for (int i = 1; i < lines.size(); i++) {
-                    String line = lines.get(i);
-                    
-                    String ownerName = extractOwnerNameFromCSV(line);
-                    if (ownerName != null) {
-                        if (isSelectableNation(ownerName)) {
-                            selectableCountries.add(ownerName);
-                            addedNations.add(ownerName);
-                        } else {
-                            filteredNations.add(ownerName);
-                        }
-                    }
-                }
-                System.out.println("[DEBUG] Loaded " + selectableCountries.size() + " selectable nations (" + filteredNations.size() + " filtered)");
-            } else {
-                System.out.println("owner_color_name.csv not found, falling back to engine countries");
-                // Fallback to engine countries
-                List<Country> countries = engine.getAllCountries();
-                for (Country country : countries) {
-                    String countryName = country.getName();
-                    if (isSelectableNation(countryName)) {
-                        selectableCountries.add(countryName);
-                    }
+            // Use engine.getAllCountries() or WorldMap for selectable nations
+            List<Country> countries = engine.getAllCountries();
+            for (Country country : countries) {
+                String countryName = country.getName();
+                if (isSelectableNation(countryName)) {
+                    selectableCountries.add(countryName);
                 }
             }
         } catch (Exception e) {
-            System.err.println("Error loading nations from CSV: " + e.getMessage());
+            System.err.println("Error loading nations: " + e.getMessage());
             // Fallback to engine countries
             List<Country> countries = engine.getAllCountries();
             for (Country country : countries) {
@@ -221,25 +200,6 @@ public class NationSelectionDialog extends JDialog {
         if (name.startsWith("Color_")) return false;
         if (name.startsWith("rgb_")) return false;
         return true;
-    }
-    
-    private String extractOwnerNameFromCSV(String line) {
-        try {
-            // Skip empty or header lines
-            if (line.trim().isEmpty() || line.startsWith("owner_color")) return null;
-            // Find the last comma (handles quoted color with commas)
-            int lastComma = line.lastIndexOf(',');
-            if (lastComma == -1) return null;
-            String ownerName = line.substring(lastComma + 1).trim();
-            // Remove quotes if present
-            if (ownerName.startsWith("\"") && ownerName.endsWith("\"")) {
-                ownerName = ownerName.substring(1, ownerName.length() - 1);
-            }
-            return ownerName;
-        } catch (Exception e) {
-            System.err.println("Error parsing CSV line: " + line + " - " + e.getMessage());
-            return null;
-        }
     }
     
     private void updateDescription() {
