@@ -112,8 +112,10 @@ public class WorldMap {
                 }
             }
             System.out.println("Loaded " + loadedCount + " provinces from JSON");
-            // Print loaded countries for verification
-            System.out.println("Countries loaded from JSON: " + countries.keySet());
+            // Print all created countries in a single line
+            if (!countries.isEmpty()) {
+                System.out.println("Created countries: " + String.join(", ", countries.keySet()));
+            }
             return loadedCount > 0;
         } catch (Exception e) {
             System.err.println("Failed to load provinces from JSON: " + e.getMessage());
@@ -211,7 +213,7 @@ public class WorldMap {
             if (!countries.containsKey(owner)) {
                 Country country = new Country(owner);
                 countries.put(owner, country);
-                System.out.println("Created country: " + owner);
+                // Don't print individual country creation - will be collected and printed later
             }
 
             // Add province to its country
