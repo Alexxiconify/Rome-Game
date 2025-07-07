@@ -138,7 +138,6 @@ public class MapPanel extends JPanel {
             if (mapFile.exists()) {
                 mapBackground = ImageIO.read(mapFile);
                 if (mapBackground != null) {
-                    mapLoaded = true;
                     // Update preferred size to match the actual map dimensions
                     setPreferredSize(new Dimension(mapBackground.getWidth(), mapBackground.getHeight()));
                     revalidate(); // Notify layout manager of size change
@@ -186,7 +185,6 @@ public class MapPanel extends JPanel {
             }
         }
         g2d.dispose();
-        mapLoaded = true;
         createLandShading();
     }
 
