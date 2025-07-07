@@ -175,22 +175,33 @@ public class Camera {
      */
     private void constrainToBounds() {
         if (mapWidth <= 0 || mapHeight <= 0) return;
-        
         double halfViewportWidth = viewportWidth / (2.0 * zoom);
         double halfViewportHeight = viewportHeight / (2.0 * zoom);
-        
-        // Constrain X
-        if (centerX < halfViewportWidth) {
-            centerX = halfViewportWidth;
-        } else if (centerX > mapWidth - halfViewportWidth) {
-            centerX = mapWidth - halfViewportWidth;
+        // X bounds
+        if (viewportWidth >= mapWidth * zoom) {
+            centerX = mapWidth / 2.0;
+            targetX = centerX;
+        } else {
+            if (centerX < halfViewportWidth) {
+                centerX = halfViewportWidth;
+                targetX = centerX;
+            } else if (centerX > mapWidth - halfViewportWidth) {
+                centerX = mapWidth - halfViewportWidth;
+                targetX = centerX;
+            }
         }
-        
-        // Constrain Y
-        if (centerY < halfViewportHeight) {
-            centerY = halfViewportHeight;
-        } else if (centerY > mapHeight - halfViewportHeight) {
-            centerY = mapHeight - halfViewportHeight;
+        // Y bounds
+        if (viewportHeight >= mapHeight * zoom) {
+            centerY = mapHeight / 2.0;
+            targetY = centerY;
+        } else {
+            if (centerY < halfViewportHeight) {
+                centerY = halfViewportHeight;
+                targetY = centerY;
+            } else if (centerY > mapHeight - halfViewportHeight) {
+                centerY = mapHeight - halfViewportHeight;
+                targetY = centerY;
+            }
         }
     }
     
