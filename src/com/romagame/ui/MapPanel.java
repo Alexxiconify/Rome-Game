@@ -1215,8 +1215,6 @@ public class MapPanel extends JPanel {
     private void drawViewingCoordinates(Graphics2D g2d) {
         if (mapBackground == null) return;
         
-        int mapWidth = mapBackground.getWidth();
-        int mapHeight = mapBackground.getHeight();
         int panelW = getWidth();
         int panelH = getHeight();
         
