@@ -27,7 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 public class MapPanel extends JPanel {
     private GameEngine engine;
-    private double zoom = 2.0;
+    private double zoom = 1.0;
     private int offsetX = 0;
     private int offsetY = 0;
     private boolean isDragging = false;
@@ -83,6 +83,9 @@ public class MapPanel extends JPanel {
         System.out.println("Calling loadNationsAndProvinces()");
         loadNationsAndProvinces();
         setupMouseListeners();
+        
+        // Center the map on startup - use map center for better initial view
+        centerOnMapCenter();
     }
 
     private void setupPanel() {
@@ -119,6 +122,26 @@ public class MapPanel extends JPanel {
                 if (selectedNation != null) {
                     centerOnNation(selectedNation);
                 }
+            }
+        });
+        
+        // C key to center on map center
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_C, 0), "centerOnMap");
+        getActionMap().put("centerOnMap", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                centerOnMapCenter();
+            }
+        });
+        
+        // E key to center on Europe
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_E, 0), "centerOnEurope");
+        getActionMap().put("centerOnEurope", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                centerOnEurope();
             }
         });
     }
@@ -441,8 +464,12 @@ public class MapPanel extends JPanel {
                         handleProvinceDrag(e.getPoint(), dx, dy);
                     } else {
                         // Left-click drag: map panning
-                        offsetX += dx;
-                        offsetY += dy;
+                        int newOffsetX = offsetX + dx;
+                        int newOffsetY = offsetY + dy;
+                        
+                        // Cap movement within map boundaries
+                        capMovementWithinBounds(newOffsetX, newOffsetY);
+                        
                         System.out.println("Map dragged: dx=" + dx + ", dy=" + dy + ", offsetX=" + offsetX + ", offsetY=" + offsetY);
                         invalidateOverlayCache();
                         repaint();
@@ -486,12 +513,14 @@ public class MapPanel extends JPanel {
             System.out.println("Mouse wheel event received: " + e.getWheelRotation());
             double oldZoom = zoom;
             double zoomFactor = e.getWheelRotation() > 0 ? 0.9 : 1.1;
-            zoom = Math.max(0.1, Math.min(40.0, zoom * zoomFactor));
+            zoom = Math.max(1.0, Math.min(10.0, zoom * zoomFactor));
             
             System.out.println("Zoom changed from " + oldZoom + " to " + zoom);
             
             // Only invalidate cache and repaint if zoom actually changed
             if (Math.abs(zoom - oldZoom) > 0.01) {
+                // Cap movement within bounds after zoom change
+                capMovementWithinBounds(offsetX, offsetY);
                 invalidateOverlayCache();
                 repaint();
             }
@@ -828,7 +857,7 @@ public class MapPanel extends JPanel {
         // Controls hint
         g2d.setColor(new Color(100, 100, 100, 180));
         g2d.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        g2d.drawString("ESC: Clear selection | SPACE: Center on selection | Click: Select province", 8, getHeight() - 10);
+        g2d.drawString("ESC: Clear selection | SPACE: Center on selection | C: Center map | E: Center Europe | Click: Select province", 8, getHeight() - 10);
     }
 
     public void centerOnNation(String nation) {
@@ -876,20 +905,71 @@ public class MapPanel extends JPanel {
         int cyScreen = y0 + (int)(cy * scale);
         offsetX = panelW/2 - cxScreen;
         offsetY = panelH/2 - cyScreen;
+        
+        // Cap movement within bounds
+        capMovementWithinBounds(offsetX, offsetY);
+        
         invalidateOverlayCache();
         repaint();
     }
     
     public void centerOnEurope() {
         // Europe coordinates (approximately center of Europe on the map)
-        int europeX = 1200; // Adjust based on your map
-        int europeY = 400;  // Adjust based on your map
+        // Based on the map dimensions, Europe is roughly in the center-left area
+        int europeX = 2900; // Adjusted for better Europe positioning
+        int europeY = 600;  // Adjusted for better Europe positioning
         
         int panelW = getWidth() > 0 ? getWidth() : 1600;
         int panelH = getHeight() > 0 ? getHeight() : 900;
         
-        offsetX = panelW/2 - europeX;
-        offsetY = panelH/2 - europeY;
+        // Apply zoom scaling to the coordinates
+        double scaledX = europeX * zoom;
+        double scaledY = europeY * zoom;
+        
+        offsetX = panelW/2 - (int)scaledX;
+        offsetY = panelH/2 - (int)scaledY;
+        
+        // Cap movement within bounds
+        capMovementWithinBounds(offsetX, offsetY);
+        
+        System.out.println("Centering on Europe: panelW=" + panelW + ", panelH=" + panelH + 
+                          ", europeX=" + europeX + ", europeY=" + europeY + 
+                          ", offsetX=" + offsetX + ", offsetY=" + offsetY);
+        
+        invalidateOverlayCache();
+        repaint();
+    }
+    
+    public void centerOnMapCenter() {
+        if (mapBackground == null) {
+            centerOnEurope();
+            return;
+        }
+        
+        int mapWidth = mapBackground.getWidth();
+        int mapHeight = mapBackground.getHeight();
+        
+        int panelW = getWidth() > 0 ? getWidth() : 1600;
+        int panelH = getHeight() > 0 ? getHeight() : 900;
+        
+        // Center of the map
+        int mapCenterX = mapWidth / 2;
+        int mapCenterY = mapHeight / 2;
+        
+        // Apply zoom scaling
+        double scaledX = mapCenterX * zoom;
+        double scaledY = mapCenterY * zoom;
+        
+        offsetX = panelW/2 - (int)scaledX;
+        offsetY = panelH/2 - (int)scaledY;
+        
+        // Cap movement within bounds
+        capMovementWithinBounds(offsetX, offsetY);
+        
+        System.out.println("Centering on map center: mapW=" + mapWidth + ", mapH=" + mapHeight + 
+                          ", mapCenterX=" + mapCenterX + ", mapCenterY=" + mapCenterY + 
+                          ", offsetX=" + offsetX + ", offsetY=" + offsetY);
+        
         invalidateOverlayCache();
         repaint();
     }
@@ -1346,6 +1426,138 @@ public class MapPanel extends JPanel {
         int newX = x - viewRect.width / 2;
         int newY = y - viewRect.height / 2;
         scrollRectToVisible(new Rectangle(newX, newY, viewRect.width, viewRect.height));
+    }
+    
+    public void centerOnProvince(String provinceId) {
+        if (provinceMask == null || provinceId == null) {
+            centerOnMapCenter();
+            return;
+        }
+        
+        // Find the province coordinates in the mask
+        int imgW = provinceMask.getWidth();
+        int imgH = provinceMask.getHeight();
+        double sumX = 0, sumY = 0;
+        int count = 0;
+        
+        for (int y = 0; y < imgH; y++) {
+            for (int x = 0; x < imgW; x++) {
+                int argb = provinceMask.getRGB(x, y);
+                String pid = colorToProvinceId.get(argb);
+                if (pid != null && pid.equals(provinceId)) {
+                    sumX += x;
+                    sumY += y;
+                    count++;
+                }
+            }
+        }
+        
+        if (count == 0) {
+            System.out.println("Province not found: " + provinceId + ", centering on map center");
+            centerOnMapCenter();
+            return;
+        }
+        
+        double centerX = sumX / count;
+        double centerY = sumY / count;
+        
+        int panelW = getWidth() > 0 ? getWidth() : 1600;
+        int panelH = getHeight() > 0 ? getHeight() : 900;
+        
+        // Apply zoom scaling
+        double scaledX = centerX * zoom;
+        double scaledY = centerY * zoom;
+        
+        offsetX = panelW/2 - (int)scaledX;
+        offsetY = panelH/2 - (int)scaledY;
+        
+        // Cap movement within bounds
+        capMovementWithinBounds(offsetX, offsetY);
+        
+        System.out.println("Centering on province " + provinceId + ": centerX=" + centerX + 
+                          ", centerY=" + centerY + ", offsetX=" + offsetX + ", offsetY=" + offsetY);
+        
+        invalidateOverlayCache();
+        repaint();
+    }
+    
+    private void capMovementWithinBounds(int newOffsetX, int newOffsetY) {
+        if (mapBackground == null) {
+            offsetX = newOffsetX;
+            offsetY = newOffsetY;
+            return;
+        }
+        
+        int mapWidth = mapBackground.getWidth();
+        int mapHeight = mapBackground.getHeight();
+        int panelW = getWidth() > 0 ? getWidth() : 1600;
+        int panelH = getHeight() > 0 ? getHeight() : 900;
+        
+        // Calculate the scaled map dimensions
+        double scaledMapWidth = mapWidth * zoom;
+        double scaledMapHeight = mapHeight * zoom;
+        
+        // Calculate boundaries
+        // The map should not be dragged beyond the point where the entire map is visible
+        int minOffsetX = panelW - (int)scaledMapWidth;
+        int maxOffsetX = 0;
+        int minOffsetY = panelH - (int)scaledMapHeight;
+        int maxOffsetY = 0;
+        
+        // If the scaled map is smaller than the panel, center it
+        if (scaledMapWidth < panelW) {
+            minOffsetX = maxOffsetX = (panelW - (int)scaledMapWidth) / 2;
+        }
+        if (scaledMapHeight < panelH) {
+            minOffsetY = maxOffsetY = (panelH - (int)scaledMapHeight) / 2;
+        }
+        
+        // Apply boundary constraints
+        offsetX = Math.max(minOffsetX, Math.min(maxOffsetX, newOffsetX));
+        offsetY = Math.max(minOffsetY, Math.min(maxOffsetY, newOffsetY));
+        
+        // Debug output for boundary checking
+        if (newOffsetX != offsetX || newOffsetY != offsetY) {
+            System.out.println("Movement capped: requested(" + newOffsetX + "," + newOffsetY + 
+                              ") -> actual(" + offsetX + "," + offsetY + ")");
+            // Could add visual feedback here (e.g., brief border flash)
+        }
+    }
+    
+    public void printMapBoundaries() {
+        if (mapBackground == null) {
+            System.out.println("Map background not loaded");
+            return;
+        }
+        
+        int mapWidth = mapBackground.getWidth();
+        int mapHeight = mapBackground.getHeight();
+        int panelW = getWidth() > 0 ? getWidth() : 1600;
+        int panelH = getHeight() > 0 ? getHeight() : 900;
+        
+        double scaledMapWidth = mapWidth * zoom;
+        double scaledMapHeight = mapHeight * zoom;
+        
+        int minOffsetX = panelW - (int)scaledMapWidth;
+        int maxOffsetX = 0;
+        int minOffsetY = panelH - (int)scaledMapHeight;
+        int maxOffsetY = 0;
+        
+        if (scaledMapWidth < panelW) {
+            minOffsetX = maxOffsetX = (panelW - (int)scaledMapWidth) / 2;
+        }
+        if (scaledMapHeight < panelH) {
+            minOffsetY = maxOffsetY = (panelH - (int)scaledMapHeight) / 2;
+        }
+        
+        System.out.println("Map Boundaries:");
+        System.out.println("  Map size: " + mapWidth + "x" + mapHeight);
+        System.out.println("  Panel size: " + panelW + "x" + panelH);
+        System.out.println("  Zoom: " + zoom);
+        System.out.println("  Scaled map: " + (int)scaledMapWidth + "x" + (int)scaledMapHeight);
+        System.out.println("  X bounds: " + minOffsetX + " to " + maxOffsetX);
+        System.out.println("  Y bounds: " + minOffsetY + " to " + maxOffsetY);
+        System.out.println("  Current offset: " + offsetX + ", " + offsetY);
     }
     
     private void showProvinceContextMenu(Province province, Point location) {
