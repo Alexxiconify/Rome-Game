@@ -236,8 +236,11 @@ public class Camera {
      */
     public java.awt.geom.AffineTransform getTransform() {
         java.awt.geom.AffineTransform transform = new java.awt.geom.AffineTransform();
+        // Translate to center the viewport
         transform.translate(viewportWidth / 2.0, viewportHeight / 2.0);
+        // Scale by zoom
         transform.scale(zoom, zoom);
+        // Translate by camera center (negative because we want to move the map, not the viewport)
         transform.translate(-centerX, -centerY);
         return transform;
     }
