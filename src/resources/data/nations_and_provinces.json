@@ -1,11 +1,83 @@
 {
   "nations": [
     {
+      "name": "Abaza",
+      "color": [
+        247,
+        109,
+        91
+      ]
+    },
+    {
+      "name": "Ahichchhatra",
+      "color": [
+        73,
+        116,
+        129
+      ]
+    },
+    {
+      "name": "Alexandria",
+      "color": [
+        158,
+        113,
+        72
+      ]
+    },
+    {
+      "name": "Arakan",
+      "color": [
+        160,
+        164,
+        38
+      ]
+    },
+    {
+      "name": "Atropatene",
+      "color": [
+        255,
+        197,
+        140
+      ]
+    },
+    {
       "name": "Baekje",
       "color": [
         145,
         188,
         180
+      ]
+    },
+    {
+      "name": "Bahal",
+      "color": [
+        170,
+        128,
+        42
+      ]
+    },
+    {
+      "name": "Barus",
+      "color": [
+        189,
+        216,
+        80
+      ]
+    },
+    {
+      "name": "Bernam",
+      "color": [
+        56,
+        137,
+        61
+      ]
+    },
+    {
+      "name": "Buyeo",
+      "color": [
+        159,
+        163,
+        165
       ]
     },
     {
@@ -33,6 +105,30 @@
       ]
     },
     {
+      "name": "Cerro_de_las_Mesas",
+      "color": [
+        233,
+        118,
+        85
+      ]
+    },
+    {
+      "name": "Chalchuapa",
+      "color": [
+        130,
+        175,
+        255
+      ]
+    },
+    {
+      "name": "Chera",
+      "color": [
+        215,
+        0,
+        121
+      ]
+    },
+    {
       "name": "Cholas",
       "color": [
         44,
@@ -41,11 +137,27 @@
       ]
     },
     {
+      "name": "Chorasmia",
+      "color": [
+        214,
+        176,
+        83
+      ]
+    },
+    {
       "name": "Chutu",
       "color": [
         103,
         140,
         53
+      ]
+    },
+    {
+      "name": "Cuetlajuchitlan",
+      "color": [
+        132,
+        165,
+        141
       ]
     },
     {
@@ -81,11 +193,27 @@
       ]
     },
     {
+      "name": "Georgia",
+      "color": [
+        165,
+        73,
+        61
+      ]
+    },
+    {
       "name": "Gerrha",
       "color": [
         181,
         180,
         4
+      ]
+    },
+    {
+      "name": "Goguryeo",
+      "color": [
+        156,
+        85,
+        61
       ]
     },
     {
@@ -105,11 +233,91 @@
       ]
     },
     {
+      "name": "Hycania",
+      "color": [
+        158,
+        99,
+        44
+      ]
+    },
+    {
+      "name": "Izapa",
+      "color": [
+        165,
+        77,
+        91
+      ]
+    },
+    {
       "name": "Japan",
       "color": [
         255,
         255,
         0
+      ]
+    },
+    {
+      "name": "Kantoli",
+      "color": [
+        99,
+        142,
+        47
+      ]
+    },
+    {
+      "name": "Kashmir",
+      "color": [
+        226,
+        114,
+        91
+      ]
+    },
+    {
+      "name": "Kedah",
+      "color": [
+        137,
+        83,
+        249
+      ]
+    },
+    {
+      "name": "Kelantan",
+      "color": [
+        193,
+        73,
+        85
+      ]
+    },
+    {
+      "name": "Kharax",
+      "color": [
+        188,
+        123,
+        115
+      ]
+    },
+    {
+      "name": "Kiche",
+      "color": [
+        96,
+        163,
+        52
+      ]
+    },
+    {
+      "name": "Kirat",
+      "color": [
+        185,
+        183,
+        85
+      ]
+    },
+    {
+      "name": "Kongu",
+      "color": [
+        232,
+        134,
+        145
       ]
     },
     {
@@ -121,11 +329,43 @@
       ]
     },
     {
+      "name": "Kushan",
+      "color": [
+        65,
+        190,
+        187
+      ]
+    },
+    {
+      "name": "Kuttuvams",
+      "color": [
+        132,
+        204,
+        140
+      ]
+    },
+    {
       "name": "Lambakannas",
       "color": [
         232,
         197,
         11
+      ]
+    },
+    {
+      "name": "Maingmaw",
+      "color": [
+        201,
+        154,
+        124
+      ]
+    },
+    {
+      "name": "Margiana",
+      "color": [
+        158,
+        106,
+        58
       ]
     },
     {
@@ -137,11 +377,59 @@
       ]
     },
     {
+      "name": "Mixteca",
+      "color": [
+        211,
+        100,
+        31
+      ]
+    },
+    {
+      "name": "Monte_Nego",
+      "color": [
+        101,
+        80,
+        158
+      ]
+    },
+    {
+      "name": "Northern_Xiongnu",
+      "color": [
+        158,
+        211,
+        120
+      ]
+    },
+    {
+      "name": "Oaxaca",
+      "color": [
+        56,
+        119,
+        170
+      ]
+    },
+    {
       "name": "Ocean",
       "color": [
         0,
         0,
         0
+      ]
+    },
+    {
+      "name": "Okjeo",
+      "color": [
+        161,
+        130,
+        214
+      ]
+    },
+    {
+      "name": "Pagan",
+      "color": [
+        137,
+        86,
+        45
       ]
     },
     {
@@ -161,11 +449,19 @@
       ]
     },
     {
-      "name": "Atropatene",
+      "name": "Persis",
       "color": [
         255,
-        197,
-        140
+        235,
+        216
+      ]
+    },
+    {
+      "name": "Pundra",
+      "color": [
+        157,
+        101,
+        216
       ]
     },
     {
@@ -201,35 +497,19 @@
       ]
     },
     {
+      "name": "Sama",
+      "color": [
+        191,
+        150,
+        67
+      ]
+    },
+    {
       "name": "Satavahana",
       "color": [
         216,
         141,
         84
-      ]
-    },
-    {
-      "name": "Silla",
-      "color": [
-        39,
-        190,
-        58
-      ]
-    },
-    {
-      "name": "Monte_Nego",
-      "color": [
-        101,
-        80,
-        158
-      ]
-    },
-    {
-      "name": "Zempoala",
-      "color": [
-        103,
-        147,
-        73
       ]
     },
     {
@@ -241,291 +521,11 @@
       ]
     },
     {
-      "name": "Vasta",
+      "name": "Silla",
       "color": [
-        128,
-        0,
-        0
-      ]
-    },
-    {
-      "name": "Yucunudahui",
-      "color": [
-        130,
-        48,
-        163
-      ]
-    },
-    {
-      "name": "Chalchuapa",
-      "color": [
-        130,
-        175,
-        255
-      ]
-    },
-    {
-      "name": "Xochipala",
-      "color": [
-        132,
-        161,
-        216
-      ]
-    },
-    {
-      "name": "Cuetlajuchitlan",
-      "color": [
-        132,
-        165,
-        141
-      ]
-    },
-    {
-      "name": "Oaxaca",
-      "color": [
-        56,
-        119,
-        170
-      ]
-    },
-    {
-      "name": "Kuttuvams",
-      "color": [
-        132,
-        204,
-        140
-      ]
-    },
-    {
-      "name": "Kedah",
-      "color": [
-        137,
-        83,
-        249
-      ]
-    },
-    {
-      "name": "Pagan",
-      "color": [
-        137,
-        86,
-        45
-      ]
-    },
-    {
-      "name": "Tagaungwn",
-      "color": [
-        140,
-        201,
-        86
-      ]
-    },
-    {
-      "name": "Wusun",
-      "color": [
-        147,
-        68,
-        115
-      ]
-    },
-    {
-      "name": "Tres_Zapotes",
-      "color": [
-        155,
-        51,
-        27
-      ]
-    },
-    {
-      "name": "Goguryeo",
-      "color": [
-        156,
-        85,
-        61
-      ]
-    },
-    {
-      "name": "Pundra",
-      "color": [
-        157,
-        101,
-        216
-      ]
-    },
-    {
-      "name": "Northern_Xiongnu",
-      "color": [
-        158,
-        211,
-        120
-      ]
-    },
-    {
-      "name": "Bernam",
-      "color": [
-        56,
-        137,
-        61
-      ]
-    },
-    {
-      "name": "Arakan",
-      "color": [
-        160,
-        164,
-        38
-      ]
-    },
-    {
-      "name": "Okjeo",
-      "color": [
-        161,
-        130,
-        214
-      ]
-    },
-    {
-      "name": "Izapa",
-      "color": [
-        165,
-        77,
-        91
-      ]
-    },
-    {
-      "name": "Bahal",
-      "color": [
-        170,
-        128,
-        42
-      ]
-    },
-    {
-      "name": "Kirat",
-      "color": [
-        185,
-        183,
-        85
-      ]
-    },
-    {
-      "name": "Kushan",
-      "color": [
-        65,
+        39,
         190,
-        187
-      ]
-    },
-    {
-      "name": "Barus",
-      "color": [
-        189,
-        216,
-        80
-      ]
-    },
-    {
-      "name": "Sama",
-      "color": [
-        191,
-        150,
-        67
-      ]
-    },
-    {
-      "name": "Kelantan",
-      "color": [
-        193,
-        73,
-        85
-      ]
-    },
-    {
-      "name": "Maingmaw",
-      "color": [
-        201,
-        154,
-        124
-      ]
-    },
-    {
-      "name": "Mixteca",
-      "color": [
-        211,
-        100,
-        31
-      ]
-    },
-    {
-      "name": "Chorasmia",
-      "color": [
-        214,
-        176,
-        83
-      ]
-    },
-    {
-      "name": "Chera",
-      "color": [
-        215,
-        0,
-        121
-      ]
-    },
-    {
-      "name": "Zapotec",
-      "color": [
-        225,
-        70,
-        26
-      ]
-    },
-    {
-      "name": "Kashmir",
-      "color": [
-        226,
-        114,
-        91
-      ]
-    },
-    {
-      "name": "Utala",
-      "color": [
-        232,
-        9,
-        75
-      ]
-    },
-    {
-      "name": "Kongu",
-      "color": [
-        232,
-        134,
-        145
-      ]
-    },
-    {
-      "name": "Cerro_de_las_Mesas",
-      "color": [
-        233,
-        118,
-        85
-      ]
-    },
-    {
-      "name": "Vanga",
-      "color": [
-        242,
-        89,
-        144
-      ]
-    },
-    {
-      "name": "Vidisha",
-      "color": [
-        252,
-        162,
-        98
+        58
       ]
     },
     {
@@ -537,11 +537,11 @@
       ]
     },
     {
-      "name": "Ahichchhatra",
+      "name": "Tagaungwn",
       "color": [
-        73,
-        116,
-        129
+        140,
+        201,
+        86
       ]
     },
     {
@@ -553,19 +553,67 @@
       ]
     },
     {
+      "name": "Tres_Zapotes",
+      "color": [
+        155,
+        51,
+        27
+      ]
+    },
+    {
+      "name": "Utala",
+      "color": [
+        232,
+        9,
+        75
+      ]
+    },
+    {
+      "name": "Vanga",
+      "color": [
+        242,
+        89,
+        144
+      ]
+    },
+    {
+      "name": "Vasta",
+      "color": [
+        128,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "Vidisha",
+      "color": [
+        252,
+        162,
+        98
+      ]
+    },
+    {
+      "name": "Wusun",
+      "color": [
+        147,
+        68,
+        115
+      ]
+    },
+    {
+      "name": "Xochipala",
+      "color": [
+        132,
+        161,
+        216
+      ]
+    },
+    {
       "name": "Xuantunich",
       "color": [
         81,
         204,
         230
-      ]
-    },
-    {
-      "name": "Kiche",
-      "color": [
-        96,
-        163,
-        52
       ]
     },
     {
@@ -577,69 +625,3648 @@
       ]
     },
     {
-      "name": "Kantoli",
+      "name": "Yucunudahui",
       "color": [
-        99,
-        142,
-        47
+        130,
+        48,
+        163
       ]
     },
     {
-      "name": "Kharax",
+      "name": "Zapotec",
       "color": [
-        188,
-        123,
-        115
+        225,
+        70,
+        26
       ]
     },
     {
-      "name": "Persis",
+      "name": "Zempoala",
       "color": [
-        255,
-        235,
-        216
-      ]
-    },
-    {
-      "name": "Alexandria",
-      "color": [
-        158,
-        113,
-        72
-      ]
-    },
-    {
-      "name": "Hycania",
-      "color": [
-        158,
-        99,
-        44
-      ]
-    },
-    {
-      "name": "Georgia",
-      "color": [
-        165,
-        73,
-        61
-      ]
-    },
-    {
-      "name": "Abaza",
-      "color": [
-        247,
-        109,
-        91
-      ]
-    },
-    {
-      "name": "Margiana",
-      "color": [
-        158,
-        106,
-        58
+        103,
+        147,
+        73
       ]
     }
   ],
-  "provinces":[]
+  "provinces": [
+    {
+      "province_id": "province_0001",
+      "owner_color": [
+        247,
+        109,
+        91
+      ],
+      "owner": "Abaza"
+    },
+    {
+      "province_id": "province_0002",
+      "owner_color": [
+        247,
+        109,
+        91
+      ],
+      "owner": "Abaza"
+    },
+    {
+      "province_id": "province_0003",
+      "owner_color": [
+        247,
+        109,
+        91
+      ],
+      "owner": "Abaza"
+    },
+    {
+      "province_id": "province_0004",
+      "owner_color": [
+        247,
+        109,
+        91
+      ],
+      "owner": "Abaza"
+    },
+    {
+      "province_id": "province_0005",
+      "owner_color": [
+        247,
+        109,
+        91
+      ],
+      "owner": "Abaza"
+    },
+    {
+      "province_id": "province_0006",
+      "owner_color": [
+        247,
+        109,
+        91
+      ],
+      "owner": "Abaza"
+    },
+    {
+      "province_id": "province_0007",
+      "owner_color": [
+        247,
+        109,
+        91
+      ],
+      "owner": "Abaza"
+    },
+    {
+      "province_id": "province_0008",
+      "owner_color": [
+        247,
+        109,
+        91
+      ],
+      "owner": "Abaza"
+    },
+    {
+      "province_id": "province_0009",
+      "owner_color": [
+        73,
+        116,
+        129
+      ],
+      "owner": "Ahichchhatra"
+    },
+    {
+      "province_id": "province_0010",
+      "owner_color": [
+        73,
+        116,
+        129
+      ],
+      "owner": "Ahichchhatra"
+    },
+    {
+      "province_id": "province_0011",
+      "owner_color": [
+        73,
+        116,
+        129
+      ],
+      "owner": "Ahichchhatra"
+    },
+    {
+      "province_id": "province_0012",
+      "owner_color": [
+        73,
+        116,
+        129
+      ],
+      "owner": "Ahichchhatra"
+    },
+    {
+      "province_id": "province_0013",
+      "owner_color": [
+        73,
+        116,
+        129
+      ],
+      "owner": "Ahichchhatra"
+    },
+    {
+      "province_id": "province_0014",
+      "owner_color": [
+        158,
+        113,
+        72
+      ],
+      "owner": "Alexandria"
+    },
+    {
+      "province_id": "province_0015",
+      "owner_color": [
+        158,
+        113,
+        72
+      ],
+      "owner": "Alexandria"
+    },
+    {
+      "province_id": "province_0016",
+      "owner_color": [
+        158,
+        113,
+        72
+      ],
+      "owner": "Alexandria"
+    },
+    {
+      "province_id": "province_0017",
+      "owner_color": [
+        158,
+        113,
+        72
+      ],
+      "owner": "Alexandria"
+    },
+    {
+      "province_id": "province_0018",
+      "owner_color": [
+        158,
+        113,
+        72
+      ],
+      "owner": "Alexandria"
+    },
+    {
+      "province_id": "province_0019",
+      "owner_color": [
+        158,
+        113,
+        72
+      ],
+      "owner": "Alexandria"
+    },
+    {
+      "province_id": "province_0020",
+      "owner_color": [
+        160,
+        164,
+        38
+      ],
+      "owner": "Arakan"
+    },
+    {
+      "province_id": "province_0021",
+      "owner_color": [
+        160,
+        164,
+        38
+      ],
+      "owner": "Arakan"
+    },
+    {
+      "province_id": "province_0022",
+      "owner_color": [
+        160,
+        164,
+        38
+      ],
+      "owner": "Arakan"
+    },
+    {
+      "province_id": "province_0023",
+      "owner_color": [
+        160,
+        164,
+        38
+      ],
+      "owner": "Arakan"
+    },
+    {
+      "province_id": "province_0024",
+      "owner_color": [
+        160,
+        164,
+        38
+      ],
+      "owner": "Arakan"
+    },
+    {
+      "province_id": "province_0025",
+      "owner_color": [
+        255,
+        197,
+        140
+      ],
+      "owner": "Atropatene"
+    },
+    {
+      "province_id": "province_0026",
+      "owner_color": [
+        255,
+        197,
+        140
+      ],
+      "owner": "Atropatene"
+    },
+    {
+      "province_id": "province_0027",
+      "owner_color": [
+        255,
+        197,
+        140
+      ],
+      "owner": "Atropatene"
+    },
+    {
+      "province_id": "province_0028",
+      "owner_color": [
+        255,
+        197,
+        140
+      ],
+      "owner": "Atropatene"
+    },
+    {
+      "province_id": "province_0029",
+      "owner_color": [
+        255,
+        197,
+        140
+      ],
+      "owner": "Atropatene"
+    },
+    {
+      "province_id": "province_0030",
+      "owner_color": [
+        255,
+        197,
+        140
+      ],
+      "owner": "Atropatene"
+    },
+    {
+      "province_id": "province_0031",
+      "owner_color": [
+        255,
+        197,
+        140
+      ],
+      "owner": "Atropatene"
+    },
+    {
+      "province_id": "province_0032",
+      "owner_color": [
+        255,
+        197,
+        140
+      ],
+      "owner": "Atropatene"
+    },
+    {
+      "province_id": "province_0033",
+      "owner_color": [
+        145,
+        188,
+        180
+      ],
+      "owner": "Baekje"
+    },
+    {
+      "province_id": "province_0034",
+      "owner_color": [
+        170,
+        128,
+        42
+      ],
+      "owner": "Bahal"
+    },
+    {
+      "province_id": "province_0035",
+      "owner_color": [
+        170,
+        128,
+        42
+      ],
+      "owner": "Bahal"
+    },
+    {
+      "province_id": "province_0036",
+      "owner_color": [
+        170,
+        128,
+        42
+      ],
+      "owner": "Bahal"
+    },
+    {
+      "province_id": "province_0037",
+      "owner_color": [
+        170,
+        128,
+        42
+      ],
+      "owner": "Bahal"
+    },
+    {
+      "province_id": "province_0038",
+      "owner_color": [
+        170,
+        128,
+        42
+      ],
+      "owner": "Bahal"
+    },
+    {
+      "province_id": "province_0039",
+      "owner_color": [
+        189,
+        216,
+        80
+      ],
+      "owner": "Barus"
+    },
+    {
+      "province_id": "province_0040",
+      "owner_color": [
+        189,
+        216,
+        80
+      ],
+      "owner": "Barus"
+    },
+    {
+      "province_id": "province_0041",
+      "owner_color": [
+        56,
+        137,
+        61
+      ],
+      "owner": "Bernam"
+    },
+    {
+      "province_id": "province_0042",
+      "owner_color": [
+        56,
+        137,
+        61
+      ],
+      "owner": "Bernam"
+    },
+    {
+      "province_id": "province_0043",
+      "owner_color": [
+        56,
+        137,
+        61
+      ],
+      "owner": "Bernam"
+    },
+    {
+      "province_id": "province_0044",
+      "owner_color": [
+        56,
+        137,
+        61
+      ],
+      "owner": "Bernam"
+    },
+    {
+      "province_id": "province_0045",
+      "owner_color": [
+        56,
+        137,
+        61
+      ],
+      "owner": "Bernam"
+    },
+    {
+      "province_id": "province_0046",
+      "owner_color": [
+        56,
+        137,
+        61
+      ],
+      "owner": "Bernam"
+    },
+    {
+      "province_id": "province_0047",
+      "owner_color": [
+        56,
+        137,
+        61
+      ],
+      "owner": "Bernam"
+    },
+    {
+      "province_id": "province_0048",
+      "owner_color": [
+        56,
+        137,
+        61
+      ],
+      "owner": "Bernam"
+    },
+    {
+      "province_id": "province_0049",
+      "owner_color": [
+        56,
+        137,
+        61
+      ],
+      "owner": "Bernam"
+    },
+    {
+      "province_id": "province_0050",
+      "owner_color": [
+        159,
+        163,
+        165
+      ],
+      "owner": "Buyeo"
+    },
+    {
+      "province_id": "province_0051",
+      "owner_color": [
+        159,
+        163,
+        165
+      ],
+      "owner": "Buyeo"
+    },
+    {
+      "province_id": "province_0052",
+      "owner_color": [
+        159,
+        163,
+        165
+      ],
+      "owner": "Buyeo"
+    },
+    {
+      "province_id": "province_0053",
+      "owner_color": [
+        159,
+        163,
+        165
+      ],
+      "owner": "Buyeo"
+    },
+    {
+      "province_id": "province_0054",
+      "owner_color": [
+        159,
+        163,
+        165
+      ],
+      "owner": "Buyeo"
+    },
+    {
+      "province_id": "province_0055",
+      "owner_color": [
+        159,
+        203,
+        195
+      ],
+      "owner": "Buyeo"
+    },
+    {
+      "province_id": "province_0056",
+      "owner_color": [
+        159,
+        203,
+        195
+      ],
+      "owner": "Buyeo"
+    },
+    {
+      "province_id": "province_0057",
+      "owner_color": [
+        159,
+        203,
+        195
+      ],
+      "owner": "Buyeo"
+    },
+    {
+      "province_id": "province_0058",
+      "owner_color": [
+        159,
+        203,
+        195
+      ],
+      "owner": "Buyeo"
+    },
+    {
+      "province_id": "province_0059",
+      "owner_color": [
+        159,
+        203,
+        195
+      ],
+      "owner": "Buyeo"
+    },
+    {
+      "province_id": "province_0060",
+      "owner_color": [
+        159,
+        203,
+        195
+      ],
+      "owner": "Buyeo"
+    },
+    {
+      "province_id": "province_0061",
+      "owner_color": [
+        159,
+        203,
+        195
+      ],
+      "owner": "Buyeo"
+    },
+    {
+      "province_id": "province_0062",
+      "owner_color": [
+        116,
+        106,
+        67
+      ],
+      "owner": "Byeonhan"
+    },
+    {
+      "province_id": "province_0063",
+      "owner_color": [
+        116,
+        106,
+        67
+      ],
+      "owner": "Byeonhan"
+    },
+    {
+      "province_id": "province_0064",
+      "owner_color": [
+        116,
+        106,
+        67
+      ],
+      "owner": "Byeonhan"
+    },
+    {
+      "province_id": "province_0065",
+      "owner_color": [
+        116,
+        106,
+        67
+      ],
+      "owner": "Byeonhan"
+    },
+    {
+      "province_id": "province_0066",
+      "owner_color": [
+        149,
+        154,
+        204
+      ],
+      "owner": "Ceras"
+    },
+    {
+      "province_id": "province_0067",
+      "owner_color": [
+        149,
+        154,
+        204
+      ],
+      "owner": "Ceras"
+    },
+    {
+      "province_id": "province_0068",
+      "owner_color": [
+        149,
+        154,
+        204
+      ],
+      "owner": "Ceras"
+    },
+    {
+      "province_id": "province_0069",
+      "owner_color": [
+        149,
+        154,
+        204
+      ],
+      "owner": "Ceras"
+    },
+    {
+      "province_id": "province_0070",
+      "owner_color": [
+        149,
+        154,
+        204
+      ],
+      "owner": "Ceras"
+    },
+    {
+      "province_id": "province_0071",
+      "owner_color": [
+        149,
+        154,
+        204
+      ],
+      "owner": "Ceras"
+    },
+    {
+      "province_id": "province_0072",
+      "owner_color": [
+        233,
+        118,
+        85
+      ],
+      "owner": "Cerro_de_las_Mesas"
+    },
+    {
+      "province_id": "province_0073",
+      "owner_color": [
+        233,
+        118,
+        85
+      ],
+      "owner": "Cerro_de_las_Mesas"
+    },
+    {
+      "province_id": "province_0074",
+      "owner_color": [
+        130,
+        175,
+        255
+      ],
+      "owner": "Chalchuapa"
+    },
+    {
+      "province_id": "province_0075",
+      "owner_color": [
+        130,
+        175,
+        255
+      ],
+      "owner": "Chalchuapa"
+    },
+    {
+      "province_id": "province_0076",
+      "owner_color": [
+        130,
+        175,
+        255
+      ],
+      "owner": "Chalchuapa"
+    },
+    {
+      "province_id": "province_0077",
+      "owner_color": [
+        215,
+        0,
+        121
+      ],
+      "owner": "Chera"
+    },
+    {
+      "province_id": "province_0078",
+      "owner_color": [
+        215,
+        0,
+        121
+      ],
+      "owner": "Chera"
+    },
+    {
+      "province_id": "province_0079",
+      "owner_color": [
+        215,
+        0,
+        121
+      ],
+      "owner": "Chera"
+    },
+    {
+      "province_id": "province_0080",
+      "owner_color": [
+        215,
+        0,
+        121
+      ],
+      "owner": "Chera"
+    },
+    {
+      "province_id": "province_0081",
+      "owner_color": [
+        44,
+        86,
+        133
+      ],
+      "owner": "Cholas"
+    },
+    {
+      "province_id": "province_0082",
+      "owner_color": [
+        44,
+        86,
+        133
+      ],
+      "owner": "Cholas"
+    },
+    {
+      "province_id": "province_0083",
+      "owner_color": [
+        44,
+        86,
+        133
+      ],
+      "owner": "Cholas"
+    },
+    {
+      "province_id": "province_0084",
+      "owner_color": [
+        214,
+        176,
+        83
+      ],
+      "owner": "Chorasmia"
+    },
+    {
+      "province_id": "province_0085",
+      "owner_color": [
+        214,
+        176,
+        83
+      ],
+      "owner": "Chorasmia"
+    },
+    {
+      "province_id": "province_0086",
+      "owner_color": [
+        214,
+        176,
+        83
+      ],
+      "owner": "Chorasmia"
+    },
+    {
+      "province_id": "province_0087",
+      "owner_color": [
+        214,
+        176,
+        83
+      ],
+      "owner": "Chorasmia"
+    },
+    {
+      "province_id": "province_0088",
+      "owner_color": [
+        214,
+        176,
+        83
+      ],
+      "owner": "Chorasmia"
+    },
+    {
+      "province_id": "province_0089",
+      "owner_color": [
+        214,
+        176,
+        83
+      ],
+      "owner": "Chorasmia"
+    },
+    {
+      "province_id": "province_0090",
+      "owner_color": [
+        214,
+        176,
+        83
+      ],
+      "owner": "Chorasmia"
+    },
+    {
+      "province_id": "province_0091",
+      "owner_color": [
+        214,
+        176,
+        83
+      ],
+      "owner": "Chorasmia"
+    },
+    {
+      "province_id": "province_0092",
+      "owner_color": [
+        103,
+        140,
+        53
+      ],
+      "owner": "Chutu"
+    },
+    {
+      "province_id": "province_0093",
+      "owner_color": [
+        103,
+        140,
+        53
+      ],
+      "owner": "Chutu"
+    },
+    {
+      "province_id": "province_0094",
+      "owner_color": [
+        103,
+        140,
+        53
+      ],
+      "owner": "Chutu"
+    },
+    {
+      "province_id": "province_0095",
+      "owner_color": [
+        103,
+        140,
+        53
+      ],
+      "owner": "Chutu"
+    },
+    {
+      "province_id": "province_0096",
+      "owner_color": [
+        103,
+        140,
+        53
+      ],
+      "owner": "Chutu"
+    },
+    {
+      "province_id": "province_0097",
+      "owner_color": [
+        103,
+        140,
+        53
+      ],
+      "owner": "Chutu"
+    },
+    {
+      "province_id": "province_0098",
+      "owner_color": [
+        103,
+        140,
+        53
+      ],
+      "owner": "Chutu"
+    },
+    {
+      "province_id": "province_0099",
+      "owner_color": [
+        103,
+        140,
+        53
+      ],
+      "owner": "Chutu"
+    },
+    {
+      "province_id": "province_0100",
+      "owner_color": [
+        103,
+        140,
+        53
+      ],
+      "owner": "Chutu"
+    },
+    {
+      "province_id": "province_0101",
+      "owner_color": [
+        103,
+        140,
+        53
+      ],
+      "owner": "Chutu"
+    },
+    {
+      "province_id": "province_0102",
+      "owner_color": [
+        132,
+        165,
+        141
+      ],
+      "owner": "Cuetlajuchitlan"
+    },
+    {
+      "province_id": "province_0103",
+      "owner_color": [
+        132,
+        165,
+        141
+      ],
+      "owner": "Cuetlajuchitlan"
+    },
+    {
+      "province_id": "province_0104",
+      "owner_color": [
+        132,
+        165,
+        141
+      ],
+      "owner": "Cuetlajuchitlan"
+    },
+    {
+      "province_id": "province_0105",
+      "owner_color": [
+        132,
+        165,
+        141
+      ],
+      "owner": "Cuetlajuchitlan"
+    },
+    {
+      "province_id": "province_0106",
+      "owner_color": [
+        132,
+        165,
+        141
+      ],
+      "owner": "Cuetlajuchitlan"
+    },
+    {
+      "province_id": "province_0107",
+      "owner_color": [
+        71,
+        142,
+        104
+      ],
+      "owner": "Dongoye"
+    },
+    {
+      "province_id": "province_0108",
+      "owner_color": [
+        71,
+        142,
+        104
+      ],
+      "owner": "Dongoye"
+    },
+    {
+      "province_id": "province_0109",
+      "owner_color": [
+        71,
+        142,
+        104
+      ],
+      "owner": "Dongoye"
+    },
+    {
+      "province_id": "province_0110",
+      "owner_color": [
+        71,
+        142,
+        104
+      ],
+      "owner": "Dongoye"
+    },
+    {
+      "province_id": "province_0111",
+      "owner_color": [
+        222,
+        58,
+        63
+      ],
+      "owner": "Eastern_Han_Empire"
+    },
+    {
+      "province_id": "province_0112",
+      "owner_color": [
+        222,
+        58,
+        63
+      ],
+      "owner": "Eastern_Han_Empire"
+    },
+    {
+      "province_id": "province_0113",
+      "owner_color": [
+        222,
+        58,
+        63
+      ],
+      "owner": "Eastern_Han_Empire"
+    },
+    {
+      "province_id": "province_0114",
+      "owner_color": [
+        222,
+        58,
+        63
+      ],
+      "owner": "Eastern_Han_Empire"
+    },
+    {
+      "province_id": "province_0115",
+      "owner_color": [
+        20,
+        125,
+        175
+      ],
+      "owner": "Ethopia"
+    },
+    {
+      "province_id": "province_0116",
+      "owner_color": [
+        76,
+        93,
+        191
+      ],
+      "owner": "Fugan"
+    },
+    {
+      "province_id": "province_0117",
+      "owner_color": [
+        76,
+        93,
+        191
+      ],
+      "owner": "Fugan"
+    },
+    {
+      "province_id": "province_0118",
+      "owner_color": [
+        76,
+        93,
+        191
+      ],
+      "owner": "Fugan"
+    },
+    {
+      "province_id": "province_0119",
+      "owner_color": [
+        165,
+        73,
+        61
+      ],
+      "owner": "Georgia"
+    },
+    {
+      "province_id": "province_0120",
+      "owner_color": [
+        165,
+        73,
+        61
+      ],
+      "owner": "Georgia"
+    },
+    {
+      "province_id": "province_0121",
+      "owner_color": [
+        165,
+        73,
+        61
+      ],
+      "owner": "Georgia"
+    },
+    {
+      "province_id": "province_0122",
+      "owner_color": [
+        181,
+        180,
+        4
+      ],
+      "owner": "Gerrha"
+    },
+    {
+      "province_id": "province_0123",
+      "owner_color": [
+        181,
+        180,
+        4
+      ],
+      "owner": "Gerrha"
+    },
+    {
+      "province_id": "province_0124",
+      "owner_color": [
+        181,
+        180,
+        4
+      ],
+      "owner": "Gerrha"
+    },
+    {
+      "province_id": "province_0125",
+      "owner_color": [
+        181,
+        180,
+        4
+      ],
+      "owner": "Gerrha"
+    },
+    {
+      "province_id": "province_0126",
+      "owner_color": [
+        181,
+        180,
+        4
+      ],
+      "owner": "Gerrha"
+    },
+    {
+      "province_id": "province_0127",
+      "owner_color": [
+        156,
+        85,
+        61
+      ],
+      "owner": "Goguryeo"
+    },
+    {
+      "province_id": "province_0128",
+      "owner_color": [
+        183,
+        207,
+        88
+      ],
+      "owner": "Hadamut"
+    },
+    {
+      "province_id": "province_0129",
+      "owner_color": [
+        183,
+        207,
+        88
+      ],
+      "owner": "Hadamut"
+    },
+    {
+      "province_id": "province_0130",
+      "owner_color": [
+        183,
+        207,
+        88
+      ],
+      "owner": "Hadamut"
+    },
+    {
+      "province_id": "province_0131",
+      "owner_color": [
+        183,
+        207,
+        88
+      ],
+      "owner": "Hadamut"
+    },
+    {
+      "province_id": "province_0132",
+      "owner_color": [
+        183,
+        207,
+        88
+      ],
+      "owner": "Hadamut"
+    },
+    {
+      "province_id": "province_0133",
+      "owner_color": [
+        183,
+        207,
+        88
+      ],
+      "owner": "Hadamut"
+    },
+    {
+      "province_id": "province_0134",
+      "owner_color": [
+        183,
+        207,
+        88
+      ],
+      "owner": "Hadamut"
+    },
+    {
+      "province_id": "province_0135",
+      "owner_color": [
+        183,
+        207,
+        88
+      ],
+      "owner": "Hadamut"
+    },
+    {
+      "province_id": "province_0136",
+      "owner_color": [
+        204,
+        90,
+        62
+      ],
+      "owner": "Himyar"
+    },
+    {
+      "province_id": "province_0137",
+      "owner_color": [
+        204,
+        90,
+        62
+      ],
+      "owner": "Himyar"
+    },
+    {
+      "province_id": "province_0138",
+      "owner_color": [
+        204,
+        90,
+        62
+      ],
+      "owner": "Himyar"
+    },
+    {
+      "province_id": "province_0139",
+      "owner_color": [
+        204,
+        90,
+        62
+      ],
+      "owner": "Himyar"
+    },
+    {
+      "province_id": "province_0140",
+      "owner_color": [
+        204,
+        90,
+        62
+      ],
+      "owner": "Himyar"
+    },
+    {
+      "province_id": "province_0141",
+      "owner_color": [
+        204,
+        90,
+        62
+      ],
+      "owner": "Himyar"
+    },
+    {
+      "province_id": "province_0142",
+      "owner_color": [
+        204,
+        90,
+        62
+      ],
+      "owner": "Himyar"
+    },
+    {
+      "province_id": "province_0143",
+      "owner_color": [
+        204,
+        90,
+        62
+      ],
+      "owner": "Himyar"
+    },
+    {
+      "province_id": "province_0144",
+      "owner_color": [
+        204,
+        90,
+        62
+      ],
+      "owner": "Himyar"
+    },
+    {
+      "province_id": "province_0145",
+      "owner_color": [
+        158,
+        99,
+        44
+      ],
+      "owner": "Hycania"
+    },
+    {
+      "province_id": "province_0146",
+      "owner_color": [
+        158,
+        99,
+        44
+      ],
+      "owner": "Hycania"
+    },
+    {
+      "province_id": "province_0147",
+      "owner_color": [
+        158,
+        99,
+        44
+      ],
+      "owner": "Hycania"
+    },
+    {
+      "province_id": "province_0148",
+      "owner_color": [
+        158,
+        99,
+        44
+      ],
+      "owner": "Hycania"
+    },
+    {
+      "province_id": "province_0149",
+      "owner_color": [
+        165,
+        77,
+        91
+      ],
+      "owner": "Izapa"
+    },
+    {
+      "province_id": "province_0150",
+      "owner_color": [
+        165,
+        77,
+        91
+      ],
+      "owner": "Izapa"
+    },
+    {
+      "province_id": "province_0151",
+      "owner_color": [
+        165,
+        77,
+        91
+      ],
+      "owner": "Izapa"
+    },
+    {
+      "province_id": "province_0152",
+      "owner_color": [
+        165,
+        77,
+        91
+      ],
+      "owner": "Izapa"
+    },
+    {
+      "province_id": "province_0153",
+      "owner_color": [
+        165,
+        77,
+        91
+      ],
+      "owner": "Izapa"
+    },
+    {
+      "province_id": "province_0154",
+      "owner_color": [
+        165,
+        77,
+        91
+      ],
+      "owner": "Izapa"
+    },
+    {
+      "province_id": "province_0155",
+      "owner_color": [
+        165,
+        77,
+        91
+      ],
+      "owner": "Izapa"
+    },
+    {
+      "province_id": "province_0156",
+      "owner_color": [
+        255,
+        255,
+        0
+      ],
+      "owner": "Japan"
+    },
+    {
+      "province_id": "province_0157",
+      "owner_color": [
+        255,
+        255,
+        0
+      ],
+      "owner": "Japan"
+    },
+    {
+      "province_id": "province_0158",
+      "owner_color": [
+        255,
+        255,
+        0
+      ],
+      "owner": "Japan"
+    },
+    {
+      "province_id": "province_0159",
+      "owner_color": [
+        255,
+        255,
+        0
+      ],
+      "owner": "Japan"
+    },
+    {
+      "province_id": "province_0160",
+      "owner_color": [
+        255,
+        255,
+        0
+      ],
+      "owner": "Japan"
+    },
+    {
+      "province_id": "province_0161",
+      "owner_color": [
+        255,
+        255,
+        0
+      ],
+      "owner": "Japan"
+    },
+    {
+      "province_id": "province_0162",
+      "owner_color": [
+        255,
+        255,
+        0
+      ],
+      "owner": "Japan"
+    },
+    {
+      "province_id": "province_0163",
+      "owner_color": [
+        99,
+        142,
+        47
+      ],
+      "owner": "Kantoli"
+    },
+    {
+      "province_id": "province_0164",
+      "owner_color": [
+        99,
+        142,
+        47
+      ],
+      "owner": "Kantoli"
+    },
+    {
+      "province_id": "province_0165",
+      "owner_color": [
+        99,
+        142,
+        47
+      ],
+      "owner": "Kantoli"
+    },
+    {
+      "province_id": "province_0166",
+      "owner_color": [
+        99,
+        142,
+        47
+      ],
+      "owner": "Kantoli"
+    },
+    {
+      "province_id": "province_0167",
+      "owner_color": [
+        99,
+        142,
+        47
+      ],
+      "owner": "Kantoli"
+    },
+    {
+      "province_id": "province_0168",
+      "owner_color": [
+        226,
+        114,
+        91
+      ],
+      "owner": "Kashmir"
+    },
+    {
+      "province_id": "province_0169",
+      "owner_color": [
+        226,
+        114,
+        91
+      ],
+      "owner": "Kashmir"
+    },
+    {
+      "province_id": "province_0170",
+      "owner_color": [
+        226,
+        114,
+        91
+      ],
+      "owner": "Kashmir"
+    },
+    {
+      "province_id": "province_0171",
+      "owner_color": [
+        226,
+        114,
+        91
+      ],
+      "owner": "Kashmir"
+    },
+    {
+      "province_id": "province_0172",
+      "owner_color": [
+        226,
+        114,
+        91
+      ],
+      "owner": "Kashmir"
+    },
+    {
+      "province_id": "province_0173",
+      "owner_color": [
+        226,
+        114,
+        91
+      ],
+      "owner": "Kashmir"
+    },
+    {
+      "province_id": "province_0174",
+      "owner_color": [
+        226,
+        114,
+        91
+      ],
+      "owner": "Kashmir"
+    },
+    {
+      "province_id": "province_0175",
+      "owner_color": [
+        137,
+        83,
+        249
+      ],
+      "owner": "Kedah"
+    },
+    {
+      "province_id": "province_0176",
+      "owner_color": [
+        137,
+        83,
+        249
+      ],
+      "owner": "Kedah"
+    },
+    {
+      "province_id": "province_0177",
+      "owner_color": [
+        137,
+        83,
+        249
+      ],
+      "owner": "Kedah"
+    },
+    {
+      "province_id": "province_0178",
+      "owner_color": [
+        137,
+        83,
+        249
+      ],
+      "owner": "Kedah"
+    },
+    {
+      "province_id": "province_0179",
+      "owner_color": [
+        137,
+        83,
+        249
+      ],
+      "owner": "Kedah"
+    },
+    {
+      "province_id": "province_0180",
+      "owner_color": [
+        137,
+        83,
+        249
+      ],
+      "owner": "Kedah"
+    },
+    {
+      "province_id": "province_0181",
+      "owner_color": [
+        137,
+        83,
+        249
+      ],
+      "owner": "Kedah"
+    },
+    {
+      "province_id": "province_0182",
+      "owner_color": [
+        193,
+        73,
+        85
+      ],
+      "owner": "Kelantan"
+    },
+    {
+      "province_id": "province_0183",
+      "owner_color": [
+        193,
+        73,
+        85
+      ],
+      "owner": "Kelantan"
+    },
+    {
+      "province_id": "province_0184",
+      "owner_color": [
+        193,
+        73,
+        85
+      ],
+      "owner": "Kelantan"
+    },
+    {
+      "province_id": "province_0185",
+      "owner_color": [
+        193,
+        73,
+        85
+      ],
+      "owner": "Kelantan"
+    },
+    {
+      "province_id": "province_0186",
+      "owner_color": [
+        193,
+        73,
+        85
+      ],
+      "owner": "Kelantan"
+    },
+    {
+      "province_id": "province_0187",
+      "owner_color": [
+        193,
+        73,
+        85
+      ],
+      "owner": "Kelantan"
+    },
+    {
+      "province_id": "province_0188",
+      "owner_color": [
+        188,
+        123,
+        115
+      ],
+      "owner": "Kharax"
+    },
+    {
+      "province_id": "province_0189",
+      "owner_color": [
+        188,
+        123,
+        115
+      ],
+      "owner": "Kharax"
+    },
+    {
+      "province_id": "province_0190",
+      "owner_color": [
+        96,
+        163,
+        52
+      ],
+      "owner": "Kiche"
+    },
+    {
+      "province_id": "province_0191",
+      "owner_color": [
+        96,
+        163,
+        52
+      ],
+      "owner": "Kiche"
+    },
+    {
+      "province_id": "province_0192",
+      "owner_color": [
+        96,
+        163,
+        52
+      ],
+      "owner": "Kiche"
+    },
+    {
+      "province_id": "province_0193",
+      "owner_color": [
+        96,
+        163,
+        52
+      ],
+      "owner": "Kiche"
+    },
+    {
+      "province_id": "province_0194",
+      "owner_color": [
+        96,
+        163,
+        52
+      ],
+      "owner": "Kiche"
+    },
+    {
+      "province_id": "province_0195",
+      "owner_color": [
+        96,
+        163,
+        52
+      ],
+      "owner": "Kiche"
+    },
+    {
+      "province_id": "province_0196",
+      "owner_color": [
+        185,
+        183,
+        85
+      ],
+      "owner": "Kirat"
+    },
+    {
+      "province_id": "province_0197",
+      "owner_color": [
+        185,
+        183,
+        85
+      ],
+      "owner": "Kirat"
+    },
+    {
+      "province_id": "province_0198",
+      "owner_color": [
+        185,
+        183,
+        85
+      ],
+      "owner": "Kirat"
+    },
+    {
+      "province_id": "province_0199",
+      "owner_color": [
+        185,
+        183,
+        85
+      ],
+      "owner": "Kirat"
+    },
+    {
+      "province_id": "province_0200",
+      "owner_color": [
+        232,
+        134,
+        145
+      ],
+      "owner": "Kongu"
+    },
+    {
+      "province_id": "province_0201",
+      "owner_color": [
+        232,
+        134,
+        145
+      ],
+      "owner": "Kongu"
+    },
+    {
+      "province_id": "province_0202",
+      "owner_color": [
+        163,
+        118,
+        173
+      ],
+      "owner": "Kush"
+    },
+    {
+      "province_id": "province_0203",
+      "owner_color": [
+        65,
+        190,
+        187
+      ],
+      "owner": "Kushan"
+    },
+    {
+      "province_id": "province_0204",
+      "owner_color": [
+        65,
+        190,
+        187
+      ],
+      "owner": "Kushan"
+    },
+    {
+      "province_id": "province_0205",
+      "owner_color": [
+        65,
+        190,
+        187
+      ],
+      "owner": "Kushan"
+    },
+    {
+      "province_id": "province_0206",
+      "owner_color": [
+        65,
+        190,
+        187
+      ],
+      "owner": "Kushan"
+    },
+    {
+      "province_id": "province_0207",
+      "owner_color": [
+        65,
+        190,
+        187
+      ],
+      "owner": "Kushan"
+    },
+    {
+      "province_id": "province_0208",
+      "owner_color": [
+        65,
+        190,
+        187
+      ],
+      "owner": "Kushan"
+    },
+    {
+      "province_id": "province_0209",
+      "owner_color": [
+        65,
+        190,
+        187
+      ],
+      "owner": "Kushan"
+    },
+    {
+      "province_id": "province_0210",
+      "owner_color": [
+        132,
+        204,
+        140
+      ],
+      "owner": "Kuttuvams"
+    },
+    {
+      "province_id": "province_0211",
+      "owner_color": [
+        132,
+        204,
+        140
+      ],
+      "owner": "Kuttuvams"
+    },
+    {
+      "province_id": "province_0212",
+      "owner_color": [
+        132,
+        204,
+        140
+      ],
+      "owner": "Kuttuvams"
+    },
+    {
+      "province_id": "province_0213",
+      "owner_color": [
+        132,
+        204,
+        140
+      ],
+      "owner": "Kuttuvams"
+    },
+    {
+      "province_id": "province_0214",
+      "owner_color": [
+        132,
+        204,
+        140
+      ],
+      "owner": "Kuttuvams"
+    },
+    {
+      "province_id": "province_0215",
+      "owner_color": [
+        132,
+        204,
+        140
+      ],
+      "owner": "Kuttuvams"
+    },
+    {
+      "province_id": "province_0216",
+      "owner_color": [
+        132,
+        204,
+        140
+      ],
+      "owner": "Kuttuvams"
+    },
+    {
+      "province_id": "province_0217",
+      "owner_color": [
+        232,
+        197,
+        11
+      ],
+      "owner": "Lambakannas"
+    },
+    {
+      "province_id": "province_0218",
+      "owner_color": [
+        232,
+        197,
+        11
+      ],
+      "owner": "Lambakannas"
+    },
+    {
+      "province_id": "province_0219",
+      "owner_color": [
+        232,
+        197,
+        11
+      ],
+      "owner": "Lambakannas"
+    },
+    {
+      "province_id": "province_0220",
+      "owner_color": [
+        232,
+        197,
+        11
+      ],
+      "owner": "Lambakannas"
+    },
+    {
+      "province_id": "province_0221",
+      "owner_color": [
+        232,
+        197,
+        11
+      ],
+      "owner": "Lambakannas"
+    },
+    {
+      "province_id": "province_0222",
+      "owner_color": [
+        201,
+        154,
+        124
+      ],
+      "owner": "Maingmaw"
+    },
+    {
+      "province_id": "province_0223",
+      "owner_color": [
+        201,
+        154,
+        124
+      ],
+      "owner": "Maingmaw"
+    },
+    {
+      "province_id": "province_0224",
+      "owner_color": [
+        201,
+        154,
+        124
+      ],
+      "owner": "Maingmaw"
+    },
+    {
+      "province_id": "province_0225",
+      "owner_color": [
+        201,
+        154,
+        124
+      ],
+      "owner": "Maingmaw"
+    },
+    {
+      "province_id": "province_0226",
+      "owner_color": [
+        201,
+        154,
+        124
+      ],
+      "owner": "Maingmaw"
+    },
+    {
+      "province_id": "province_0227",
+      "owner_color": [
+        201,
+        154,
+        124
+      ],
+      "owner": "Maingmaw"
+    },
+    {
+      "province_id": "province_0228",
+      "owner_color": [
+        201,
+        154,
+        124
+      ],
+      "owner": "Maingmaw"
+    },
+    {
+      "province_id": "province_0229",
+      "owner_color": [
+        201,
+        154,
+        124
+      ],
+      "owner": "Maingmaw"
+    },
+    {
+      "province_id": "province_0230",
+      "owner_color": [
+        201,
+        154,
+        124
+      ],
+      "owner": "Maingmaw"
+    },
+    {
+      "province_id": "province_0231",
+      "owner_color": [
+        201,
+        154,
+        124
+      ],
+      "owner": "Maingmaw"
+    },
+    {
+      "province_id": "province_0232",
+      "owner_color": [
+        158,
+        106,
+        58
+      ],
+      "owner": "Margiana"
+    },
+    {
+      "province_id": "province_0233",
+      "owner_color": [
+        158,
+        106,
+        58
+      ],
+      "owner": "Margiana"
+    },
+    {
+      "province_id": "province_0234",
+      "owner_color": [
+        158,
+        106,
+        58
+      ],
+      "owner": "Margiana"
+    },
+    {
+      "province_id": "province_0235",
+      "owner_color": [
+        158,
+        106,
+        58
+      ],
+      "owner": "Margiana"
+    },
+    {
+      "province_id": "province_0236",
+      "owner_color": [
+        158,
+        106,
+        58
+      ],
+      "owner": "Margiana"
+    },
+    {
+      "province_id": "province_0237",
+      "owner_color": [
+        158,
+        106,
+        58
+      ],
+      "owner": "Margiana"
+    },
+    {
+      "province_id": "province_0238",
+      "owner_color": [
+        158,
+        106,
+        58
+      ],
+      "owner": "Margiana"
+    },
+    {
+      "province_id": "province_0239",
+      "owner_color": [
+        158,
+        106,
+        58
+      ],
+      "owner": "Margiana"
+    },
+    {
+      "province_id": "province_0240",
+      "owner_color": [
+        158,
+        106,
+        58
+      ],
+      "owner": "Margiana"
+    },
+    {
+      "province_id": "province_0241",
+      "owner_color": [
+        139,
+        204,
+        130
+      ],
+      "owner": "Maya"
+    },
+    {
+      "province_id": "province_0242",
+      "owner_color": [
+        211,
+        100,
+        31
+      ],
+      "owner": "Mixteca"
+    },
+    {
+      "province_id": "province_0243",
+      "owner_color": [
+        211,
+        100,
+        31
+      ],
+      "owner": "Mixteca"
+    },
+    {
+      "province_id": "province_0244",
+      "owner_color": [
+        211,
+        100,
+        31
+      ],
+      "owner": "Mixteca"
+    },
+    {
+      "province_id": "province_0245",
+      "owner_color": [
+        211,
+        100,
+        31
+      ],
+      "owner": "Mixteca"
+    },
+    {
+      "province_id": "province_0246",
+      "owner_color": [
+        211,
+        100,
+        31
+      ],
+      "owner": "Mixteca"
+    },
+    {
+      "province_id": "province_0247",
+      "owner_color": [
+        211,
+        100,
+        31
+      ],
+      "owner": "Mixteca"
+    },
+    {
+      "province_id": "province_0248",
+      "owner_color": [
+        101,
+        80,
+        158
+      ],
+      "owner": "Monte_Nego"
+    },
+    {
+      "province_id": "province_0249",
+      "owner_color": [
+        101,
+        80,
+        158
+      ],
+      "owner": "Monte_Nego"
+    },
+    {
+      "province_id": "province_0250",
+      "owner_color": [
+        158,
+        211,
+        120
+      ],
+      "owner": "Northern_Xiongnu"
+    },
+    {
+      "province_id": "province_0251",
+      "owner_color": [
+        158,
+        211,
+        120
+      ],
+      "owner": "Northern_Xiongnu"
+    },
+    {
+      "province_id": "province_0252",
+      "owner_color": [
+        158,
+        211,
+        120
+      ],
+      "owner": "Northern_Xiongnu"
+    },
+    {
+      "province_id": "province_0253",
+      "owner_color": [
+        158,
+        211,
+        120
+      ],
+      "owner": "Northern_Xiongnu"
+    },
+    {
+      "province_id": "province_0254",
+      "owner_color": [
+        158,
+        211,
+        120
+      ],
+      "owner": "Northern_Xiongnu"
+    },
+    {
+      "province_id": "province_0255",
+      "owner_color": [
+        158,
+        211,
+        120
+      ],
+      "owner": "Northern_Xiongnu"
+    },
+    {
+      "province_id": "province_0256",
+      "owner_color": [
+        56,
+        119,
+        170
+      ],
+      "owner": "Oaxaca"
+    },
+    {
+      "province_id": "province_0257",
+      "owner_color": [
+        0,
+        0,
+        0
+      ],
+      "owner": "Ocean"
+    },
+    {
+      "province_id": "province_0258",
+      "owner_color": [
+        0,
+        0,
+        0
+      ],
+      "owner": "Ocean"
+    },
+    {
+      "province_id": "province_0259",
+      "owner_color": [
+        0,
+        0,
+        0
+      ],
+      "owner": "Ocean"
+    },
+    {
+      "province_id": "province_0260",
+      "owner_color": [
+        0,
+        0,
+        0
+      ],
+      "owner": "Ocean"
+    },
+    {
+      "province_id": "province_0261",
+      "owner_color": [
+        161,
+        130,
+        214
+      ],
+      "owner": "Okjeo"
+    },
+    {
+      "province_id": "province_0262",
+      "owner_color": [
+        161,
+        130,
+        214
+      ],
+      "owner": "Okjeo"
+    },
+    {
+      "province_id": "province_0263",
+      "owner_color": [
+        137,
+        86,
+        45
+      ],
+      "owner": "Pagan"
+    },
+    {
+      "province_id": "province_0264",
+      "owner_color": [
+        137,
+        86,
+        45
+      ],
+      "owner": "Pagan"
+    },
+    {
+      "province_id": "province_0265",
+      "owner_color": [
+        196,
+        102,
+        40
+      ],
+      "owner": "Pandyas"
+    },
+    {
+      "province_id": "province_0266",
+      "owner_color": [
+        196,
+        102,
+        40
+      ],
+      "owner": "Pandyas"
+    },
+    {
+      "province_id": "province_0267",
+      "owner_color": [
+        196,
+        102,
+        40
+      ],
+      "owner": "Pandyas"
+    },
+    {
+      "province_id": "province_0268",
+      "owner_color": [
+        196,
+        102,
+        40
+      ],
+      "owner": "Pandyas"
+    },
+    {
+      "province_id": "province_0269",
+      "owner_color": [
+        196,
+        102,
+        40
+      ],
+      "owner": "Pandyas"
+    },
+    {
+      "province_id": "province_0270",
+      "owner_color": [
+        196,
+        102,
+        40
+      ],
+      "owner": "Pandyas"
+    },
+    {
+      "province_id": "province_0271",
+      "owner_color": [
+        196,
+        102,
+        40
+      ],
+      "owner": "Pandyas"
+    },
+    {
+      "province_id": "province_0272",
+      "owner_color": [
+        196,
+        102,
+        40
+      ],
+      "owner": "Pandyas"
+    },
+    {
+      "province_id": "province_0273",
+      "owner_color": [
+        196,
+        102,
+        40
+      ],
+      "owner": "Pandyas"
+    },
+    {
+      "province_id": "province_0274",
+      "owner_color": [
+        196,
+        102,
+        40
+      ],
+      "owner": "Pandyas"
+    },
+    {
+      "province_id": "province_0275",
+      "owner_color": [
+        242,
+        175,
+        109
+      ],
+      "owner": "Persia"
+    },
+    {
+      "province_id": "province_0276",
+      "owner_color": [
+        242,
+        175,
+        109
+      ],
+      "owner": "Persia"
+    },
+    {
+      "province_id": "province_0277",
+      "owner_color": [
+        242,
+        175,
+        109
+      ],
+      "owner": "Persia"
+    },
+    {
+      "province_id": "province_0278",
+      "owner_color": [
+        242,
+        175,
+        109
+      ],
+      "owner": "Persia"
+    },
+    {
+      "province_id": "province_0279",
+      "owner_color": [
+        242,
+        175,
+        109
+      ],
+      "owner": "Persia"
+    },
+    {
+      "province_id": "province_0280",
+      "owner_color": [
+        255,
+        235,
+        216
+      ],
+      "owner": "Persis"
+    },
+    {
+      "province_id": "province_0281",
+      "owner_color": [
+        255,
+        235,
+        216
+      ],
+      "owner": "Persis"
+    },
+    {
+      "province_id": "province_0282",
+      "owner_color": [
+        157,
+        101,
+        216
+      ],
+      "owner": "Pundra"
+    },
+    {
+      "province_id": "province_0283",
+      "owner_color": [
+        157,
+        101,
+        216
+      ],
+      "owner": "Pundra"
+    },
+    {
+      "province_id": "province_0284",
+      "owner_color": [
+        177,
+        101,
+        180
+      ],
+      "owner": "Qataban"
+    },
+    {
+      "province_id": "province_0285",
+      "owner_color": [
+        177,
+        101,
+        180
+      ],
+      "owner": "Qataban"
+    },
+    {
+      "province_id": "province_0286",
+      "owner_color": [
+        177,
+        101,
+        180
+      ],
+      "owner": "Qataban"
+    },
+    {
+      "province_id": "province_0287",
+      "owner_color": [
+        177,
+        101,
+        180
+      ],
+      "owner": "Qataban"
+    },
+    {
+      "province_id": "province_0288",
+      "owner_color": [
+        177,
+        101,
+        180
+      ],
+      "owner": "Qataban"
+    },
+    {
+      "province_id": "province_0289",
+      "owner_color": [
+        177,
+        101,
+        180
+      ],
+      "owner": "Qataban"
+    },
+    {
+      "province_id": "province_0290",
+      "owner_color": [
+        177,
+        101,
+        180
+      ],
+      "owner": "Qataban"
+    },
+    {
+      "province_id": "province_0291",
+      "owner_color": [
+        177,
+        101,
+        180
+      ],
+      "owner": "Qataban"
+    },
+    {
+      "province_id": "province_0292",
+      "owner_color": [
+        177,
+        101,
+        180
+      ],
+      "owner": "Qataban"
+    },
+    {
+      "province_id": "province_0293",
+      "owner_color": [
+        190,
+        85,
+        69
+      ],
+      "owner": "Roman_Albania"
+    },
+    {
+      "province_id": "province_0294",
+      "owner_color": [
+        190,
+        85,
+        69
+      ],
+      "owner": "Roman_Albania"
+    },
+    {
+      "province_id": "province_0295",
+      "owner_color": [
+        190,
+        85,
+        69
+      ],
+      "owner": "Roman_Albania"
+    },
+    {
+      "province_id": "province_0296",
+      "owner_color": [
+        190,
+        85,
+        69
+      ],
+      "owner": "Roman_Albania"
+    },
+    {
+      "province_id": "province_0297",
+      "owner_color": [
+        190,
+        85,
+        69
+      ],
+      "owner": "Roman_Albania"
+    },
+    {
+      "province_id": "province_0298",
+      "owner_color": [
+        190,
+        85,
+        69
+      ],
+      "owner": "Roman_Albania"
+    },
+    {
+      "province_id": "province_0299",
+      "owner_color": [
+        190,
+        85,
+        69
+      ],
+      "owner": "Roman_Albania"
+    },
+    {
+      "province_id": "province_0300",
+      "owner_color": [
+        190,
+        85,
+        69
+      ],
+      "owner": "Roman_Albania"
+    },
+    {
+      "province_id": "province_0301",
+      "owner_color": [
+        190,
+        85,
+        69
+      ],
+      "owner": "Roman_Albania"
+    },
+    {
+      "province_id": "province_0302",
+      "owner_color": [
+        168,
+        28,
+        7
+      ],
+      "owner": "Rome"
+    },
+    {
+      "province_id": "province_0303",
+      "owner_color": [
+        168,
+        28,
+        7
+      ],
+      "owner": "Rome"
+    },
+    {
+      "province_id": "province_0304",
+      "owner_color": [
+        168,
+        28,
+        7
+      ],
+      "owner": "Rome"
+    },
+    {
+      "province_id": "province_0305",
+      "owner_color": [
+        43,
+        89,
+        104
+      ],
+      "owner": "Saba"
+    },
+    {
+      "province_id": "province_0306",
+      "owner_color": [
+        43,
+        89,
+        104
+      ],
+      "owner": "Saba"
+    },
+    {
+      "province_id": "province_0307",
+      "owner_color": [
+        43,
+        89,
+        104
+      ],
+      "owner": "Saba"
+    },
+    {
+      "province_id": "province_0308",
+      "owner_color": [
+        43,
+        89,
+        104
+      ],
+      "owner": "Saba"
+    },
+    {
+      "province_id": "province_0309",
+      "owner_color": [
+        43,
+        89,
+        104
+      ],
+      "owner": "Saba"
+    },
+    {
+      "province_id": "province_0310",
+      "owner_color": [
+        43,
+        89,
+        104
+      ],
+      "owner": "Saba"
+    },
+    {
+      "province_id": "province_0311",
+      "owner_color": [
+        43,
+        89,
+        104
+      ],
+      "owner": "Saba"
+    },
+    {
+      "province_id": "province_0312",
+      "owner_color": [
+        43,
+        89,
+        104
+      ],
+      "owner": "Saba"
+    },
+    {
+      "province_id": "province_0313",
+      "owner_color": [
+        43,
+        89,
+        104
+      ],
+      "owner": "Saba"
+    },
+    {
+      "province_id": "province_0314",
+      "owner_color": [
+        191,
+        150,
+        67
+      ],
+      "owner": "Sama"
+    },
+    {
+      "province_id": "province_0315",
+      "owner_color": [
+        191,
+        150,
+        67
+      ],
+      "owner": "Sama"
+    },
+    {
+      "province_id": "province_0316",
+      "owner_color": [
+        191,
+        150,
+        67
+      ],
+      "owner": "Sama"
+    },
+    {
+      "province_id": "province_0317",
+      "owner_color": [
+        216,
+        141,
+        84
+      ],
+      "owner": "Satavahana"
+    },
+    {
+      "province_id": "province_0318",
+      "owner_color": [
+        125,
+        125,
+        195
+      ],
+      "owner": "Satraps"
+    },
+    {
+      "province_id": "province_0319",
+      "owner_color": [
+        125,
+        125,
+        195
+      ],
+      "owner": "Satraps"
+    },
+    {
+      "province_id": "province_0320",
+      "owner_color": [
+        125,
+        125,
+        195
+      ],
+      "owner": "Satraps"
+    },
+    {
+      "province_id": "province_0321",
+      "owner_color": [
+        125,
+        125,
+        195
+      ],
+      "owner": "Satraps"
+    },
+    {
+      "province_id": "province_0322",
+      "owner_color": [
+        125,
+        125,
+        195
+      ],
+      "owner": "Satraps"
+    },
+    {
+      "province_id": "province_0323",
+      "owner_color": [
+        39,
+        190,
+        58
+      ],
+      "owner": "Silla"
+    },
+    {
+      "province_id": "province_0324",
+      "owner_color": [
+        39,
+        190,
+        58
+      ],
+      "owner": "Silla"
+    },
+    {
+      "province_id": "province_0325",
+      "owner_color": [
+        39,
+        190,
+        58
+      ],
+      "owner": "Silla"
+    },
+    {
+      "province_id": "province_0326",
+      "owner_color": [
+        255,
+        134,
+        76
+      ],
+      "owner": "Soma"
+    },
+    {
+      "province_id": "province_0327",
+      "owner_color": [
+        255,
+        134,
+        76
+      ],
+      "owner": "Soma"
+    },
+    {
+      "province_id": "province_0328",
+      "owner_color": [
+        255,
+        134,
+        76
+      ],
+      "owner": "Soma"
+    },
+    {
+      "province_id": "province_0329",
+      "owner_color": [
+        255,
+        134,
+        76
+      ],
+      "owner": "Soma"
+    },
+    {
+      "province_id": "province_0330",
+      "owner_color": [
+        140,
+        201,
+        86
+      ],
+      "owner": "Tagaungwn"
+    },
+    {
+      "province_id": "province_0331",
+      "owner_color": [
+        140,
+        201,
+        86
+      ],
+      "owner": "Tagaungwn"
+    },
+    {
+      "province_id": "province_0332",
+      "owner_color": [
+        80,
+        35,
+        89
+      ],
+      "owner": "Tambralinga"
+    },
+    {
+      "province_id": "province_0333",
+      "owner_color": [
+        80,
+        35,
+        89
+      ],
+      "owner": "Tambralinga"
+    },
+    {
+      "province_id": "province_0334",
+      "owner_color": [
+        80,
+        35,
+        89
+      ],
+      "owner": "Tambralinga"
+    },
+    {
+      "province_id": "province_0335",
+      "owner_color": [
+        155,
+        51,
+        27
+      ],
+      "owner": "Tres_Zapotes"
+    },
+    {
+      "province_id": "province_0336",
+      "owner_color": [
+        155,
+        51,
+        27
+      ],
+      "owner": "Tres_Zapotes"
+    },
+    {
+      "province_id": "province_0337",
+      "owner_color": [
+        155,
+        51,
+        27
+      ],
+      "owner": "Tres_Zapotes"
+    },
+    {
+      "province_id": "province_0338",
+      "owner_color": [
+        155,
+        51,
+        27
+      ],
+      "owner": "Tres_Zapotes"
+    },
+    {
+      "province_id": "province_0339",
+      "owner_color": [
+        232,
+        9,
+        75
+      ],
+      "owner": "Utala"
+    },
+    {
+      "province_id": "province_0340",
+      "owner_color": [
+        232,
+        9,
+        75
+      ],
+      "owner": "Utala"
+    },
+    {
+      "province_id": "province_0341",
+      "owner_color": [
+        232,
+        9,
+        75
+      ],
+      "owner": "Utala"
+    },
+    {
+      "province_id": "province_0342",
+      "owner_color": [
+        232,
+        9,
+        75
+      ],
+      "owner": "Utala"
+    },
+    {
+      "province_id": "province_0343",
+      "owner_color": [
+        242,
+        89,
+        144
+      ],
+      "owner": "Vanga"
+    },
+    {
+      "province_id": "province_0344",
+      "owner_color": [
+        242,
+        89,
+        144
+      ],
+      "owner": "Vanga"
+    },
+    {
+      "province_id": "province_0345",
+      "owner_color": [
+        242,
+        89,
+        144
+      ],
+      "owner": "Vanga"
+    },
+    {
+      "province_id": "province_0346",
+      "owner_color": [
+        242,
+        89,
+        144
+      ],
+      "owner": "Vanga"
+    },
+    {
+      "province_id": "province_0347",
+      "owner_color": [
+        128,
+        0,
+        0
+      ],
+      "owner": "Vasta"
+    },
+    {
+      "province_id": "province_0348",
+      "owner_color": [
+        128,
+        0,
+        0
+      ],
+      "owner": "Vasta"
+    },
+    {
+      "province_id": "province_0349",
+      "owner_color": [
+        252,
+        162,
+        98
+      ],
+      "owner": "Vidisha"
+    },
+    {
+      "province_id": "province_0350",
+      "owner_color": [
+        252,
+        162,
+        98
+      ],
+      "owner": "Vidisha"
+    },
+    {
+      "province_id": "province_0351",
+      "owner_color": [
+        252,
+        162,
+        98
+      ],
+      "owner": "Vidisha"
+    },
+    {
+      "province_id": "province_0352",
+      "owner_color": [
+        252,
+        162,
+        98
+      ],
+      "owner": "Vidisha"
+    },
+    {
+      "province_id": "province_0353",
+      "owner_color": [
+        252,
+        162,
+        98
+      ],
+      "owner": "Vidisha"
+    },
+    {
+      "province_id": "province_0354",
+      "owner_color": [
+        252,
+        162,
+        98
+      ],
+      "owner": "Vidisha"
+    },
+    {
+      "province_id": "province_0355",
+      "owner_color": [
+        252,
+        162,
+        98
+      ],
+      "owner": "Vidisha"
+    },
+    {
+      "province_id": "province_0356",
+      "owner_color": [
+        252,
+        162,
+        98
+      ],
+      "owner": "Vidisha"
+    },
+    {
+      "province_id": "province_0357",
+      "owner_color": [
+        147,
+        68,
+        115
+      ],
+      "owner": "Wusun"
+    },
+    {
+      "province_id": "province_0358",
+      "owner_color": [
+        147,
+        68,
+        115
+      ],
+      "owner": "Wusun"
+    },
+    {
+      "province_id": "province_0359",
+      "owner_color": [
+        147,
+        68,
+        115
+      ],
+      "owner": "Wusun"
+    },
+    {
+      "province_id": "province_0360",
+      "owner_color": [
+        132,
+        161,
+        216
+      ],
+      "owner": "Xochipala"
+    },
+    {
+      "province_id": "province_0361",
+      "owner_color": [
+        132,
+        161,
+        216
+      ],
+      "owner": "Xochipala"
+    },
+    {
+      "province_id": "province_0362",
+      "owner_color": [
+        132,
+        161,
+        216
+      ],
+      "owner": "Xochipala"
+    },
+    {
+      "province_id": "province_0363",
+      "owner_color": [
+        132,
+        161,
+        216
+      ],
+      "owner": "Xochipala"
+    },
+    {
+      "province_id": "province_0364",
+      "owner_color": [
+        132,
+        161,
+        216
+      ],
+      "owner": "Xochipala"
+    },
+    {
+      "province_id": "province_0365",
+      "owner_color": [
+        132,
+        161,
+        216
+      ],
+      "owner": "Xochipala"
+    },
+    {
+      "province_id": "province_0366",
+      "owner_color": [
+        132,
+        161,
+        216
+      ],
+      "owner": "Xochipala"
+    },
+    {
+      "province_id": "province_0367",
+      "owner_color": [
+        132,
+        161,
+        216
+      ],
+      "owner": "Xochipala"
+    },
+    {
+      "province_id": "province_0368",
+      "owner_color": [
+        132,
+        161,
+        216
+      ],
+      "owner": "Xochipala"
+    },
+    {
+      "province_id": "province_0369",
+      "owner_color": [
+        81,
+        204,
+        230
+      ],
+      "owner": "Xuantunich"
+    },
+    {
+      "province_id": "province_0370",
+      "owner_color": [
+        81,
+        204,
+        230
+      ],
+      "owner": "Xuantunich"
+    },
+    {
+      "province_id": "province_0371",
+      "owner_color": [
+        255,
+        166,
+        83
+      ],
+      "owner": "Ye"
+    },
+    {
+      "province_id": "province_0372",
+      "owner_color": [
+        255,
+        166,
+        83
+      ],
+      "owner": "Ye"
+    },
+    {
+      "province_id": "province_0373",
+      "owner_color": [
+        255,
+        166,
+        83
+      ],
+      "owner": "Ye"
+    },
+    {
+      "province_id": "province_0374",
+      "owner_color": [
+        255,
+        166,
+        83
+      ],
+      "owner": "Ye"
+    },
+    {
+      "province_id": "province_0375",
+      "owner_color": [
+        255,
+        166,
+        83
+      ],
+      "owner": "Ye"
+    },
+    {
+      "province_id": "province_0376",
+      "owner_color": [
+        255,
+        166,
+        83
+      ],
+      "owner": "Ye"
+    },
+    {
+      "province_id": "province_0377",
+      "owner_color": [
+        255,
+        166,
+        83
+      ],
+      "owner": "Ye"
+    },
+    {
+      "province_id": "province_0378",
+      "owner_color": [
+        255,
+        166,
+        83
+      ],
+      "owner": "Ye"
+    },
+    {
+      "province_id": "province_0379",
+      "owner_color": [
+        255,
+        166,
+        83
+      ],
+      "owner": "Ye"
+    },
+    {
+      "province_id": "province_0380",
+      "owner_color": [
+        255,
+        166,
+        83
+      ],
+      "owner": "Ye"
+    },
+    {
+      "province_id": "province_0381",
+      "owner_color": [
+        130,
+        48,
+        163
+      ],
+      "owner": "Yucunudahui"
+    },
+    {
+      "province_id": "province_0382",
+      "owner_color": [
+        130,
+        48,
+        163
+      ],
+      "owner": "Yucunudahui"
+    },
+    {
+      "province_id": "province_0383",
+      "owner_color": [
+        130,
+        48,
+        163
+      ],
+      "owner": "Yucunudahui"
+    },
+    {
+      "province_id": "province_0384",
+      "owner_color": [
+        130,
+        48,
+        163
+      ],
+      "owner": "Yucunudahui"
+    },
+    {
+      "province_id": "province_0385",
+      "owner_color": [
+        225,
+        70,
+        26
+      ],
+      "owner": "Zapotec"
+    },
+    {
+      "province_id": "province_0386",
+      "owner_color": [
+        225,
+        70,
+        26
+      ],
+      "owner": "Zapotec"
+    },
+    {
+      "province_id": "province_0387",
+      "owner_color": [
+        225,
+        70,
+        26
+      ],
+      "owner": "Zapotec"
+    },
+    {
+      "province_id": "province_0388",
+      "owner_color": [
+        225,
+        70,
+        26
+      ],
+      "owner": "Zapotec"
+    },
+    {
+      "province_id": "province_0389",
+      "owner_color": [
+        225,
+        70,
+        26
+      ],
+      "owner": "Zapotec"
+    },
+    {
+      "province_id": "province_0390",
+      "owner_color": [
+        225,
+        70,
+        26
+      ],
+      "owner": "Zapotec"
+    },
+    {
+      "province_id": "province_0391",
+      "owner_color": [
+        225,
+        70,
+        26
+      ],
+      "owner": "Zapotec"
+    },
+    {
+      "province_id": "province_0392",
+      "owner_color": [
+        225,
+        70,
+        26
+      ],
+      "owner": "Zapotec"
+    },
+    {
+      "province_id": "province_0393",
+      "owner_color": [
+        103,
+        147,
+        73
+      ],
+      "owner": "Zempoala"
+    },
+    {
+      "province_id": "province_0394",
+      "owner_color": [
+        103,
+        147,
+        73
+      ],
+      "owner": "Zempoala"
+    },
+    {
+      "province_id": "province_0395",
+      "owner_color": [
+        103,
+        147,
+        73
+      ],
+      "owner": "Zempoala"
+    },
+    {
+      "province_id": "province_0396",
+      "owner_color": [
+        103,
+        147,
+        73
+      ],
+      "owner": "Zempoala"
+    },
+    {
+      "province_id": "province_0397",
+      "owner_color": [
+        103,
+        147,
+        73
+      ],
+      "owner": "Zempoala"
+    },
+    {
+      "province_id": "province_0398",
+      "owner_color": [
+        103,
+        147,
+        73
+      ],
+      "owner": "Zempoala"
+    },
+    {
+      "province_id": "province_0399",
+      "owner_color": [
+        103,
+        147,
+        73
+      ],
+      "owner": "Zempoala"
+    },
+    {
+      "province_id": "province_0400",
+      "owner_color": [
+        103,
+        147,
+        73
+      ],
+      "owner": "Zempoala"
+    },
+    {
+      "province_id": "province_0401",
+      "owner_color": [
+        103,
+        147,
+        73
+      ],
+      "owner": "Zempoala"
+    },
+    {
+      "province_id": "province_0402",
+      "owner_color": [
+        103,
+        147,
+        73
+      ],
+      "owner": "Zempoala"
+    }
+  ]
 }
