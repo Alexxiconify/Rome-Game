@@ -50,6 +50,8 @@ public class MapPanel extends JPanel {
     private String cachedNationForHighlight = null;
     private BufferedImage cachedProvinceHighlight = null;
     private String cachedProvinceForHighlight = null;
+    private BufferedImage cachedHoverHighlight = null;
+    private String cachedHoverForHighlight = null;
     
     // Province data from JSON
     private Map<String, String> provinceIdToOwner = new HashMap<>();
@@ -421,13 +423,13 @@ public class MapPanel extends JPanel {
             @Override
             public void mouseMoved(MouseEvent e) {
                 if (provinceMask == null) return;
-                Point oldHovered = hoveredProvinceId != null ? new Point(mouseMapPoint) : null;
+                String oldHoveredProvinceId = hoveredProvinceId;
                 mouseMapPoint = screenToMap(e.getPoint());
                 hoveredProvinceId = getProvinceIdAt(mouseMapPoint);
                 
                 // Only repaint if hover state changed
-                if ((oldHovered == null) != (hoveredProvinceId == null) || 
-                    (oldHovered != null && hoveredProvinceId != null && !oldHovered.equals(mouseMapPoint))) {
+                if ((oldHoveredProvinceId == null) != (hoveredProvinceId == null) || 
+                    (oldHoveredProvinceId != null && hoveredProvinceId != null && !oldHoveredProvinceId.equals(hoveredProvinceId))) {
                     
                     // Update tooltip with nation name
                     if (hoveredProvinceId != null) {
@@ -442,6 +444,9 @@ public class MapPanel extends JPanel {
                         setToolTipText(null);
                     }
                     
+                    // Invalidate hover cache and repaint
+                    cachedHoverHighlight = null;
+                    cachedHoverForHighlight = null;
                     repaint();
                 }
             }
@@ -559,13 +564,61 @@ public class MapPanel extends JPanel {
         }
         g2d.dispose();
     }
+    
+    private void updateCachedHoverHighlight(String provinceId, int imgW, int imgH, double scale, int x, int y) {
+        if (cachedHoverHighlight != null && provinceId.equals(cachedHoverForHighlight) && cachedHoverHighlight.getWidth() == getWidth() && cachedHoverHighlight.getHeight() == getHeight()) return;
+        cachedHoverHighlight = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+        cachedHoverForHighlight = provinceId;
+        Province hovered = engine.getWorldMap().getProvince(provinceId);
+        if (hovered == null) return;
+        
+        Graphics2D g2d = cachedHoverHighlight.createGraphics();
+        
+        // Enhanced hover highlighting with bright border and glow effect
+        for (int yy = 0; yy < imgH; yy++) {
+            for (int xx = 0; xx < imgW; xx++) {
+                int argb = provinceMask.getRGB(xx, yy);
+                int r = (argb >> 16) & 0xFF;
+                int g = (argb >> 8) & 0xFF;
+                int b = argb & 0xFF;
+                
+                // Skip black pixels (ocean/background)
+                if (r == 0 && g == 0 && b == 0) {
+                    continue;
+                }
+                
+                // Check if this pixel belongs to the hovered province
+                String colorKey = String.format("%d,%d,%d", r, g, b);
+                String pixelProvinceId = colorKeyToProvinceId.get(colorKey);
+                if (pixelProvinceId != null && pixelProvinceId.equals(provinceId)) {
+                    int screenX = x + (int)(xx * scale);
+                    int screenY = y + (int)(yy * scale);
+                    int pixelSize = (int)Math.ceil(scale);
+                    
+                    // Inner highlight (bright white glow)
+                    g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
+                    g2d.setColor(Color.WHITE);
+                    g2d.fillRect(screenX, screenY, pixelSize, pixelSize);
+                    
+                    // Border highlight (bright cyan border)
+                    g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.9f));
+                    g2d.setColor(Color.CYAN);
+                    g2d.setStroke(new BasicStroke(Math.max(3.0f, (float)scale * 0.8f)));
+                    g2d.drawRect(screenX, screenY, pixelSize, pixelSize);
+                }
+            }
+        }
+        g2d.dispose();
+    }
 
     private void invalidateOverlayCache() {
         cachedBorders = null;
         cachedNationHighlight = null;
         cachedProvinceHighlight = null;
+        cachedHoverHighlight = null;
         cachedNationForHighlight = null;
         cachedProvinceForHighlight = null;
+        cachedHoverForHighlight = null;
         // Don't invalidate ocean background cache - it's static
     }
 
@@ -594,6 +647,16 @@ public class MapPanel extends JPanel {
                     g2d.dispose();
                     g2d = (Graphics2D) g.create();
                     g2d.drawImage(cachedNationHighlight, 0, 0, null);
+                }
+            }
+            
+            // Draw hover highlight for province under mouse
+            if (hoveredProvinceId != null && provinceMask != null) {
+                updateCachedHoverHighlight(hoveredProvinceId, mapImgWidth, mapImgHeight, currentScale, currentOffsetX, currentOffsetY);
+                if (cachedHoverHighlight != null) {
+                    g2d.dispose();
+                    g2d = (Graphics2D) g.create();
+                    g2d.drawImage(cachedHoverHighlight, 0, 0, null);
                 }
             }
             
@@ -726,7 +789,7 @@ public class MapPanel extends JPanel {
         // Controls hint
         g2d.setColor(new Color(100, 100, 100, 180));
         g2d.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        g2d.drawString("ESC: Clear selection | SPACE: Center on selection", 8, getHeight() - 10);
+        g2d.drawString("ESC: Clear selection | SPACE: Center on selection | Click: Select province", 8, getHeight() - 10);
     }
 
     public void centerOnNation(String nation) {
