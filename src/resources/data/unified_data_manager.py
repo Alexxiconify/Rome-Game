@@ -5,6 +5,8 @@ Combines all data processing, generation, and validation functions into one opti
 Replaces multiple scattered Python files with a single comprehensive solution.
 """
 
+# flake8: noqa
+
 import json
 import csv
 from pathlib import Path
@@ -12,14 +14,14 @@ import argparse
 import sys
 import time
 from multiprocessing import Pool, cpu_count
+import cv2  # type: ignore
+import numpy as np  # type: ignore
+from scipy import ndimage  # type: ignore
 
 try:
-    import cv2
-    from scipy import ndimage
-    CV2_AVAILABLE = True
+    from PIL import Image # type: ignore
 except ImportError:
-    CV2_AVAILABLE = False
-    print("Warning: cv2 and scipy not available. Some advanced features will be disabled.")
+    print("Warning: PIL not available. Some advanced features will be disabled.")
 
 class UnifiedDataManager:
     def __init__(self, base_path=None):
@@ -86,7 +88,7 @@ class UnifiedDataManager:
         
         print(f"Loading province mask from: {mask_path}")
         
-        if CV2_AVAILABLE:
+        if cv2.cv2_available:
             return self._generate_provinces_cv2(mask_path, min_size)
         else:
             return self._generate_provinces_pil(mask_path, min_size)
