@@ -4,12 +4,12 @@ Generate provinces from start.png by finding connected regions
 Each connected region of the same color becomes a separate province
 """
 
-import cv2
-import numpy as np
-import json
+import cv2 # type: ignore
+import numpy as np # type: ignore
+import json # type: ignore
 import csv
-from pathlib import Path
-from scipy import ndimage
+from pathlib import Path # type: ignore
+from scipy import ndimage # type: ignore
 
 def load_owner_color_mapping():
     """Load owner color to name mapping from CSV"""
