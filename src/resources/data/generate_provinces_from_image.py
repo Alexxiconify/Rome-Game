@@ -62,11 +62,11 @@ def generate_provinces_from_image():
     provinces = []
     
     for idx, (color, count) in enumerate(zip(unique_colors, counts), 1):
-        color_tuple = tuple(color)
+        color_tuple = tuple(int(x) for x in color)
         owner_name = color_mapping.get(color_tuple, f"Unknown_{idx}")
         province = {
             "province_id": f"province_{idx:04d}",
-            "owner_color": list(color_tuple),
+            "owner_color": [int(c) for c in color],
             "owner": owner_name,
             "pixel_count": int(count)
         }
