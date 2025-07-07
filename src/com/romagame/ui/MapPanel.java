@@ -83,8 +83,7 @@ public class MapPanel extends JPanel {
         System.out.println("Calling loadNationsAndProvinces()");
         loadNationsAndProvinces();
         setupMouseListeners();
-        
-        // Center the map on startup - use map center for better initial view
+        // Center the map on startup
         centerOnMapCenter();
     }
 
@@ -113,35 +112,13 @@ public class MapPanel extends JPanel {
             }
         });
         
-        // Space key to center on selected nation
+        // Space key to center on map center
         getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "centerOnSelection");
-        getActionMap().put("centerOnSelection", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (selectedNation != null) {
-                    centerOnNation(selectedNation);
-                }
-            }
-        });
-        
-        // C key to center on map center
-        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_C, 0), "centerOnMap");
+            KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "centerOnMap");
         getActionMap().put("centerOnMap", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 centerOnMapCenter();
-            }
-        });
-        
-        // E key to center on Europe
-        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_E, 0), "centerOnEurope");
-        getActionMap().put("centerOnEurope", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                centerOnEurope();
             }
         });
     }
@@ -890,95 +867,15 @@ public class MapPanel extends JPanel {
         // Controls hint
         g2d.setColor(new Color(100, 100, 100, 180));
         g2d.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        g2d.drawString("ESC: Clear selection | SPACE: Center on selection | C: Center map | E: Center Europe | Click: Select province", 8, getHeight() - 10);
+        g2d.drawString("ESC: Clear selection | SPACE: Center map | Click: Select province", 8, getHeight() - 10);
         
         // Display current viewing coordinates
         drawViewingCoordinates(g2d);
     }
 
-    public void centerOnNation(String nation) {
-        if (provinceMask == null || colorToProvinceId.isEmpty()) {
-            // Fallback to Europe if no province data available
-            centerOnEurope();
-            return;
-        }
-        
-        int imgW = provinceMask.getWidth();
-        int imgH = provinceMask.getHeight();
-        double sumX = 0, sumY = 0; int count = 0;
-        
-        for (int y = 0; y < imgH; y++) {
-            for (int x = 0; x < imgW; x++) {
-                int argb = provinceMask.getRGB(x, y);
-                String pid = colorToProvinceId.get(argb);
-                if (pid != null) {
-                    Province p = engine.getWorldMap().getProvince(pid);
-                    if (p != null && nation.equals(p.getOwner())) {
-                        sumX += x;
-                        sumY += y;
-                        count++;
-                    }
-                }
-            }
-        }
-        
-        if (count == 0) {
-            // No provinces found for this nation, fallback to Europe
-            System.out.println("No provinces found for nation: " + nation + ", centering on Europe");
-            centerOnEurope();
-            return;
-        }
-        
-        double cx = sumX / count, cy = sumY / count;
-        int panelW = getWidth() > 0 ? getWidth() : 1600;
-        int panelH = getHeight() > 0 ? getHeight() : 900;
-        double scale = zoom * Math.min(panelW / (double)imgW, panelH / (double)imgH);
-        int drawW = (int)(imgW * scale);
-        int drawH = (int)(imgH * scale);
-        int x0 = (panelW - drawW) / 2;
-        int y0 = (panelH - drawH) / 2;
-        int cxScreen = x0 + (int)(cx * scale);
-        int cyScreen = y0 + (int)(cy * scale);
-        offsetX = panelW/2 - cxScreen;
-        offsetY = panelH/2 - cyScreen;
-        
-        // Cap movement within bounds
-        capMovementWithinBounds(offsetX, offsetY);
-        
-        invalidateOverlayCache();
-        repaint();
-    }
-    
-    public void centerOnEurope() {
-        // Europe coordinates (approximately center of Europe on the map)
-        // Based on the map dimensions, Europe is roughly in the center-left area
-        int europeX = 2900; // Adjusted for better Europe positioning
-        int europeY = 600;  // Adjusted for better Europe positioning
-        
-        int panelW = getWidth() > 0 ? getWidth() : 1600;
-        int panelH = getHeight() > 0 ? getHeight() : 900;
-        
-        // Apply zoom scaling to the coordinates
-        double scaledX = europeX * zoom;
-        double scaledY = europeY * zoom;
-        
-        offsetX = panelW/2 - (int)scaledX;
-        offsetY = panelH/2 - (int)scaledY;
-        
-        // Cap movement within bounds
-        capMovementWithinBounds(offsetX, offsetY);
-        
-        System.out.println("Centering on Europe: panelW=" + panelW + ", panelH=" + panelH + 
-                          ", europeX=" + europeX + ", europeY=" + europeY + 
-                          ", offsetX=" + offsetX + ", offsetY=" + offsetY);
-        
-        invalidateOverlayCache();
-        repaint();
-    }
-    
     public void centerOnMapCenter() {
         if (mapBackground == null) {
-            centerOnEurope();
+            System.out.println("Map background not loaded, cannot center");
             return;
         }
         
@@ -1614,10 +1511,10 @@ public class MapPanel extends JPanel {
         
         // Convert screen coordinates to map coordinates
         Point topLeft = screenToMap(new Point(0, 0));
-        Point topRight = screenToMap(new Point(panelW, 0));
+        Point bottomRight = screenToMap(new Point(panelW, panelH));
         Point center = screenToMap(new Point(panelW/2, panelH/2));
         
-        if (topLeft != null && topRight != null && center != null) {
+        if (topLeft != null && bottomRight != null && center != null) {
             // Draw coordinate display panel
             int panelX = 8;
             int panelY = getHeight() - 120;
@@ -1638,12 +1535,12 @@ public class MapPanel extends JPanel {
             
             g2d.setFont(new Font("Segoe UI", Font.PLAIN, 11));
             g2d.drawString(String.format("Top Left: (%d, %d)", topLeft.x, topLeft.y), panelX + 10, panelY + 40);
-            g2d.drawString(String.format("Top Right: (%d, %d)", topRight.x, topRight.y), panelX + 10, panelY + 60);
+            g2d.drawString(String.format("Bottom Right: (%d, %d)", bottomRight.x, bottomRight.y), panelX + 10, panelY + 60);
             g2d.drawString(String.format("Center: (%d, %d)", center.x, center.y), panelX + 10, panelY + 80);
             
             // Also display in console for debugging
             System.out.println(String.format("Viewing - Top Left: (%d, %d), Top Right: (%d, %d), Center: (%d, %d)", 
-                topLeft.x, topLeft.y, topRight.x, topRight.y, center.x, center.y));
+                topLeft.x, topLeft.y, bottomRight.x, bottomRight.y, center.x, center.y));
         }
     }
     
