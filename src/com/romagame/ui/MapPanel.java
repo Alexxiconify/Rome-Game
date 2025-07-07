@@ -68,7 +68,7 @@ public class MapPanel extends JPanel {
 
     // HOI4-style edge scrolling
     private Timer edgeScrollTimer;
-    private static final int EDGE_SCROLL_ZONE = 20; // px from edge
+    private static final int EDGE_SCROLL_ZONE = 60; // px from edge (restored buffer)
     private static final int EDGE_SCROLL_SPEED = 30; // px per timer tick
 
     public MapPanel(GameEngine engine) {
@@ -197,6 +197,17 @@ public class MapPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 camera.moveBy(0, 50); // Pan down
+                repaint();
+            }
+        });
+        // F5 for hot reload of map assets
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("F5"), "hotReload");
+        getActionMap().put("hotReload", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                loadMapBackground();
+                loadProvinceMask();
+                camera.centerOn(2481, 560);
                 repaint();
             }
         });
