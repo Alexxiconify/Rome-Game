@@ -2,15 +2,11 @@ package com.romagame.ui;
 
 import com.romagame.core.GameEngine;
 import com.romagame.map.Province;
-import com.romagame.map.DistanceCalculator;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.ConvolveOp;
-import java.awt.image.Kernel;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
@@ -53,11 +49,6 @@ public class MapPanel extends JPanel {
     // Hold-to-drag settings
     private static final long HOLD_THRESHOLD_MS = 200; // 200ms hold required
     private static final int HOLD_DISTANCE_THRESHOLD = 5; // 5 pixels max movement during hold
-    
-    // Performance tracking
-    private long lastProvinceClickTime = 0;
-    private long lastRepaintTime = 0;
-    private static final long REPAINT_THROTTLE_MS = 16; // ~60 FPS
     
     // Data mappings
     private Map<Integer, String> colorToProvinceId = new HashMap<>();
@@ -1079,7 +1070,6 @@ public class MapPanel extends JPanel {
                     !nationName.equals("Uncivilized") && !isBlack) {
                     selectedNation = nationName;
                     selectedProvince = clickedProvince; // Set selected province for info display
-                    lastProvinceClickTime = System.currentTimeMillis(); // Track click time for faster response
                     repaint();
                     // Show province info dialog (popup)
                     showProvinceInfo(clickedProvince);
@@ -1194,9 +1184,6 @@ public class MapPanel extends JPanel {
         double centerX = sumX / count;
         double centerY = sumY / count;
         
-        int panelW = getWidth() > 0 ? getWidth() : 1600;
-        int panelH = getHeight() > 0 ? getHeight() : 900;
-        
         // Center camera on the province coordinates
         camera.centerOn(centerX, centerY);
         
@@ -1217,30 +1204,11 @@ public class MapPanel extends JPanel {
         int mapWidth = mapBackground.getWidth();
         int mapHeight = mapBackground.getHeight();
         int panelW = getWidth() > 0 ? getWidth() : 1600;
-        int panelH = getHeight() > 0 ? getHeight() : 900;
-        
-        double scaledMapWidth = mapWidth * camera.getZoom();
-        double scaledMapHeight = mapHeight * camera.getZoom();
-        
-        int minOffsetX = panelW - (int)scaledMapWidth;
-        int maxOffsetX = 0;
-        int minOffsetY = panelH - (int)scaledMapHeight;
-        int maxOffsetY = 0;
-        
-        if (scaledMapWidth < panelW) {
-            minOffsetX = maxOffsetX = (panelW - (int)scaledMapWidth) / 2;
-        }
-        if (scaledMapHeight < panelH) {
-            minOffsetY = maxOffsetY = (panelH - (int)scaledMapHeight) / 2;
-        }
-        
+        // Camera handles bounds checking internally
         System.out.println("Map Boundaries:");
         System.out.println("  Map size: " + mapWidth + "x" + mapHeight);
-        System.out.println("  Panel size: " + panelW + "x" + panelH);
+        System.out.println("  Panel size: " + panelW + "x" + getHeight());
         System.out.println("  Zoom: " + camera.getZoom());
-        System.out.println("  Scaled map: " + (int)scaledMapWidth + "x" + (int)scaledMapHeight);
-        System.out.println("  X bounds: " + minOffsetX + " to " + maxOffsetX);
-        System.out.println("  Y bounds: " + minOffsetY + " to " + maxOffsetY);
         System.out.println("  Current center: " + camera.getCenter());
     }
     
@@ -1252,10 +1220,6 @@ public class MapPanel extends JPanel {
         int panelW = getWidth();
         int panelH = getHeight();
         
-        // Calculate the visible area of the map
-        double scaledMapWidth = mapWidth * camera.getZoom();
-        double scaledMapHeight = mapHeight * camera.getZoom();
-                
         // Convert screen coordinates to map coordinates
         Point topLeft = screenToMap(new Point(0, 0));
         Point bottomRight = screenToMap(new Point(panelW, panelH));
