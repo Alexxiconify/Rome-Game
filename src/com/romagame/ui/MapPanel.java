@@ -2,7 +2,6 @@ package com.romagame.ui;
 
 import com.romagame.core.GameEngine;
 import com.romagame.map.Province;
-import com.romagame.map.Country;
 import com.romagame.map.DistanceCalculator;
 import javax.swing.*;
 import java.awt.*;
@@ -35,9 +34,7 @@ public class MapPanel extends JPanel {
     private Point lastMousePos;
     private BufferedImage mapBackground;
     private BufferedImage borderlessOverlay; // Borderless version to hide same-color borders
-    private boolean mapLoaded = false;
     private BufferedImage provinceMask;
-    private BufferedImage provinceColorMap = null;
     private BufferedImage borderOverlay = null;
     private Map<Integer, String> colorToProvinceId = new HashMap<>(); // ARGB -> provinceId
     private Point mouseMapPoint = null;
@@ -483,7 +480,7 @@ public class MapPanel extends JPanel {
     }
 
 
-    private void updateCachedBorders(int imgW, int imgH, double scale, int x, int y) {
+    public void updateCachedBorders(int imgW, int imgH, double scale, int x, int y) {
         if (cachedBorders != null && cachedBorders.getWidth() == getWidth() && cachedBorders.getHeight() == getHeight()) return;
         cachedBorders = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = cachedBorders.createGraphics();
@@ -557,7 +554,7 @@ public class MapPanel extends JPanel {
         g2d.dispose();
     }
 
-    private void updateCachedProvinceHighlight(String provinceId, int imgW, int imgH, double scale, int x, int y) {
+    public void updateCachedProvinceHighlight(String provinceId, int imgW, int imgH, double scale, int x, int y) {
         if (cachedProvinceHighlight != null && provinceId.equals(cachedProvinceForHighlight) && cachedProvinceHighlight.getWidth() == getWidth() && cachedProvinceHighlight.getHeight() == getHeight()) return;
         cachedProvinceHighlight = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
         cachedProvinceForHighlight = provinceId;
