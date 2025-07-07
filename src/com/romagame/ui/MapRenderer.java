@@ -30,8 +30,8 @@ public class MapRenderer {
     
     // Performance settings
     private static final int MAX_CACHE_SIZE = 50;
-    private static final boolean ENABLE_CACHING = true;
-    private static final boolean ENABLE_DIRTY_RECTANGLES = true;
+    private static final boolean ENABLE_CACHING = false;
+    private static final boolean ENABLE_DIRTY_RECTANGLES = false;
     
     // Rendering quality settings
     private RenderingHints renderingHints;
