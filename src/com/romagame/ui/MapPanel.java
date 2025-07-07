@@ -1097,11 +1097,6 @@ public class MapPanel extends JPanel {
             System.out.println("[DEBUG] Clicked on ocean/black pixel at " + x + "," + y);
             return null;
         }
-        // Check if this pixel is on a border by looking at neighboring pixels
-        if (isBorderPixel(x, y)) {
-            System.out.println("[DEBUG] Clicked on border pixel at " + x + "," + y);
-            return null;
-        }
         // Try the colorKeyToProvinceId mapping first (from JSON data)
         String colorKey = String.format("%d,%d,%d", r, g, b);
         String provinceId = colorKeyToProvinceId.get(colorKey);
@@ -1129,35 +1124,6 @@ public class MapPanel extends JPanel {
         return null;
     }
     
-    private boolean isBorderPixel(int x, int y) {
-        if (provinceMask == null) return false;
-        
-        int centerColor = provinceMask.getRGB(x, y);
-        
-        // Check 8 neighboring pixels
-        int[] dx = {-1, -1, -1,  0,  0,  1,  1,  1};
-        int[] dy = {-1,  0,  1, -1,  1, -1,  0,  1};
-        
-        for (int i = 0; i < 8; i++) {
-            int nx = x + dx[i];
-            int ny = y + dy[i];
-            
-            if (nx >= 0 && nx < provinceMask.getWidth() && 
-                ny >= 0 && ny < provinceMask.getHeight()) {
-                int neighborColor = provinceMask.getRGB(nx, ny);
-                
-                // If neighbor is black (ocean) or different color, this might be a border
-                if (neighborColor == 0xFF000000 || neighborColor != centerColor) {
-                    return true;
-                }
-            }
-        }
-        
-        return false;
-    }
-    
-
-
     public void handleProvinceClick(Point p) {
         if (provinceMask == null) return;
         Point mapPoint = screenToMap(p);
