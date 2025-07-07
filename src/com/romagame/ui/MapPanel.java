@@ -1089,14 +1089,6 @@ public class MapPanel extends JPanel {
         int r = (argb >> 16) & 0xFF;
         int g = (argb >> 8) & 0xFF;
         int b = argb & 0xFF;
-        // In province_mask.png:
-        // - Black (0,0,0): Ocean/background - not clickable
-        // - Each province has a unique color (RGB values)
-        // Skip black pixels (ocean/background)
-        if (r == 0 && g == 0 && b == 0) {
-            System.out.println("[DEBUG] Clicked on ocean/black pixel at " + x + "," + y);
-            return null;
-        }
         // Try the colorKeyToProvinceId mapping first (from JSON data)
         String colorKey = String.format("%d,%d,%d", r, g, b);
         String provinceId = colorKeyToProvinceId.get(colorKey);
