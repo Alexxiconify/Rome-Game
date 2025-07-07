@@ -1347,4 +1347,134 @@ public class MapPanel extends JPanel {
         int newY = y - viewRect.height / 2;
         scrollRectToVisible(new Rectangle(newX, newY, viewRect.width, viewRect.height));
     }
+    
+    private void showProvinceContextMenu(Province province, Point location) {
+        JPopupMenu menu = new JPopupMenu();
+        
+        // Province information
+        JMenuItem info = new JMenuItem("Province Information");
+        info.addActionListener(e -> showProvinceInfo(province));
+        menu.add(info);
+        
+        menu.addSeparator();
+        
+        // Military actions
+        JMenuItem buildArmy = new JMenuItem("Build Army");
+        buildArmy.addActionListener(e -> buildArmyInProvince(province));
+        menu.add(buildArmy);
+        
+        JMenuItem buildNavy = new JMenuItem("Build Navy");
+        buildNavy.addActionListener(e -> buildNavyInProvince(province));
+        menu.add(buildNavy);
+        
+        menu.addSeparator();
+        
+        // Economic actions
+        JMenuItem buildBuilding = new JMenuItem("Build Building");
+        buildBuilding.addActionListener(e -> buildBuildingInProvince(province));
+        menu.add(buildBuilding);
+        
+        JMenuItem developProvince = new JMenuItem("Develop Province");
+        developProvince.addActionListener(e -> developProvince(province));
+        menu.add(developProvince);
+        
+        menu.addSeparator();
+        
+        // Diplomatic actions
+        JMenuItem declareWar = new JMenuItem("Declare War");
+        declareWar.addActionListener(e -> declareWarOnProvince(province));
+        menu.add(declareWar);
+        
+        JMenuItem offerPeace = new JMenuItem("Offer Peace");
+        offerPeace.addActionListener(e -> offerPeaceToProvince(province));
+        menu.add(offerPeace);
+        
+        menu.show(this, location.x, location.y);
+    }
+    
+    private void handleProvinceDrag(Point currentPoint, int dx, int dy) {
+        // Get the province at the current drag position
+        Point mapPoint = screenToMap(currentPoint);
+        String provinceId = getProvinceIdAt(mapPoint);
+        
+        if (provinceId != null) {
+            Province draggedProvince = engine.getWorldMap().getProvince(provinceId);
+            if (draggedProvince != null) {
+                // Handle province drag interactions
+                handleProvinceDragInteraction(draggedProvince, dx, dy);
+            }
+        }
+    }
+    
+    private void handleProvinceDragInteraction(Province province, int dx, int dy) {
+        // Implement province-specific drag interactions
+        // For example: moving armies, adjusting province borders, etc.
+        System.out.println("Province drag: " + province.getName() + " dx=" + dx + " dy=" + dy);
+        
+        // Example: Move armies in the province
+        if (selectedArmy != null && selectedArmy.getLocation().equals(province.getName())) {
+            // Move the army within the province based on drag
+            System.out.println("Moving army within province: " + province.getName());
+        }
+        
+        // Example: Adjust province development based on drag
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+            // Significant drag - could trigger province development
+            System.out.println("Significant province drag detected for: " + province.getName());
+        }
+    }
+    
+    private void buildArmyInProvince(Province province) {
+        // Implementation for building army in province
+        System.out.println("Building army in province: " + province.getName());
+        JOptionPane.showMessageDialog(this, 
+            "Building army in " + province.getName(), 
+            "Build Army", 
+            JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    private void buildNavyInProvince(Province province) {
+        // Implementation for building navy in province
+        System.out.println("Building navy in province: " + province.getName());
+        JOptionPane.showMessageDialog(this, 
+            "Building navy in " + province.getName(), 
+            "Build Navy", 
+            JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    private void buildBuildingInProvince(Province province) {
+        // Implementation for building in province
+        System.out.println("Building in province: " + province.getName());
+        JOptionPane.showMessageDialog(this, 
+            "Building in " + province.getName(), 
+            "Build Building", 
+            JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    private void developProvince(Province province) {
+        // Implementation for developing province
+        System.out.println("Developing province: " + province.getName());
+        JOptionPane.showMessageDialog(this, 
+            "Developing " + province.getName(), 
+            "Develop Province", 
+            JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    private void declareWarOnProvince(Province province) {
+        // Implementation for declaring war
+        System.out.println("Declaring war on province: " + province.getName());
+        JOptionPane.showMessageDialog(this, 
+            "Declaring war on " + province.getName(), 
+            "Declare War", 
+            JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    private void offerPeaceToProvince(Province province) {
+        // Implementation for offering peace
+        System.out.println("Offering peace to province: " + province.getName());
+        JOptionPane.showMessageDialog(this, 
+            "Offering peace to " + province.getName(), 
+            "Offer Peace", 
+            JOptionPane.INFORMATION_MESSAGE);
+    }
 } 
