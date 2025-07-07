@@ -28,7 +28,7 @@ def generate_provinces_from_image():
     """Generate provinces from start.png image"""
     
     # Load the start.png image
-    start_path = "../../resources/img/start.png"
+    start_path = "/mnt/c/Users/taylo/Documents/projects/Roma Game/src/resources/img/start.png"
     if not Path(start_path).exists():
         print(f"Error: {start_path} not found")
         return None
@@ -49,35 +49,28 @@ def generate_provinces_from_image():
     color_mapping = load_owner_color_mapping()
     print(f"Loaded {len(color_mapping)} owner color mappings")
     
-    # Find unique colors in the image
-    unique_colors = set()
-    for y in range(height):
-        for x in range(width):
-            color = tuple(start_rgb[y, x])
-            if color != (0, 0, 0):  # Skip black (ocean)
-                unique_colors.add(color)
+    # Flatten the image to a (num_pixels, 3) array
+    pixels = start_rgb.reshape(-1, 3)
+    # Remove black pixels (ocean)
+    pixels = pixels[~np.all(pixels == [0, 0, 0], axis=1)]
+    # Find unique colors and their counts
+    unique_colors, counts = np.unique(pixels, axis=0, return_counts=True)
     
     print(f"Found {len(unique_colors)} unique colors (excluding black)")
     
     # Generate provinces for each unique color
     provinces = []
-    province_id = 1
     
-    for color in sorted(unique_colors):
-        owner_name = color_mapping.get(color, f"Unknown_{province_id}")
-        
-        # Count pixels of this color
-        pixel_count = np.sum(np.all(start_rgb == color, axis=2))
-        
-        # Create province
+    for idx, (color, count) in enumerate(zip(unique_colors, counts), 1):
+        color_tuple = tuple(color)
+        owner_name = color_mapping.get(color_tuple, f"Unknown_{idx}")
         province = {
-            "province_id": f"province_{province_id:04d}",
-            "owner_color": list(color),
+            "province_id": f"province_{idx:04d}",
+            "owner_color": list(color_tuple),
             "owner": owner_name,
-            "pixel_count": int(pixel_count)
+            "pixel_count": int(count)
         }
         provinces.append(province)
-        province_id += 1
     
     print(f"Generated {len(provinces)} provinces")
     
