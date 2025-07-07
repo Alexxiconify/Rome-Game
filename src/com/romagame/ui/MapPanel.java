@@ -224,8 +224,8 @@ public class MapPanel extends JPanel {
                     
                     // Set map dimensions in camera
                     camera.setMapDimensions(loadedMapBackground.getWidth(), loadedMapBackground.getHeight());
-                    // Always center camera after loading map
-                    camera.centerOnMapCenter();
+                    // Center camera on Rome (2481, 704) at start
+                    camera.centerOn(2481, 704);
                     
                     // Set background in renderer
                     renderer.setMapBackground(loadedMapBackground);
