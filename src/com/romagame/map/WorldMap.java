@@ -54,4 +54,23 @@ public class WorldMap {
             countries.put(country.getName(), country);
         }
     }
+
+    private boolean loadProvincesFromJson() {
+        java.nio.file.Path jsonPath = java.nio.file.Paths.get("src/resources/data/nations_and_provinces.json");
+        if (!java.nio.file.Files.exists(jsonPath)) {
+            System.out.println("JSON file not found: " + jsonPath);
+            return false;
+        }
+        String jsonText;
+        try {
+            jsonText = new String(java.nio.file.Files.readAllBytes(jsonPath));
+        } catch (Exception e) {
+            System.out.println("Failed to read JSON file: " + e.getMessage());
+            return false;
+        }
+        // ... parse provinces and nations ...
+        // After loading:
+        System.out.println("[DEBUG] Loaded " + provinces.size() + " provinces, " + countries.size() + " countries from JSON");
+        return true;
+    }
 }

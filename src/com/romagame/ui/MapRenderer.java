@@ -138,7 +138,24 @@ public class MapRenderer {
     /**
      * Render the map with camera transform
      */
-    public void render(Graphics2D g2d, Camera camera, Rectangle clipBounds) {
+    public void render(Graphics2D g2d, Camera camera, Rectangle visibleRect) {
+        if (mapBackground != null) {
+            g2d.drawImage(mapBackground, 0, 0, null);
+        } else {
+            // Fallback: draw a gray checkerboard
+            int w = visibleRect.width, h = visibleRect.height;
+            for (int y = 0; y < h; y += 40) {
+                for (int x = 0; x < w; x += 40) {
+                    g2d.setColor(((x + y) / 40) % 2 == 0 ? Color.LIGHT_GRAY : Color.GRAY);
+                    g2d.fillRect(x, y, 40, 40);
+                }
+            }
+            System.out.println("[DEBUG] Fallback: map background missing, drew checkerboard");
+        }
+        if (borderlessOverlay != null) {
+            g2d.drawImage(borderlessOverlay, 0, 0, null);
+        }
+        
         // Apply rendering hints
         g2d.setRenderingHints(renderingHints);
         
