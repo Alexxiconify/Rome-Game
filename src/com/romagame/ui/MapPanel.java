@@ -21,8 +21,6 @@ import com.romagame.military.Army;
 import com.romagame.military.MilitaryManager;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import com.romagame.ui.Camera;
-import com.romagame.ui.MapRenderer;
 
 /**
  * Optimized MapPanel with modern camera system and performance improvements.
