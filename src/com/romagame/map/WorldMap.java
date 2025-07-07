@@ -72,31 +72,38 @@ public class WorldMap {
                     entry = entry.replaceFirst("\\s*\\}\\s*$", "");
                 }
                 
+                if (i < 5) {
+                    System.out.println("DEBUG: Province entry [" + i + "]: " + entry.substring(0, Math.min(200, entry.length())));
+                }
                 try {
                     // Extract province_id
                     String provinceId = extractJsonValue(entry, "province_id");
-                    if (provinceId == null) continue;
-                    
+                    if (provinceId == null) {
+                        System.out.println("DEBUG: Skipping entry [" + i + "]: missing province_id");
+                        continue;
+                    }
                     // Extract owner
                     String owner = extractJsonValue(entry, "owner");
-                    if (owner == null) continue;
-                    
+                    if (owner == null) {
+                        System.out.println("DEBUG: Skipping entry [" + i + "]: missing owner");
+                        continue;
+                    }
                     // Extract color array
                     int[] rgb = extractColorArray(entry, "owner_color");
-                    if (rgb == null) continue;
-                    
+                    if (rgb == null) {
+                        System.out.println("DEBUG: Skipping entry [" + i + "]: missing owner_color");
+                        continue;
+                    }
                     createProvince(provinceId, owner, rgb[0], rgb[1], rgb[2]);
                     loadedCount++;
-                    
                 } catch (Exception e) {
-                    // Skip malformed province entries
-                    System.err.println("Skipping malformed province entry: " + e.getMessage());
+                    System.err.println("DEBUG: Exception parsing entry [" + i + "]: " + e.getMessage());
                 }
             }
-            
             System.out.println("Loaded " + loadedCount + " provinces from JSON");
+            // Print loaded countries for verification
+            System.out.println("Countries loaded from JSON: " + countries.keySet());
             return loadedCount > 0;
-            
         } catch (Exception e) {
             System.err.println("Failed to load provinces from JSON: " + e.getMessage());
             e.printStackTrace();

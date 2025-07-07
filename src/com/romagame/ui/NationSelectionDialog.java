@@ -18,7 +18,7 @@ public class NationSelectionDialog extends JDialog {
     private JButton cancelButton;
     private static final String DEFAULT_NATION = "Rome";
     private static final String[] PINNED_NATIONS = {
-        "Rome", "Parthia", "Han", "Carthage", "Egypt", "Maurya", "Kushan", "Axum", "Dacia", "Germania", "Sarmatia", "Armenia", "Nabatea", "Judea", "Saba"
+        "Rome", "Kushan", "Axum", "Saba"
     };
     private JPanel pinnedPanel;
     
@@ -140,23 +140,52 @@ public class NationSelectionDialog extends JDialog {
     }
     
     private void populateCountries() {
-        List<Country> countries = engine.getAllCountries();
-        
-        // Debug output
-        System.out.println("Available countries from engine: " + countries.size());
-        for (Country country : countries) {
-            System.out.println("  - " + country.getName());
-        }
-        
-        // Create a list of selectable country names and sort them alphabetically
         List<String> selectableCountries = new ArrayList<>();
-        for (Country country : countries) {
-            String countryName = country.getName();
-            if (isSelectableNation(countryName)) {
-                selectableCountries.add(countryName);
-                System.out.println("Added country: " + countryName);
+        
+        try {
+            // Load nations from owner_color_name.csv
+            java.nio.file.Path csvPath = java.nio.file.Paths.get("src/resources/data/owner_color_name.csv");
+            if (java.nio.file.Files.exists(csvPath)) {
+                List<String> lines = java.nio.file.Files.readAllLines(csvPath);
+                
+                // Skip header line
+                for (int i = 1; i < lines.size(); i++) {
+                    String line = lines.get(i);
+                    
+                    // Parse CSV with quoted values properly
+                    String ownerName = extractOwnerNameFromCSV(line);
+                    if (ownerName != null) {
+                        // Filter out unwanted nations
+                        if (isSelectableNation(ownerName)) {
+                            selectableCountries.add(ownerName);
+                            System.out.println("Added nation from CSV: " + ownerName);
+                        } else {
+                            System.out.println("Filtered out nation from CSV: " + ownerName);
+                        }
+                    }
+                }
+                
+                System.out.println("Loaded " + selectableCountries.size() + " nations from owner_color_name.csv");
             } else {
-                System.out.println("Filtered out country: " + countryName);
+                System.out.println("owner_color_name.csv not found, falling back to engine countries");
+                // Fallback to engine countries
+                List<Country> countries = engine.getAllCountries();
+                for (Country country : countries) {
+                    String countryName = country.getName();
+                    if (isSelectableNation(countryName)) {
+                        selectableCountries.add(countryName);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading nations from CSV: " + e.getMessage());
+            // Fallback to engine countries
+            List<Country> countries = engine.getAllCountries();
+            for (Country country : countries) {
+                String countryName = country.getName();
+                if (isSelectableNation(countryName)) {
+                    selectableCountries.add(countryName);
+                }
             }
         }
         
@@ -201,6 +230,30 @@ public class NationSelectionDialog extends JDialog {
         if (name.startsWith("Color_")) return false;
         if (name.startsWith("rgb_")) return false;
         return true;
+    }
+    
+    private String extractOwnerNameFromCSV(String line) {
+        try {
+            // Find the second quoted value (owner_name column)
+            int firstQuote = line.indexOf('"');
+            if (firstQuote == -1) return null;
+            
+            int secondQuote = line.indexOf('"', firstQuote + 1);
+            if (secondQuote == -1) return null;
+            
+            // Find the third quoted value (owner_name column)
+            int thirdQuote = line.indexOf('"', secondQuote + 1);
+            if (thirdQuote == -1) return null;
+            
+            int fourthQuote = line.indexOf('"', thirdQuote + 1);
+            if (fourthQuote == -1) return null;
+            
+            // Extract the owner name (second quoted value)
+            return line.substring(thirdQuote + 1, fourthQuote).trim();
+        } catch (Exception e) {
+            System.err.println("Error parsing CSV line: " + line + " - " + e.getMessage());
+            return null;
+        }
     }
     
     private void updateDescription() {
