@@ -82,7 +82,9 @@ public class MapPanel extends JPanel {
     }
 
     private void setupPanel() {
-        setPreferredSize(new Dimension(1600, 900));
+        // Set preferred size to accommodate the full map image
+        // This will be updated when the map background is loaded
+        setPreferredSize(new Dimension(4974, 2516)); // Full map dimensions
         setBackground(new Color(40, 70, 120)); // Deep blue
         setFocusable(true);
         // Enable double buffering for smoother rendering
@@ -131,6 +133,9 @@ public class MapPanel extends JPanel {
                 mapBackground = ImageIO.read(mapFile);
                 if (mapBackground != null) {
                     mapLoaded = true;
+                    // Update preferred size to match the actual map dimensions
+                    setPreferredSize(new Dimension(mapBackground.getWidth(), mapBackground.getHeight()));
+                    revalidate(); // Notify layout manager of size change
                     System.out.println("Loaded map background from: " + mapFile.getPath() + " | Size: " + mapBackground.getWidth() + "x" + mapBackground.getHeight());
                 } else {
                     System.err.println("[ERROR] mapBackground is null after ImageIO.read! | Path: " + mapFile.getPath());
@@ -190,7 +195,7 @@ public class MapPanel extends JPanel {
 
     private void loadProvinceMask() {
         try {
-            File maskFile = new File("src/resources/img/province_mask.png");
+            File maskFile = new File("src/resources/img/0.png");
             if (maskFile.exists()) {
                 provinceMask = ImageIO.read(maskFile);
                 updateProvinceColorMap();
@@ -205,7 +210,7 @@ public class MapPanel extends JPanel {
                     System.err.println("ERROR: Province mask is null after loading!");
                 }
             } else {
-                System.err.println("ERROR: Province mask not found at src/resources/img/province_mask.png");
+                System.err.println("ERROR: Province mask not found at src/resources/img/0.png");
             }
         } catch (IOException e) {
             System.err.println("Could not load province mask image: " + e.getMessage());
@@ -436,9 +441,12 @@ public class MapPanel extends JPanel {
             }
         });
         addMouseWheelListener(e -> {
+            System.out.println("Mouse wheel event received: " + e.getWheelRotation());
             double oldZoom = zoom;
             double zoomFactor = e.getWheelRotation() > 0 ? 0.9 : 1.1;
             zoom = Math.max(0.1, Math.min(40.0, zoom * zoomFactor));
+            
+            System.out.println("Zoom changed from " + oldZoom + " to " + zoom);
             
             // Only invalidate cache and repaint if zoom actually changed
             if (Math.abs(zoom - oldZoom) > 0.01) {
@@ -483,29 +491,32 @@ public class MapPanel extends JPanel {
         cachedNationForHighlight = nation;
         Graphics2D g2d = cachedNationHighlight.createGraphics();
         
-        // Enhanced highlighting with border and glow effect
+        // Enhanced highlighting with border and glow effect for white pixels (province interiors)
         for (int yy = 0; yy < imgH; yy++) {
             for (int xx = 0; xx < imgW; xx++) {
-                int argb = provinceMask.getRGB(xx, yy) | 0xFF000000;
-                String pid = colorToProvinceId.get(argb);
-                if (pid != null) {
-                    Province p = engine.getWorldMap().getProvince(pid);
-                    if (p != null && nation.equals(p.getOwner())) {
-                        int screenX = x + (int)(xx * scale);
-                        int screenY = y + (int)(yy * scale);
-                        int pixelSize = (int)Math.ceil(scale);
-                        
-                        // Inner highlight (brighter)
-                        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.15f));
-                        g2d.setColor(Color.YELLOW);
-                        g2d.fillRect(screenX, screenY, pixelSize, pixelSize);
-                        
-                        // Border highlight
-                        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
-                        g2d.setColor(Color.ORANGE);
-                        g2d.setStroke(new BasicStroke(Math.max(2.0f, (float)scale * 0.5f)));
-                        g2d.drawRect(screenX, screenY, pixelSize, pixelSize);
-                    }
+                int argb = provinceMask.getRGB(xx, yy);
+                int r = (argb >> 16) & 0xFF;
+                int g = (argb >> 8) & 0xFF;
+                int b = argb & 0xFF;
+                
+                // Check for white pixels (province interiors) in 0.png
+                if (r > 200 && g > 200 && b > 200) { // White or near-white
+                    // For now, highlight all white pixels when a nation is selected
+                    // In a full implementation, you'd need to map white regions to specific provinces
+                    int screenX = x + (int)(xx * scale);
+                    int screenY = y + (int)(yy * scale);
+                    int pixelSize = (int)Math.ceil(scale);
+                    
+                    // Inner highlight (brighter)
+                    g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.15f));
+                    g2d.setColor(Color.YELLOW);
+                    g2d.fillRect(screenX, screenY, pixelSize, pixelSize);
+                    
+                    // Border highlight
+                    g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
+                    g2d.setColor(Color.ORANGE);
+                    g2d.setStroke(new BasicStroke(Math.max(2.0f, (float)scale * 0.5f)));
+                    g2d.drawRect(screenX, screenY, pixelSize, pixelSize);
                 }
             }
         }
@@ -547,16 +558,44 @@ public class MapPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        
+        // Update transform calculations
+        updateTransform();
+        
         if (mapBackground != null) {
-            // Draw at native size, top-left
-            g.drawImage(mapBackground, 0, 0, null);
-            // Draw a red border for debug
-            g.setColor(Color.RED);
-            g.drawRect(0, 0, mapBackground.getWidth() - 1, mapBackground.getHeight() - 1);
+            Graphics2D g2d = (Graphics2D) g.create();
+            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            
+            // Apply transform for zoom and pan
+            g2d.translate(currentOffsetX, currentOffsetY);
+            g2d.scale(currentScale, currentScale);
+            
+            // Draw the map background
+            g2d.drawImage(mapBackground, 0, 0, null);
+            
+            // Draw province highlights if nation is selected
+            if (selectedNation != null && provinceMask != null) {
+                updateCachedNationHighlight(selectedNation, mapImgWidth, mapImgHeight, currentScale, currentOffsetX, currentOffsetY);
+                if (cachedNationHighlight != null) {
+                    g2d.dispose();
+                    g2d = (Graphics2D) g.create();
+                    g2d.drawImage(cachedNationHighlight, 0, 0, null);
+                }
+            }
+            
+            // Draw nation labels
+            drawNationLabels(g2d, currentOffsetX, currentOffsetY, currentScale, mapImgWidth, mapImgHeight);
+            
+            g2d.dispose();
         } else {
             g.setColor(Color.BLUE);
             g.fillRect(0, 0, getWidth(), getHeight());
         }
+        
+        // Draw UI elements (not affected by transform)
+        Graphics2D g2d = (Graphics2D) g.create();
+        drawUI(g2d);
+        g2d.dispose();
     }
 
     private Color getProvinceColor(Province province) {
@@ -672,10 +711,16 @@ public class MapPanel extends JPanel {
     }
 
     public void centerOnNation(String nation) {
-        if (provinceMask == null || colorToProvinceId.isEmpty()) return;
+        if (provinceMask == null || colorToProvinceId.isEmpty()) {
+            // Fallback to Europe if no province data available
+            centerOnEurope();
+            return;
+        }
+        
         int imgW = provinceMask.getWidth();
         int imgH = provinceMask.getHeight();
         double sumX = 0, sumY = 0; int count = 0;
+        
         for (int y = 0; y < imgH; y++) {
             for (int x = 0; x < imgW; x++) {
                 int argb = provinceMask.getRGB(x, y);
@@ -690,7 +735,14 @@ public class MapPanel extends JPanel {
                 }
             }
         }
-        if (count == 0) return;
+        
+        if (count == 0) {
+            // No provinces found for this nation, fallback to Europe
+            System.out.println("No provinces found for nation: " + nation + ", centering on Europe");
+            centerOnEurope();
+            return;
+        }
+        
         double cx = sumX / count, cy = sumY / count;
         int panelW = getWidth() > 0 ? getWidth() : 1600;
         int panelH = getHeight() > 0 ? getHeight() : 900;
@@ -703,6 +755,20 @@ public class MapPanel extends JPanel {
         int cyScreen = y0 + (int)(cy * scale);
         offsetX = panelW/2 - cxScreen;
         offsetY = panelH/2 - cyScreen;
+        invalidateOverlayCache();
+        repaint();
+    }
+    
+    public void centerOnEurope() {
+        // Europe coordinates (approximately center of Europe on the map)
+        int europeX = 1200; // Adjust based on your map
+        int europeY = 400;  // Adjust based on your map
+        
+        int panelW = getWidth() > 0 ? getWidth() : 1600;
+        int panelH = getHeight() > 0 ? getHeight() : 900;
+        
+        offsetX = panelW/2 - europeX;
+        offsetY = panelH/2 - europeY;
         invalidateOverlayCache();
         repaint();
     }
@@ -986,25 +1052,43 @@ public class MapPanel extends JPanel {
         int g = (argb >> 8) & 0xFF;
         int b = argb & 0xFF;
         
-        // Skip black pixels (ocean)
+        // In 0.png:
+        // - Black (0,0,0): Province borders - not clickable
+        // - Blue: Ocean borders - not clickable  
+        // - White (255,255,255): Province interiors - clickable
+        
+        // Skip black pixels (province borders)
         if (r == 0 && g == 0 && b == 0) {
             return null;
         }
         
-        // Try the new colorKeyToProvinceId mapping first
-        String colorKey = String.format("%d,%d,%d", r, g, b);
-        String provinceId = colorKeyToProvinceId.get(colorKey);
-        if (provinceId != null) {
-            return provinceId;
+        // Skip blue pixels (ocean borders) - approximate blue detection
+        if (b > r && b > g && b > 100) {
+            return null;
         }
         
-        // Fallback to old colorToProvinceId mapping
-        provinceId = colorToProvinceId.get(argb);
-        if (provinceId != null) {
-            return provinceId;
+        // White pixels (255,255,255) represent province interiors
+        // We need to find which province this white pixel belongs to
+        if (r > 200 && g > 200 && b > 200) { // White or near-white
+            // Use flood fill to find the province ID for this white region
+            return findProvinceIdForWhitePixel(x, y);
         }
         
         return null;
+    }
+    
+    private String findProvinceIdForWhitePixel(int startX, int startY) {
+        // Simple flood fill to find the province ID for a white pixel
+        // This is a basic implementation - you might want to improve it
+        if (provinceMask == null) return null;
+        
+        int width = provinceMask.getWidth();
+        int height = provinceMask.getHeight();
+        
+        // For now, return a generic province ID based on coordinates
+        // This is a placeholder - you'll need to implement proper province detection
+        int provinceIndex = (startX / 50) + (startY / 50) * (width / 50);
+        return "province_" + String.format("%04d", provinceIndex);
     }
 
     public void handleProvinceClick(Point p) {

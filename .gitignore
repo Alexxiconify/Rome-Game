@@ -1,7 +1,6 @@
 # Java build artifacts
 bin/
 out/
-*.class
 
 # IntelliJ IDEA
 .idea/
