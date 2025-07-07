@@ -116,10 +116,17 @@ public class MapPanel extends JPanel {
 
     private void loadMapBackground() {
         try {
-            File mapFile = new File("src/resources/map_background.png");
+            // Try the data directory first
+            File mapFile = new File("src/resources/data/start.png");
+            if (!mapFile.exists()) {
+                // Fallback to resources directory
+                mapFile = new File("src/resources/map_background.png");
+            }
+            
             if (mapFile.exists()) {
                 mapBackground = ImageIO.read(mapFile);
                 mapLoaded = true;
+                System.out.println("Loaded map background from: " + mapFile.getPath());
             } else {
                 createGradientBackground();
             }
@@ -172,7 +179,13 @@ public class MapPanel extends JPanel {
 
     private void loadProvinceMask() {
         try {
-            File maskFile = new File("src/resources/province_mask.png");
+            // Try the data directory first
+            File maskFile = new File("src/resources/data/province_mask.png");
+            if (!maskFile.exists()) {
+                // Fallback to resources directory
+                maskFile = new File("src/resources/province_mask.png");
+            }
+            
             if (maskFile.exists()) {
                 provinceMask = ImageIO.read(maskFile);
                 updateProvinceColorMap();
@@ -180,9 +193,12 @@ public class MapPanel extends JPanel {
                 updateLandShading();
                 createLandShading();
                 repaint();
+                System.out.println("Loaded province mask from: " + maskFile.getPath());
+            } else {
+                System.out.println("Province mask not found in either location");
             }
         } catch (IOException e) {
-            System.out.println("Could not load province mask image");
+            System.out.println("Could not load province mask image: " + e.getMessage());
         }
     }
 

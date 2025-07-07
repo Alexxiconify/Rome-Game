@@ -147,16 +147,18 @@ public class WorldMap {
         Province province = new Province(id, owner, 0.0, 0.0, "Auto");
         provinces.put(id, province);
 
-        // Create country if it doesn't exist
-        if (!countries.containsKey(owner)) {
-            Country country = new Country(owner);
-            countries.put(owner, country);
-            System.out.println("Created country: " + owner);
-        }
+        // Create country if it doesn't exist (skip unknown/color provinces)
+        if (!owner.startsWith("Unknown") && !owner.startsWith("Color_") && !owner.startsWith("rgb_")) {
+            if (!countries.containsKey(owner)) {
+                Country country = new Country(owner);
+                countries.put(owner, country);
+                System.out.println("Created country: " + owner);
+            }
 
-        // Add province to its country
-        Country country = countries.get(owner);
-        country.addProvince(province);
+            // Add province to its country
+            Country country = countries.get(owner);
+            country.addProvince(province);
+        }
     }
 
     public Province getProvince(String id) {
