@@ -1000,48 +1000,72 @@ public class MapPanel extends JPanel {
             
             // Parse nations (if they exist in the JSON)
             if (jsonText.contains("\"nations\"")) {
-                String nationsBlock = jsonText.split("\"nations\"\\s*:\\s*\\[", 2)[1].split("],", 2)[0];
-                String[] nationEntries = nationsBlock.split("\\},\\s*\\{");
-                for (String entry : nationEntries) {
-                    try {
-                        String name = entry.split("\"name\"\\s*:\\s*\"")[1].split("\"")[0];
-                        String colorStr = entry.split("\"color\"\\s*:\\s*\\[")[1].split("]")[0].replaceAll("\\s", "");
-                        nationToColor.put(name, colorStr.replace(",", ","));
-                        nationList.add(name);
-                    } catch (Exception e) {
-                        // Skip malformed nation entries
+                int nationsStart = jsonText.indexOf("\"nations\"");
+                int nationsArrayStart = jsonText.indexOf("[", nationsStart);
+                int nationsArrayEnd = findMatchingBracket(jsonText, nationsArrayStart);
+                
+                if (nationsArrayEnd != -1) {
+                    String nationsBlock = jsonText.substring(nationsArrayStart + 1, nationsArrayEnd);
+                    String[] nationEntries = nationsBlock.split("\\},\\s*\\{");
+                    for (String entry : nationEntries) {
+                        try {
+                            String name = extractJsonValue(entry, "name");
+                            String colorStr = extractColorArrayString(entry, "color");
+                            if (name != null && colorStr != null) {
+                                nationToColor.put(name, colorStr);
+                                nationList.add(name);
+                            }
+                        } catch (Exception e) {
+                            // Skip malformed nation entries
+                        }
                     }
                 }
             }
 
             // Parse provinces with improved error handling
-            String provincesBlock = jsonText.split("\"provinces\"\\s*:\\s*\\[", 2)[1].split("]")[0];
+            int provincesStart = jsonText.indexOf("\"provinces\"");
+            if (provincesStart == -1) {
+                System.out.println("Could not find provinces section in JSON");
+                return;
+            }
+            
+            int provincesArrayStart = jsonText.indexOf("[", provincesStart);
+            int provincesArrayEnd = findMatchingBracket(jsonText, provincesArrayStart);
+            
+            if (provincesArrayEnd == -1) {
+                System.out.println("Could not find end of provinces array in JSON");
+                return;
+            }
+            
+            String provincesBlock = jsonText.substring(provincesArrayStart + 1, provincesArrayEnd);
             String[] provinceEntries = provincesBlock.split("\\},\\s*\\{");
             
             int loadedCount = 0;
-            for (String entry : provinceEntries) {
+            for (int i = 0; i < provinceEntries.length; i++) {
+                String entry = provinceEntries[i];
+                
+                // Clean up the entry
+                if (i == 0) {
+                    entry = entry.replaceFirst("^\\s*\\{\\s*", "");
+                }
+                if (i == provinceEntries.length - 1) {
+                    entry = entry.replaceFirst("\\s*\\}\\s*$", "");
+                }
+                
                 try {
                     // Extract province_id
-                    String provinceId = entry.split("\"province_id\"\\s*:\\s*\"")[1].split("\"")[0];
+                    String provinceId = extractJsonValue(entry, "province_id");
+                    if (provinceId == null) continue;
                     
-                    // Extract owner (try both "owner" and "owner_name" fields)
-                    String owner;
-                    if (entry.contains("\"owner_name\"")) {
-                        owner = entry.split("\"owner_name\"\\s*:\\s*\"")[1].split("\"")[0];
-                    } else {
-                        owner = entry.split("\"owner\"\\s*:\\s*\"")[1].split("\"")[0];
-                    }
+                    // Extract owner
+                    String owner = extractJsonValue(entry, "owner");
+                    if (owner == null) continue;
                     
-                    // Extract color (try both "mask_color" and "owner_color" fields)
-                    String colorStr;
-                    if (entry.contains("\"mask_color\"")) {
-                        colorStr = entry.split("\"mask_color\"\\s*:\\s*\\[")[1].split("]")[0].replaceAll("\\s", "");
-                    } else {
-                        colorStr = entry.split("\"owner_color\"\\s*:\\s*\\[")[1].split("]")[0].replaceAll("\\s", "");
-                    }
+                    // Extract color array
+                    int[] rgb = extractColorArray(entry, "owner_color");
+                    if (rgb == null) continue;
                     
-                    String[] rgb = colorStr.split(",");
-                    String colorKey = String.format("%s,%s,%s", rgb[0], rgb[1], rgb[2]);
+                    String colorKey = String.format("%d,%d,%d", rgb[0], rgb[1], rgb[2]);
                     colorKeyToProvinceId.put(colorKey, provinceId);
                     provinceIdToOwner.put(provinceId, owner);
                     loadedCount++;
@@ -1058,6 +1082,53 @@ public class MapPanel extends JPanel {
             System.err.println("Failed to load nations_and_provinces.json: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+    
+    private int findMatchingBracket(String text, int start) {
+        int count = 0;
+        for (int i = start; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == '[') count++;
+            else if (c == ']') {
+                count--;
+                if (count == 0) return i;
+            }
+        }
+        return -1;
+    }
+    
+    private String extractJsonValue(String json, String key) {
+        String pattern = "\"" + key + "\"\\s*:\\s*\"([^\"]+)\"";
+        java.util.regex.Pattern p = java.util.regex.Pattern.compile(pattern);
+        java.util.regex.Matcher m = p.matcher(json);
+        if (m.find()) {
+            return m.group(1);
+        }
+        return null;
+    }
+    
+    private String extractColorArrayString(String json, String key) {
+        String pattern = "\"" + key + "\"\\s*:\\s*\\[\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\]";
+        java.util.regex.Pattern p = java.util.regex.Pattern.compile(pattern);
+        java.util.regex.Matcher m = p.matcher(json);
+        if (m.find()) {
+            return m.group(1) + "," + m.group(2) + "," + m.group(3);
+        }
+        return null;
+    }
+    
+    private int[] extractColorArray(String json, String key) {
+        String pattern = "\"" + key + "\"\\s*:\\s*\\[\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\]";
+        java.util.regex.Pattern p = java.util.regex.Pattern.compile(pattern);
+        java.util.regex.Matcher m = p.matcher(json);
+        if (m.find()) {
+            return new int[]{
+                Integer.parseInt(m.group(1)),
+                Integer.parseInt(m.group(2)),
+                Integer.parseInt(m.group(3))
+            };
+        }
+        return null;
     }
 
     // Call this in paintComponent before drawing anything
