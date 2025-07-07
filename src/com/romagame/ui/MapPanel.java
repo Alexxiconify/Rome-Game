@@ -473,6 +473,7 @@ public class MapPanel extends JPanel {
     // Add the handleMouseClick method
     private void handleMouseClick(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON1) {
+            System.out.println("[DEBUG] Left click at " + e.getX() + "," + e.getY());
             // Left-click: select army if clicked on icon, otherwise select province
             MilitaryManager mm = engine.getMilitaryManager();
             Point clickPoint = e.getPoint();
@@ -519,8 +520,12 @@ public class MapPanel extends JPanel {
             if (!armyClicked) {
                 // Only select province if click is on a valid province pixel
                 Point mapPoint = camera.screenToMap(e.getX(), e.getY());
-                if (getProvinceIdAt(mapPoint) != null) {
+                String provinceId = getProvinceIdAt(mapPoint);
+                System.out.println("[DEBUG] Province at click: " + provinceId);
+                if (provinceId != null) {
                     handleProvinceClick(e.getPoint());
+                } else {
+                    System.out.println("[DEBUG] No province found at click location.");
                 }
             }
         } else if (e.getButton() == MouseEvent.BUTTON3) {
@@ -1070,30 +1075,33 @@ public class MapPanel extends JPanel {
     }
 
     private String getProvinceIdAt(Point mapPoint) {
-        if (provinceMask == null || mapPoint == null) return null;
+        if (provinceMask == null || mapPoint == null) {
+            System.out.println("[DEBUG] provinceMask or mapPoint is null in getProvinceIdAt");
+            return null;
+        }
         int x = mapPoint.x, y = mapPoint.y;
-        if (x < 0 || y < 0 || x >= provinceMask.getWidth() || y >= provinceMask.getHeight()) return null;
+        if (x < 0 || y < 0 || x >= provinceMask.getWidth() || y >= provinceMask.getHeight()) {
+            System.out.println("[DEBUG] Click out of provinceMask bounds: " + x + "," + y);
+            return null;
+        }
         int argb = provinceMask.getRGB(x, y);
-        
         // Extract RGB values from ARGB
         int r = (argb >> 16) & 0xFF;
         int g = (argb >> 8) & 0xFF;
         int b = argb & 0xFF;
-        
         // In province_mask.png:
         // - Black (0,0,0): Ocean/background - not clickable
         // - Each province has a unique color (RGB values)
-        
         // Skip black pixels (ocean/background)
         if (r == 0 && g == 0 && b == 0) {
+            System.out.println("[DEBUG] Clicked on ocean/black pixel at " + x + "," + y);
             return null;
         }
-        
         // Check if this pixel is on a border by looking at neighboring pixels
         if (isBorderPixel(x, y)) {
+            System.out.println("[DEBUG] Clicked on border pixel at " + x + "," + y);
             return null;
         }
-        
         // Try the colorKeyToProvinceId mapping first (from JSON data)
         String colorKey = String.format("%d,%d,%d", r, g, b);
         String provinceId = colorKeyToProvinceId.get(colorKey);
@@ -1101,22 +1109,23 @@ public class MapPanel extends JPanel {
             // Check if this province is uncivilized - if so, return null (not clickable)
             String owner = provinceIdToOwner.get(provinceId);
             if (owner != null && owner.equals("Uncivilized")) {
+                System.out.println("[DEBUG] Clicked on uncivilized province at " + x + "," + y);
                 return null;
             }
             return provinceId;
         }
-        
         // Fallback to old colorToProvinceId mapping
         provinceId = colorToProvinceId.get(argb);
         if (provinceId != null) {
             // Check if this province is uncivilized - if so, return null (not clickable)
             String owner = provinceIdToOwner.get(provinceId);
             if (owner != null && owner.equals("Uncivilized")) {
+                System.out.println("[DEBUG] Clicked on uncivilized province at " + x + "," + y);
                 return null;
             }
             return provinceId;
         }
-        
+        System.out.println("[DEBUG] No provinceId found for color at " + x + "," + y + " (" + r + "," + g + "," + b + ")");
         return null;
     }
     
