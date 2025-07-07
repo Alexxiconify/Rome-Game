@@ -67,6 +67,8 @@ public class MapPanel extends JPanel {
     private int lastOceanBgHeight = -1;
 
     private Army selectedArmy = null;
+    private Province selectedProvince = null; // Track selected province for info display
+    private long lastProvinceClickTime = 0; // For faster response
 
     private Map<String, String> colorKeyToProvinceId = new HashMap<>();
 
@@ -104,6 +106,7 @@ public class MapPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 clearNationSelection();
+                clearProvinceSelection();
             }
         });
         
@@ -715,6 +718,11 @@ public class MapPanel extends JPanel {
             g2d.drawString("Selected: " + selectedNation, 20, 135);
         }
         
+        // Province info panel (integrated into main screen)
+        if (selectedProvince != null) {
+            drawProvinceInfoPanel(g2d);
+        }
+        
         // Controls hint
         g2d.setColor(new Color(100, 100, 100, 180));
         g2d.setFont(new Font("Segoe UI", Font.PLAIN, 12));
@@ -793,6 +801,11 @@ public class MapPanel extends JPanel {
     public void clearNationSelection() {
         selectedNation = null;
         invalidateOverlayCache();
+        repaint();
+    }
+    
+    public void clearProvinceSelection() {
+        selectedProvince = null;
         repaint();
     }
     
@@ -1149,13 +1162,70 @@ public class MapPanel extends JPanel {
                 if (!nationName.equals("Ocean") && !nationName.equals("Uncolonized") && 
                     !nationName.equals("Uncivilized") && !isBlack) {
                     selectedNation = nationName;
+                    selectedProvince = clickedProvince; // Set selected province for info display
+                    lastProvinceClickTime = System.currentTimeMillis(); // Track click time for faster response
                     invalidateOverlayCache();
                     repaint();
-                    // Show province info dialog
-                    showProvinceInfo(clickedProvince);
                 }
             }
         }
+    }
+
+    private void drawProvinceInfoPanel(Graphics2D g2d) {
+        if (selectedProvince == null) return;
+        
+        // Position the panel on the right side of the screen
+        int panelX = getWidth() - 320;
+        int panelY = 8;
+        int panelWidth = 300;
+        int panelHeight = 200;
+        
+        // Draw background panel
+        g2d.setColor(new Color(255, 255, 255, 240));
+        g2d.fillRoundRect(panelX, panelY, panelWidth, panelHeight, 18, 18);
+        g2d.setColor(new Color(0, 0, 0, 60));
+        g2d.setStroke(new BasicStroke(3f));
+        g2d.drawRoundRect(panelX, panelY, panelWidth, panelHeight, 18, 18);
+        g2d.setColor(Color.DARK_GRAY);
+        g2d.setStroke(new BasicStroke(1.2f));
+        g2d.drawRoundRect(panelX, panelY, panelWidth, panelHeight, 18, 18);
+        
+        // Draw title
+        g2d.setColor(Color.BLACK);
+        g2d.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        g2d.drawString("Province Information", panelX + 15, panelY + 25);
+        
+        // Draw province details
+        g2d.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        int yOffset = 45;
+        int lineHeight = 20;
+        
+        g2d.drawString("Name: " + selectedProvince.getName(), panelX + 15, panelY + yOffset);
+        yOffset += lineHeight;
+        
+        g2d.drawString("Owner: " + selectedProvince.getOwner(), panelX + 15, panelY + yOffset);
+        yOffset += lineHeight;
+        
+        g2d.drawString("Population: " + selectedProvince.getPopulation(), panelX + 15, panelY + yOffset);
+        yOffset += lineHeight;
+        
+        g2d.drawString("Development: " + String.format("%.1f", selectedProvince.getDevelopment()), panelX + 15, panelY + yOffset);
+        yOffset += lineHeight;
+        
+        g2d.drawString("Terrain: " + selectedProvince.getTerrain(), panelX + 15, panelY + yOffset);
+        yOffset += lineHeight;
+        
+        String tradeGoods = String.join(", ", selectedProvince.getTradeGoods());
+        if (tradeGoods.isEmpty()) {
+            tradeGoods = "None";
+        }
+        g2d.drawString("Trade Goods: " + tradeGoods, panelX + 15, panelY + yOffset);
+        yOffset += lineHeight;
+        
+        // Add close button hint
+        g2d.setColor(new Color(100, 100, 100, 180));
+        g2d.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        g2d.drawString("ESC: Close panel", panelX + 15, panelY + panelHeight - 10);
     }
 
     public void showProvinceInfo(Province province) {
