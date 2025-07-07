@@ -512,7 +512,7 @@ public class MapPanel extends JPanel {
         addMouseWheelListener(e -> {
             System.out.println("Mouse wheel event received: " + e.getWheelRotation());
             double oldZoom = zoom;
-            double zoomFactor = e.getWheelRotation() > 0 ? 0.9 : 1.1;
+            double zoomFactor = e.getWheelRotation() > 0 ? 0.7 : 1.4; // Much faster zoom
             zoom = Math.max(1.0, Math.min(10.0, zoom * zoomFactor));
             
             System.out.println("Zoom changed from " + oldZoom + " to " + zoom);
@@ -758,6 +758,8 @@ public class MapPanel extends JPanel {
     private void drawNationLabels(Graphics2D g2d, int x0, int y0, double scale, int imgW, int imgH) {
         Map<String, double[]> centroids = new HashMap<>();
         Map<String, Integer> counts = new HashMap<>();
+        
+        // First pass: collect all nations and their pixel counts
         for (int y = 0; y < imgH; y++) {
             for (int x = 0; x < imgW; x++) {
                 int argb = provinceMask.getRGB(x, y);
@@ -765,8 +767,12 @@ public class MapPanel extends JPanel {
                 String provinceId = colorKeyToProvinceId.get(colorKey);
                 if (provinceId != null) {
                     String owner = provinceIdToOwner.get(provinceId);
-                    if (owner == null || owner.equals("Ocean") || owner.equals("Uncolonized") || owner.startsWith("Unknown") || owner.startsWith("rgb_") || owner.startsWith("Color_") || owner.equals("REMOVE_FROM_MAP") || owner.equals("BORDER") || owner.equals("Water") || owner.equals("Sea") || owner.equals("Lake") || owner.equals("River"))
+                    if (owner == null || owner.equals("Ocean") || owner.equals("Uncolonized") || 
+                        owner.startsWith("Unknown") || owner.startsWith("rgb_") || owner.startsWith("Color_") || 
+                        owner.equals("REMOVE_FROM_MAP") || owner.equals("BORDER") || owner.equals("Water") || 
+                        owner.equals("Sea") || owner.equals("Lake") || owner.equals("River"))
                         continue;
+                    
                     centroids.putIfAbsent(owner, new double[]{0, 0});
                     counts.put(owner, counts.getOrDefault(owner, 0) + 1);
                     centroids.get(owner)[0] += x;
@@ -774,26 +780,51 @@ public class MapPanel extends JPanel {
                 }
             }
         }
-        for (String owner : centroids.keySet()) {
-            int count = counts.get(owner);
-            if (count < 100) continue;
+        
+        // Sort nations by size (largest first) to prioritize important nations
+        List<Map.Entry<String, Integer>> sortedNations = new ArrayList<>(counts.entrySet());
+        sortedNations.sort((a, b) -> Integer.compare(b.getValue(), a.getValue()));
+        
+        for (Map.Entry<String, Integer> entry : sortedNations) {
+            String owner = entry.getKey();
+            int count = entry.getValue();
+            
+            // Skip uncivilized nations (make them transparent)
+            if (owner.equals("Uncivilized")) {
+                continue;
+            }
+            
+            // Lower threshold to show more nations, but still filter out tiny ones
+            if (count < 20) continue;
+            
             double[] c = centroids.get(owner);
             int cx = (int)(c[0] / count);
             int cy = (int)(c[1] / count);
             int sx = x0 + (int)(cx * scale);
             int sy = y0 + (int)(cy * scale);
+            
             boolean isSelected = owner.equals(selectedNation);
-            int fontSize = Math.max(14, Math.min((int)(44 * scale), 48));
+            
+            // Scale font size based on country size and zoom
+            int baseFontSize = Math.max(8, Math.min(16, (int)(Math.sqrt(count) * 0.5)));
+            int fontSize = Math.max(10, Math.min((int)(baseFontSize * scale), 32));
             if (isSelected) {
-                fontSize = Math.max(18, Math.min((int)(52 * scale), 56));
+                fontSize = Math.max(12, Math.min((int)(baseFontSize * scale * 1.2), 40));
             }
+            
             Font labelFont = new Font("Segoe UI", Font.BOLD, fontSize);
             g2d.setFont(labelFont);
             FontMetrics fm = g2d.getFontMetrics();
-            int lw = fm.stringWidth(owner) + 32;
-            int lh = fm.getHeight() + 10;
+            int lw = fm.stringWidth(owner) + 16;
+            int lh = fm.getHeight() + 8;
             int lx = sx - lw / 2;
             int ly = sy - lh / 2;
+            
+            // Check if label is visible on screen
+            if (lx + lw < 0 || lx > getWidth() || ly + lh < 0 || ly > getHeight()) {
+                continue;
+            }
+            
             if (isSelected) {
                 g2d.setColor(new Color(255, 255, 0, 100));
                 g2d.fillRoundRect(lx - 4, ly - 4, lw + 8, lh + 8, 22, 22);
@@ -801,12 +832,14 @@ public class MapPanel extends JPanel {
                 g2d.setStroke(new BasicStroke(3.0f));
                 g2d.drawRoundRect(lx - 4, ly - 4, lw + 8, lh + 8, 22, 22);
             }
+            
             g2d.setColor(new Color(30,30,30,180));
             g2d.fillRoundRect(lx, ly, lw, lh, 18, 18);
             g2d.setColor(new Color(0,0,0,120));
             g2d.drawRoundRect(lx, ly, lw, lh, 18, 18);
             g2d.setColor(new Color(0,0,0,180));
             g2d.drawString(owner, sx+3, sy+3);
+            
             String colorStr = nationToColor.getOrDefault(owner, "255,255,255");
             String[] rgb = colorStr.split(",");
             Color col = new Color(Integer.parseInt(rgb[0]), Integer.parseInt(rgb[1]), Integer.parseInt(rgb[2]), 220);
@@ -858,6 +891,9 @@ public class MapPanel extends JPanel {
         g2d.setColor(new Color(100, 100, 100, 180));
         g2d.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         g2d.drawString("ESC: Clear selection | SPACE: Center on selection | C: Center map | E: Center Europe | Click: Select province", 8, getHeight() - 10);
+        
+        // Display current viewing coordinates
+        drawViewingCoordinates(g2d);
     }
 
     public void centerOnNation(String nation) {
@@ -1558,6 +1594,57 @@ public class MapPanel extends JPanel {
         System.out.println("  X bounds: " + minOffsetX + " to " + maxOffsetX);
         System.out.println("  Y bounds: " + minOffsetY + " to " + maxOffsetY);
         System.out.println("  Current offset: " + offsetX + ", " + offsetY);
+    }
+    
+    private void drawViewingCoordinates(Graphics2D g2d) {
+        if (mapBackground == null) return;
+        
+        int mapWidth = mapBackground.getWidth();
+        int mapHeight = mapBackground.getHeight();
+        int panelW = getWidth();
+        int panelH = getHeight();
+        
+        // Calculate the visible area of the map
+        double scaledMapWidth = mapWidth * zoom;
+        double scaledMapHeight = mapHeight * zoom;
+        
+        // Calculate the top-left corner of the visible map area
+        int visibleX = -offsetX;
+        int visibleY = -offsetY;
+        
+        // Convert screen coordinates to map coordinates
+        Point topLeft = screenToMap(new Point(0, 0));
+        Point topRight = screenToMap(new Point(panelW, 0));
+        Point center = screenToMap(new Point(panelW/2, panelH/2));
+        
+        if (topLeft != null && topRight != null && center != null) {
+            // Draw coordinate display panel
+            int panelX = 8;
+            int panelY = getHeight() - 120;
+            int panelWidth = 400;
+            int panelHeight = 100;
+            
+            // Background
+            g2d.setColor(new Color(0, 0, 0, 180));
+            g2d.fillRoundRect(panelX, panelY, panelWidth, panelHeight, 10, 10);
+            g2d.setColor(new Color(255, 255, 255, 100));
+            g2d.setStroke(new BasicStroke(1.0f));
+            g2d.drawRoundRect(panelX, panelY, panelWidth, panelHeight, 10, 10);
+            
+            // Text
+            g2d.setColor(Color.WHITE);
+            g2d.setFont(new Font("Segoe UI", Font.BOLD, 12));
+            g2d.drawString("Viewing Coordinates:", panelX + 10, panelY + 20);
+            
+            g2d.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+            g2d.drawString(String.format("Top Left: (%d, %d)", topLeft.x, topLeft.y), panelX + 10, panelY + 40);
+            g2d.drawString(String.format("Top Right: (%d, %d)", topRight.x, topRight.y), panelX + 10, panelY + 60);
+            g2d.drawString(String.format("Center: (%d, %d)", center.x, center.y), panelX + 10, panelY + 80);
+            
+            // Also display in console for debugging
+            System.out.println(String.format("Viewing - Top Left: (%d, %d), Top Right: (%d, %d), Center: (%d, %d)", 
+                topLeft.x, topLeft.y, topRight.x, topRight.y, center.x, center.y));
+        }
     }
     
     private void showProvinceContextMenu(Province province, Point location) {
