@@ -82,15 +82,15 @@ public class MapPanel extends JPanel {
     private static int lastCenterY = Integer.MIN_VALUE;
 
     public MapPanel(GameEngine engine) {
-        // Comment out or remove verbose/step-by-step logs
-        // System.out.println("MapPanel constructor called");
         this.engine = engine;
-        
-        // Initialize camera and renderer
         this.camera = new Camera();
         this.renderer = new MapRenderer();
-        
         setupPanel();
+        loadMapBackground();
+        loadProvinceMask();
+        loadColorToProvinceId();
+        loadProvinceOwnerColors();
+        loadNationsAndProvinces();
         System.out.println("[DEBUG] Loaded " + colorToProvinceId.size() + " province mappings, " + nationList.size() + " nations");
         setupMouseListeners();
         startEdgeScrollTimer();
@@ -213,17 +213,12 @@ public class MapPanel extends JPanel {
     }
 
     private void loadMapBackground() {
-        // Comment out or remove verbose/step-by-step logs
-        // System.out.println("[DEBUG] Entering loadMapBackground()");
         try {
             // Load start.png as the main background (with borders)
             File mapFile = new File("src/resources/img/start.png");
-            // System.out.println("[DEBUG] Checking for map background at: " + mapFile.getAbsolutePath());
             if (!mapFile.exists()) {
-                // System.err.println("[ERROR] Map background not found at " + mapFile.getAbsolutePath());
                 // Try absolute path fallback (edit this path if needed)
                 mapFile = new File("C:/Users/taylo/Documents/projects/Roma Game/src/resources/img/start.png");
-                // System.out.println("[DEBUG] Fallback absolute path: " + mapFile.getAbsolutePath());
             }
             if (mapFile.exists()) {
                 BufferedImage loadedMapBackground = ImageIO.read(mapFile);
@@ -231,7 +226,6 @@ public class MapPanel extends JPanel {
                     // Update preferred size to match the actual map dimensions
                     setPreferredSize(new Dimension(loadedMapBackground.getWidth(), loadedMapBackground.getHeight()));
                     revalidate(); // Notify layout manager of size change
-                    // System.out.println("[DEBUG] Loaded map background from: " + mapFile.getPath() + " | Size: " + loadedMapBackground.getWidth() + "x" + loadedMapBackground.getHeight());
                     
                     // Set map dimensions in camera
                     camera.setMapDimensions(loadedMapBackground.getWidth(), loadedMapBackground.getHeight());
@@ -241,13 +235,10 @@ public class MapPanel extends JPanel {
                     // Set background in renderer
                     renderer.setMapBackground(loadedMapBackground);
                     this.mapBackground = loadedMapBackground;
-                    // System.out.println("[DEBUG] Map background set in renderer and camera");
                 } else {
-                    // System.err.println("[ERROR] mapBackground is null after ImageIO.read! | Path: " + mapFile.getPath());
                     createGradientBackground();
                 }
             } else {
-                // System.err.println("[ERROR] Map background not found at either relative or absolute path.");
                 createGradientBackground();
             }
             
@@ -256,17 +247,10 @@ public class MapPanel extends JPanel {
             if (borderlessFile.exists()) {
                 BufferedImage borderlessOverlay = ImageIO.read(borderlessFile);
                 if (borderlessOverlay != null) {
-                    // System.out.println("[DEBUG] Loaded borderless overlay from: " + borderlessFile.getPath() + " | Size: " + borderlessOverlay.getWidth() + "x" + borderlessOverlay.getHeight());
                     renderer.setBorderlessOverlay(borderlessOverlay);
-                    // System.out.println("[DEBUG] Borderless overlay set in renderer");
-                } else {
-                    // System.err.println("[ERROR] borderlessOverlay is null after ImageIO.read! | Path: " + borderlessFile.getPath());
                 }
-            } else {
-                // System.err.println("[ERROR] Borderless overlay not found at src/resources/img/start1.png");
             }
         } catch (IOException e) {
-            // System.err.println("[ERROR] Could not load map background image: " + e.getMessage());
             createGradientBackground();
         }
     }
@@ -303,17 +287,12 @@ public class MapPanel extends JPanel {
                 renderer.setProvinceMask(provinceMask);
                 this.provinceMask = provinceMask;
                 repaint();
-                // System.out.println("Loaded province mask from: " + maskFile.getPath());
                 if (provinceMask != null) {
-                    // System.out.println("Province mask loaded: " + provinceMask.getWidth() + "x" + provinceMask.getHeight());
                 } else {
-                    // System.err.println("ERROR: Province mask is null after loading!");
                 }
             } else {
-                // System.err.println("ERROR: Province mask not found at src/resources/img/province_mask.png");
             }
         } catch (IOException e) {
-            // System.err.println("Could not load province mask image: " + e.getMessage());
         }
     }
 
@@ -334,13 +313,10 @@ public class MapPanel extends JPanel {
                         String provinceId = parts[2].trim();
                         colorToProvinceId.put(argb, provinceId);
                     } catch (NumberFormatException e) {
-                        // System.out.println("Invalid ARGB value in mapping: " + parts[0]);
                     }
                 }
             }
-            // System.out.println("Loaded " + colorToProvinceId.size() + " province color mappings");
         } catch (IOException e) {
-            // System.out.println("Could not load province color map: " + e.getMessage());
         }
     }
 
@@ -360,7 +336,6 @@ public class MapPanel extends JPanel {
                 }
             }
         } catch (IOException e) {
-            // System.out.println("Could not load province owner color map: " + e.getMessage());
         }
     }
 
@@ -388,7 +363,6 @@ public class MapPanel extends JPanel {
                 if (holdDuration >= HOLD_THRESHOLD_MS && holdDistance <= HOLD_DISTANCE_THRESHOLD) {
                     // This was a hold - start dragging
                     isDragging = true;
-                    // System.out.println("Hold detected - dragging enabled");
                 } else if (holdDuration < HOLD_THRESHOLD_MS && holdDistance <= HOLD_DISTANCE_THRESHOLD) {
                     // This was a quick click - handle as click
                     handleMouseClick(e);
@@ -418,7 +392,6 @@ public class MapPanel extends JPanel {
                         // Left-click drag: map panning using camera
                         camera.moveBy(-dx, -dy);
                         
-                        // System.out.println("Map dragged: dx=" + dx + ", dy=" + dy);
                         repaint();
                     }
                     
@@ -436,7 +409,6 @@ public class MapPanel extends JPanel {
                     } else if (holdDuration >= HOLD_THRESHOLD_MS) {
                         // Hold threshold reached - start dragging
                         isDragging = true;
-                        // System.out.println("Hold threshold reached - dragging enabled");
                     }
                 }
             }
@@ -471,7 +443,6 @@ public class MapPanel extends JPanel {
     // Add the handleMouseClick method
     private void handleMouseClick(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON1) {
-            // System.out.println("[DEBUG] Left click at " + e.getX() + "," + e.getY());
             // Left-click: select army if clicked on icon, otherwise select province
             MilitaryManager mm = engine.getMilitaryManager();
             Point clickPoint = e.getPoint();
@@ -774,7 +745,6 @@ public class MapPanel extends JPanel {
 
     public void centerOnMapCenter() {
         if (mapBackground == null) {
-            // System.out.println("Map background not loaded, cannot center");
             return;
         }
         
@@ -787,15 +757,11 @@ public class MapPanel extends JPanel {
         
         camera.centerOn(mapCenterX, mapCenterY);
         
-        // System.out.println("Centering on map center: mapW=" + mapWidth + ", mapH=" + mapHeight + 
-        //                   ", mapCenterX=" + mapCenterX + ", mapCenterY=" + mapCenterY);
-        
         repaint();
     }
     
     public void centerOnRome() {
         if (mapBackground == null) {
-            // System.out.println("Map background not loaded, cannot center on Rome");
             return;
         }
         
@@ -805,14 +771,11 @@ public class MapPanel extends JPanel {
         
         camera.centerOn(romeX, romeY);
         
-        // System.out.println("Centering on Rome: romeX=" + romeX + ", romeY=" + romeY);
-        
         repaint();
     }
     
     public void centerOnEurope() {
         if (mapBackground == null) {
-            // System.out.println("Map background not loaded, cannot center on Europe");
             return;
         }
         
@@ -822,21 +785,17 @@ public class MapPanel extends JPanel {
         
         camera.centerOn(europeX, europeY);
         
-        // System.out.println("Centering on Europe: europeX=" + europeX + ", europeY=" + europeY);
-        
         repaint();
     }
     
     public void centerOnNation(String nationName) {
         if (mapBackground == null) {
-            // System.out.println("Map background not loaded, cannot center on nation");
             return;
         }
         
         if (nationToViewpoint.containsKey(nationName)) {
             Point vp = nationToViewpoint.get(nationName);
             centerOnCoordinates(vp.x, vp.y);
-            // System.out.println("Centering on nation " + nationName + " via starting_viewpoint " + vp.x + "," + vp.y);
             return;
         }
         
@@ -845,13 +804,11 @@ public class MapPanel extends JPanel {
             if (province.getOwner() != null && province.getOwner().equals(nationName)) {
                 // Found a province owned by this nation, center on it
                 centerOnProvince(province.getId());
-                // System.out.println("Centering on nation " + nationName + " via province " + province.getId());
                 return;
             }
         }
         
         // If no provinces found for this nation, fallback to Europe
-        // System.out.println("No provinces found for nation " + nationName + ", centering on Europe instead");
         centerOnEurope();
     }
     
@@ -1004,7 +961,6 @@ public class MapPanel extends JPanel {
             // Parse provinces with improved error handling
             int provincesStart = jsonText.indexOf("\"provinces\"");
             if (provincesStart == -1) {
-                // System.out.println("Could not find provinces section in JSON");
                 return;
             }
             
@@ -1012,7 +968,6 @@ public class MapPanel extends JPanel {
             int provincesArrayEnd = findMatchingBracket(jsonText, provincesArrayStart);
             
             if (provincesArrayEnd == -1) {
-                // System.out.println("Could not find end of provinces array in JSON");
                 return;
             }
             
@@ -1062,14 +1017,10 @@ public class MapPanel extends JPanel {
                     
                 } catch (Exception e) {
                     // Skip malformed province entries
-                    // System.err.println("Skipping malformed province entry: " + e.getMessage());
                 }
             }
 
-            // System.out.println("Loaded " + loadedCount + " provinces from nations_and_provinces.json");
-            // System.out.println("Loaded " + nationList.size() + " nations from nations_and_provinces.json");
         } catch (Exception e) {
-            // System.err.println("Failed to load nations_and_provinces.json: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -1142,12 +1093,10 @@ public class MapPanel extends JPanel {
 
     private String getProvinceIdAt(Point mapPoint) {
         if (provinceMask == null || mapPoint == null) {
-            // System.out.println("[DEBUG] provinceMask or mapPoint is null in getProvinceIdAt");
             return null;
         }
         int x = mapPoint.x, y = mapPoint.y;
         if (x < 0 || y < 0 || x >= provinceMask.getWidth() || y >= provinceMask.getHeight()) {
-            // System.out.println("[DEBUG] Click out of provinceMask bounds: " + x + "," + y);
             return null;
         }
         int argb = provinceMask.getRGB(x, y);
@@ -1162,7 +1111,6 @@ public class MapPanel extends JPanel {
             // Check if this province is uncivilized - if so, return null (not clickable)
             String owner = provinceIdToOwner.get(provinceId);
             if (owner != null && owner.equals("Uncivilized")) {
-                // System.out.println("[DEBUG] Clicked on uncivilized province at " + x + "," + y);
                 return null;
             }
             return provinceId;
@@ -1173,12 +1121,10 @@ public class MapPanel extends JPanel {
             // Check if this province is uncivilized - if so, return null (not clickable)
             String owner = provinceIdToOwner.get(provinceId);
             if (owner != null && owner.equals("Uncivilized")) {
-                // System.out.println("[DEBUG] Clicked on uncivilized province at " + x + "," + y);
                 return null;
             }
             return provinceId;
         }
-        // System.out.println("[DEBUG] No provinceId found for color at " + x + "," + y + " (" + r + "," + g + "," + b + ")");
         return null;
     }
     
@@ -1207,7 +1153,6 @@ public class MapPanel extends JPanel {
             }
         } else {
             // Only print debug info on click if no province found
-            // System.out.println("[DEBUG] No province found at click location.");
         }
     }
 
@@ -1309,7 +1254,6 @@ public class MapPanel extends JPanel {
         }
         
         if (count == 0) {
-            // System.out.println("Province not found: " + provinceId + ", centering on map center");
             centerOnMapCenter();
             return;
         }
@@ -1320,9 +1264,6 @@ public class MapPanel extends JPanel {
         // Center camera on the province coordinates
         camera.centerOn(centerX, centerY);
         
-        // System.out.println("Centering on province " + provinceId + ": centerX=" + centerX + 
-        //                   ", centerY=" + centerY);
-        
         repaint();
     }
     
@@ -1330,19 +1271,12 @@ public class MapPanel extends JPanel {
     
     public void printMapBoundaries() {
         if (mapBackground == null) {
-            // System.out.println("Map background not loaded");
             return;
         }
         
         int mapWidth = mapBackground.getWidth();
         int mapHeight = mapBackground.getHeight();
         int panelW = getWidth() > 0 ? getWidth() : 1600;
-        // Camera handles bounds checking internally
-        // System.out.println("Map Boundaries:");
-        // System.out.println("  Map size: " + mapWidth + "x" + mapHeight);
-        // System.out.println("  Panel size: " + panelW + "x" + getHeight());
-        // System.out.println("  Zoom: " + camera.getZoom());
-        // System.out.println("  Current center: " + camera.getCenter());
     }
     
     private void drawViewingCoordinates(Graphics2D g2d) {
@@ -1388,8 +1322,6 @@ public class MapPanel extends JPanel {
                 shouldLog = true;
             }
             if (shouldLog) {
-                // System.out.println(String.format("[DEBUG] View TL:(%d,%d) TR:(%d,%d) C:(%d,%d)", 
-                //     topLeft.x, topLeft.y, bottomRight.x, bottomRight.y, center.x, center.y));
                 lastTopLeftX = topLeft.x;
                 lastTopLeftY = topLeft.y;
                 lastBottomRightX = bottomRight.x;
@@ -1461,24 +1393,20 @@ public class MapPanel extends JPanel {
     private void handleProvinceDragInteraction(Province province, int dx, int dy) {
         // Implement province-specific drag interactions
         // For example: moving armies, adjusting province borders, etc.
-        // System.out.println("Province drag: " + province.getName() + " dx=" + dx + " dy=" + dy);
         
         // Example: Move armies in the province
         if (selectedArmy != null && selectedArmy.getLocation().equals(province.getName())) {
             // Move the army within the province based on drag
-            // System.out.println("Moving army within province: " + province.getName());
         }
         
         // Example: Adjust province development based on drag
         if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
             // Significant drag - could trigger province development
-            // System.out.println("Significant province drag detected for: " + province.getName());
         }
     }
     
     private void buildArmyInProvince(Province province) {
         // Implementation for building army in province
-        // System.out.println("Building army in province: " + province.getName());
         JOptionPane.showMessageDialog(this, 
             "Building army in " + province.getName(), 
             "Build Army", 
@@ -1487,7 +1415,6 @@ public class MapPanel extends JPanel {
     
     private void buildNavyInProvince(Province province) {
         // Implementation for building navy in province
-        // System.out.println("Building navy in province: " + province.getName());
         JOptionPane.showMessageDialog(this, 
             "Building navy in " + province.getName(), 
             "Build Navy", 
@@ -1496,7 +1423,6 @@ public class MapPanel extends JPanel {
     
     private void buildBuildingInProvince(Province province) {
         // Implementation for building in province
-        // System.out.println("Building in province: " + province.getName());
         JOptionPane.showMessageDialog(this, 
             "Building in " + province.getName(), 
             "Build Building", 
@@ -1505,7 +1431,6 @@ public class MapPanel extends JPanel {
     
     private void developProvince(Province province) {
         // Implementation for developing province
-        // System.out.println("Developing province: " + province.getName());
         JOptionPane.showMessageDialog(this, 
             "Developing " + province.getName(), 
             "Develop Province", 
@@ -1514,7 +1439,6 @@ public class MapPanel extends JPanel {
     
     private void declareWarOnProvince(Province province) {
         // Implementation for declaring war
-        // System.out.println("Declaring war on province: " + province.getName());
         JOptionPane.showMessageDialog(this, 
             "Declaring war on " + province.getName(), 
             "Declare War", 
@@ -1523,7 +1447,6 @@ public class MapPanel extends JPanel {
     
     private void offerPeaceToProvince(Province province) {
         // Implementation for offering peace
-        // System.out.println("Offering peace to province: " + province.getName());
         JOptionPane.showMessageDialog(this, 
             "Offering peace to " + province.getName(), 
             "Offer Peace", 
