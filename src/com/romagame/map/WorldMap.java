@@ -24,84 +24,62 @@ public class WorldMap {
     }
     
     private boolean loadProvincesFromJson() {
-        try {
-            java.nio.file.Path jsonPath = java.nio.file.Paths.get("src/resources/data/nations_and_provinces.json");
-            if (!java.nio.file.Files.exists(jsonPath)) {
-                System.out.println("JSON file not found: " + jsonPath);
-                return false;
-            }
-            
-            String jsonText = new String(java.nio.file.Files.readAllBytes(jsonPath));
-            
-            // Parse provinces from JSON with more robust parsing
-            int provincesStart = jsonText.indexOf("\"provinces\"");
-            if (provincesStart == -1) {
-                System.out.println("Could not find provinces section in JSON");
-                return false;
-            }
-            
-            int arrayStart = jsonText.indexOf("[", provincesStart);
-            if (arrayStart == -1) {
-                System.out.println("Could not find provinces array in JSON");
-                return false;
-            }
-            
-            int arrayEnd = findMatchingBracket(jsonText, arrayStart);
-            if (arrayEnd == -1) {
-                System.out.println("Could not find end of provinces array in JSON");
-                return false;
-            }
-            
-            String provincesBlock = jsonText.substring(arrayStart + 1, arrayEnd);
-            
-            // Split by province objects more carefully
-            String[] provinceEntries = provincesBlock.split("\\},\\s*\\{");
-            
-            int loadedCount = 0;
-            for (int i = 0; i < provinceEntries.length; i++) {
-                String entry = provinceEntries[i];
-                
-                // Clean up the entry
-                if (i == 0) {
-                    entry = entry.replaceFirst("^\\s*\\{\\s*", "");
-                }
-                if (i == provinceEntries.length - 1) {
-                    entry = entry.replaceFirst("\\s*\\}\\s*$", "");
-                }
-                
-                try {
-                    // Extract province_id
-                    String provinceId = extractJsonValue(entry, "province_id");
-                    if (provinceId == null) {
-                        System.out.println("DEBUG: Skipping entry [" + i + "]: missing province_id");
-                        continue;
-                    }
-                    // Extract owner
-                    String owner = extractJsonValue(entry, "owner");
-                    if (owner == null) {
-                        System.out.println("DEBUG: Skipping entry [" + i + "]: missing owner");
-                        continue;
-                    }
-                    // Extract color array
-                    int[] rgb = extractColorArray(entry, "owner_color");
-                    if (rgb == null) {
-                        System.out.println("DEBUG: Skipping entry [" + i + "]: missing owner_color");
-                        continue;
-                    }
-                    
-                    // Single-line debug output for first 5 entries
-                    if (i < 5) {
-                        String pixelCount = extractJsonValue(entry, "pixel_count");
-                        String centroidX = extractJsonValue(entry, "centroid_x");
-                        String centroidY = extractJsonValue(entry, "centroid_y");
-                    }
-                    
-                    createProvince(provinceId, owner, rgb[0], rgb[1], rgb[2]);
-                    loadedCount++;
-                }
-            }
-            return loadedCount > 0;
+        java.nio.file.Path jsonPath = java.nio.file.Paths.get("src/resources/data/nations_and_provinces.json");
+        if (!java.nio.file.Files.exists(jsonPath)) {
+            System.out.println("JSON file not found: " + jsonPath);
+            return false;
         }
+        String jsonText;
+        try {
+            jsonText = new String(java.nio.file.Files.readAllBytes(jsonPath));
+        } catch (Exception e) {
+            System.out.println("Failed to read JSON file: " + e.getMessage());
+            return false;
+        }
+        
+        // Parse provinces from JSON with more robust parsing
+        int provincesStart = jsonText.indexOf("\"provinces\"");
+        if (provincesStart == -1) {
+            System.out.println("Could not find provinces section in JSON");
+            return false;
+        }
+        
+        int arrayStart = jsonText.indexOf("[", provincesStart);
+        if (arrayStart == -1) {
+            System.out.println("Could not find provinces array in JSON");
+            return false;
+        }
+        
+        int arrayEnd = findMatchingBracket(jsonText, arrayStart);
+        if (arrayEnd == -1) {
+            System.out.println("Could not find end of provinces array in JSON");
+            return false;
+        }
+        
+        String provincesBlock = jsonText.substring(arrayStart + 1, arrayEnd);
+        
+        // Split by province objects more carefully
+        String[] provinceEntries = provincesBlock.split("\\},\\s*\\{");
+        
+        int loadedCount = 0;
+        for (int i = 0; i < provinceEntries.length; i++) {
+            String entry = provinceEntries[i];
+            
+            try {
+                // Extract province_id
+                String provinceId = extractJsonValue(entry, "province_id");
+                // Extract owner
+                String owner = extractJsonValue(entry, "owner");
+                // Extract color array
+                int[] rgb = extractColorArray(entry, "owner_color");
+                if (provinceId == null || owner == null || rgb == null) continue;
+                createProvince(provinceId, owner, rgb[0], rgb[1], rgb[2]);
+                loadedCount++;
+            } catch (Exception e) {
+                // Optionally handle or log the error
+            }
+        }
+        return loadedCount > 0;
     }
     
     private int findMatchingBracket(String text, int start) {
