@@ -83,8 +83,9 @@ public class MapPanel extends JPanel {
         System.out.println("Calling loadNationsAndProvinces()");
         loadNationsAndProvinces();
         setupMouseListeners();
-        // Center the map on startup
-        centerOnMapCenter();
+        // Start at coordinates (0,0)
+        offsetX = 0;
+        offsetY = 0;
     }
 
     private void setupPanel() {
@@ -119,6 +120,16 @@ public class MapPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 centerOnMapCenter();
+            }
+        });
+        
+        // R key to center on Rome
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_R, 0), "centerOnRome");
+        getActionMap().put("centerOnRome", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                centerOnRome();
             }
         });
     }
@@ -905,6 +916,87 @@ public class MapPanel extends JPanel {
         
         invalidateOverlayCache();
         repaint();
+    }
+    
+    public void centerOnRome() {
+        if (mapBackground == null) {
+            System.out.println("Map background not loaded, cannot center on Rome");
+            return;
+        }
+        
+        // Rome coordinates: x=2210, y=300
+        int romeX = 2210;
+        int romeY = 300;
+        
+        int panelW = getWidth() > 0 ? getWidth() : 1600;
+        int panelH = getHeight() > 0 ? getHeight() : 900;
+        
+        // Apply zoom scaling
+        double scaledX = romeX * zoom;
+        double scaledY = romeY * zoom;
+        
+        offsetX = panelW/2 - (int)scaledX;
+        offsetY = panelH/2 - (int)scaledY;
+        
+        // Cap movement within bounds
+        capMovementWithinBounds(offsetX, offsetY);
+        
+        System.out.println("Centering on Rome: romeX=" + romeX + ", romeY=" + romeY + 
+                          ", offsetX=" + offsetX + ", offsetY=" + offsetY);
+        
+        invalidateOverlayCache();
+        repaint();
+    }
+    
+    public void centerOnEurope() {
+        if (mapBackground == null) {
+            System.out.println("Map background not loaded, cannot center on Europe");
+            return;
+        }
+        
+        // Europe coordinates (approximate center of Europe)
+        int europeX = 2400;
+        int europeY = 300;
+        
+        int panelW = getWidth() > 0 ? getWidth() : 1600;
+        int panelH = getHeight() > 0 ? getHeight() : 900;
+        
+        // Apply zoom scaling
+        double scaledX = europeX * zoom;
+        double scaledY = europeY * zoom;
+        
+        offsetX = panelW/2 - (int)scaledX;
+        offsetY = panelH/2 - (int)scaledY;
+        
+        // Cap movement within bounds
+        capMovementWithinBounds(offsetX, offsetY);
+        
+        System.out.println("Centering on Europe: europeX=" + europeX + ", europeY=" + europeY + 
+                          ", offsetX=" + offsetX + ", offsetY=" + offsetY);
+        
+        invalidateOverlayCache();
+        repaint();
+    }
+    
+    public void centerOnNation(String nationName) {
+        if (mapBackground == null) {
+            System.out.println("Map background not loaded, cannot center on nation");
+            return;
+        }
+        
+        // Try to find the nation's provinces and center on the first one
+        for (Province province : engine.getWorldMap().getAllProvinces()) {
+            if (province.getOwner() != null && province.getOwner().equals(nationName)) {
+                // Found a province owned by this nation, center on it
+                centerOnProvince(province.getId());
+                System.out.println("Centering on nation " + nationName + " via province " + province.getId());
+                return;
+            }
+        }
+        
+        // If no provinces found for this nation, fallback to Europe
+        System.out.println("No provinces found for nation " + nationName + ", centering on Europe instead");
+        centerOnEurope();
     }
     
     public void selectNation(String nation) {
