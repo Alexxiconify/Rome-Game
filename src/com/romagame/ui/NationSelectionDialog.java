@@ -141,6 +141,8 @@ public class NationSelectionDialog extends JDialog {
     
     private void populateCountries() {
         List<String> selectableCountries = new ArrayList<>();
+        List<String> addedNations = new ArrayList<>();
+        List<String> filteredNations = new ArrayList<>();
         
         try {
             // Load nations from owner_color_name.csv
@@ -158,11 +160,21 @@ public class NationSelectionDialog extends JDialog {
                         // Filter out unwanted nations
                         if (isSelectableNation(ownerName)) {
                             selectableCountries.add(ownerName);
-                            System.out.println("Added nation from CSV: " + ownerName);
+                            addedNations.add(ownerName);
                         } else {
-                            System.out.println("Filtered out nation from CSV: " + ownerName);
+                            filteredNations.add(ownerName);
                         }
                     }
+                }
+                
+                // Output all added nations in a single line
+                if (!addedNations.isEmpty()) {
+                    System.out.println("Added nations from CSV: " + String.join(", ", addedNations));
+                }
+                
+                // Output all filtered nations in a single line
+                if (!filteredNations.isEmpty()) {
+                    System.out.println("Filtered out nations from CSV: " + String.join(", ", filteredNations));
                 }
                 
                 System.out.println("Loaded " + selectableCountries.size() + " nations from owner_color_name.csv");
