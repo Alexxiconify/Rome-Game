@@ -198,6 +198,8 @@ public class NationSelectionDialog extends JDialog {
         if (name == null) return false;
         if (name.equalsIgnoreCase("Ocean") || name.equalsIgnoreCase("Uncolonized")) return false;
         if (name.startsWith("Unknown")) return false;
+        if (name.startsWith("Color_")) return false;
+        if (name.startsWith("rgb_")) return false;
         return true;
     }
     

@@ -731,7 +731,7 @@ public class MapPanel extends JPanel {
                 String provinceId = colorKeyToProvinceId.get(colorKey);
                 if (provinceId != null) {
                     String owner = provinceIdToOwner.get(provinceId);
-                    if (owner == null || owner.equals("Ocean") || owner.equals("Uncolonized") || owner.startsWith("Unknown") || owner.startsWith("rgb_") || owner.equals("REMOVE_FROM_MAP") || owner.equals("BORDER") || owner.equals("Water") || owner.equals("Sea") || owner.equals("Lake") || owner.equals("River"))
+                    if (owner == null || owner.equals("Ocean") || owner.equals("Uncolonized") || owner.startsWith("Unknown") || owner.startsWith("rgb_") || owner.startsWith("Color_") || owner.equals("REMOVE_FROM_MAP") || owner.equals("BORDER") || owner.equals("Water") || owner.equals("Sea") || owner.equals("Lake") || owner.equals("River"))
                         continue;
                     centroids.putIfAbsent(owner, new double[]{0, 0});
                     counts.put(owner, counts.getOrDefault(owner, 0) + 1);
