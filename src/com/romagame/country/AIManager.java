@@ -252,9 +252,10 @@ public class AIManager {
                 }
             }
             reader.close();
+        } catch (java.io.FileNotFoundException e) {
+            System.err.println("[DEBUG] AI config not found: src/resources/ai_config.txt");
         } catch (Exception e) {
-            System.err.println("Failed to load AI configuration: " + e.getMessage());
-            // Fall back to default personalities
+            System.err.println("[DEBUG] Failed to load AI configuration: " + e.getMessage());
         }
     }
     
