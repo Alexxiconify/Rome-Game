@@ -27,6 +27,8 @@ import javax.swing.Timer;
 import java.awt.MouseInfo;
 import java.awt.PointerInfo;
 import javax.swing.SwingUtilities;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Optimized MapPanel with modern camera system and performance improvements.
@@ -878,164 +880,48 @@ public class MapPanel extends JPanel {
     public void loadNationsAndProvinces() {
         try {
             String jsonText = new String(Files.readAllBytes(Paths.get("src/resources/data/nations_and_provinces.json")));
-            
-            // Parse nations (if they exist in the JSON)
-            if (jsonText.contains("\"nations\"")) {
-                int nationsStart = jsonText.indexOf("\"nations\"");
-                int nationsArrayStart = jsonText.indexOf("[", nationsStart);
-                int nationsArrayEnd = findMatchingBracket(jsonText, nationsArrayStart);
-                
-                if (nationsArrayEnd != -1) {
-                    String nationsBlock = jsonText.substring(nationsArrayStart + 1, nationsArrayEnd);
-                    String[] nationEntries = nationsBlock.split("\\},\\s*\\{");
-                    for (String entry : nationEntries) {
-                        try {
-                            String name = extractJsonValue(entry, "name");
-                            String colorStr = extractColorArrayString(entry, "color");
-                            String viewpointStr = extractArrayString(entry, "starting_viewpoint");
-                            if (name != null && colorStr != null) {
-                                nationToColor.put(name, colorStr);
-                                nationList.add(name);
-                                if (viewpointStr != null) {
-                                    String[] xy = viewpointStr.split(",");
-                                    if (xy.length == 2) {
-                                        try {
-                                            int vx = Integer.parseInt(xy[0].trim());
-                                            int vy = Integer.parseInt(xy[1].trim());
-                                            nationToViewpoint.put(name, new Point(vx, vy));
-                                        } catch (NumberFormatException ignore) {}
-                                    }
-                                }
-                            }
-                        } catch (Exception e) {
-                            // Skip malformed nation entries
-                        }
+            JSONObject root = new JSONObject(jsonText);
+            // Parse nations
+            nationList.clear();
+            nationToColor.clear();
+            nationToViewpoint.clear();
+            JSONArray nations = root.optJSONArray("nations");
+            if (nations != null) {
+                for (int i = 0; i < nations.length(); i++) {
+                    JSONObject nation = nations.getJSONObject(i);
+                    String name = nation.getString("name");
+                    JSONArray colorArr = nation.getJSONArray("color");
+                    String colorStr = colorArr.getInt(0) + "," + colorArr.getInt(1) + "," + colorArr.getInt(2);
+                    nationToColor.put(name, colorStr);
+                    nationList.add(name);
+                    if (nation.has("starting_viewpoint")) {
+                        JSONArray vpArr = nation.getJSONArray("starting_viewpoint");
+                        nationToViewpoint.put(name, new Point(vpArr.getInt(0), vpArr.getInt(1)));
                     }
                 }
             }
-
-            // Parse provinces with improved error handling
-            int provincesStart = jsonText.indexOf("\"provinces\"");
-            if (provincesStart == -1) {
-                return;
-            }
-            
-            int provincesArrayStart = jsonText.indexOf("[", provincesStart);
-            int provincesArrayEnd = findMatchingBracket(jsonText, provincesArrayStart);
-            
-            if (provincesArrayEnd == -1) {
-                return;
-            }
-            
-            String provincesBlock = jsonText.substring(provincesArrayStart + 1, provincesArrayEnd);
-            String[] provinceEntries = provincesBlock.split("\\},\\s*\\{");
-            
-            int loadedCount = 0;
-            for (int i = 0; i < provinceEntries.length; i++) {
-                String entry = provinceEntries[i];
-                
-                // Clean up the entry
-                if (i == 0) {
-                    entry = entry.replaceFirst("^\\s*\\{\\s*", "");
-                }
-                if (i == provinceEntries.length - 1) {
-                    entry = entry.replaceFirst("\\s*\\}\\s*$", "");
-                }
-                
-                try {
-                    // Extract province_id
-                    String provinceId = extractJsonValue(entry, "province_id");
-                    if (provinceId == null) continue;
-                    
-                    // Extract owner
-                    String owner = extractJsonValue(entry, "owner");
-                    if (owner == null) continue;
-                    
-                    // Extract color array
-                    int[] rgb = extractColorArray(entry, "owner_color");
-                    if (rgb == null) continue;
-                    
-                    String colorKey = String.format("%d,%d,%d", rgb[0], rgb[1], rgb[2]);
+            // Parse provinces
+            colorKeyToProvinceId.clear();
+            provinceIdToOwner.clear();
+            provinceIdToCentroid.clear();
+            JSONArray provincesArr = root.optJSONArray("provinces");
+            if (provincesArr != null) {
+                for (int i = 0; i < provincesArr.length(); i++) {
+                    JSONObject province = provincesArr.getJSONObject(i);
+                    String provinceId = province.getString("province_id");
+                    JSONArray colorArr = province.getJSONArray("owner_color");
+                    String colorKey = colorArr.getInt(0) + "," + colorArr.getInt(1) + "," + colorArr.getInt(2);
+                    String owner = province.getString("owner");
                     colorKeyToProvinceId.put(colorKey, provinceId);
                     provinceIdToOwner.put(provinceId, owner);
-                    loadedCount++;
-                    
-                    // Extract centroid
-                    String centroidXStr = extractJsonValue(entry, "centroid_x");
-                    String centroidYStr = extractJsonValue(entry, "centroid_y");
-                    if (centroidXStr != null && centroidYStr != null) {
-                        try {
-                            int cx = Integer.parseInt(centroidXStr);
-                            int cy = Integer.parseInt(centroidYStr);
-                            provinceIdToCentroid.put(provinceId, new Point(cx, cy));
-                        } catch (NumberFormatException ignore) {}
+                    if (province.has("centroid_x") && province.has("centroid_y")) {
+                        provinceIdToCentroid.put(provinceId, new Point(province.getInt("centroid_x"), province.getInt("centroid_y")));
                     }
-                    
-                } catch (Exception e) {
-                    // Skip malformed province entries
                 }
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-    
-    private int findMatchingBracket(String text, int start) {
-        int count = 0;
-        for (int i = start; i < text.length(); i++) {
-            char c = text.charAt(i);
-            if (c == '[') count++;
-            else if (c == ']') {
-                count--;
-                if (count == 0) return i;
-            }
-        }
-        return -1;
-    }
-    
-    private String extractJsonValue(String json, String key) {
-        String pattern = "\"" + key + "\"\\s*:\\s*\"([^\"]+)\"";
-        java.util.regex.Pattern p = java.util.regex.Pattern.compile(pattern);
-        java.util.regex.Matcher m = p.matcher(json);
-        if (m.find()) {
-            return m.group(1);
-        }
-        return null;
-    }
-    
-    private String extractColorArrayString(String json, String key) {
-        String pattern = "\"" + key + "\"\\s*:\\s*\\[\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\]";
-        java.util.regex.Pattern p = java.util.regex.Pattern.compile(pattern);
-        java.util.regex.Matcher m = p.matcher(json);
-        if (m.find()) {
-            return m.group(1) + "," + m.group(2) + "," + m.group(3);
-        }
-        return null;
-    }
-    
-    private int[] extractColorArray(String json, String key) {
-        String pattern = "\"" + key + "\"\\s*:\\s*\\[\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\]";
-        java.util.regex.Pattern p = java.util.regex.Pattern.compile(pattern);
-        java.util.regex.Matcher m = p.matcher(json);
-        if (m.find()) {
-            return new int[]{
-                Integer.parseInt(m.group(1)),
-                Integer.parseInt(m.group(2)),
-                Integer.parseInt(m.group(3))
-            };
-        }
-        return null;
-    }
-
-    private String extractArrayString(String json, String key) {
-        String pattern = "\"" + key + "\"\\s*:\\s*\\[\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\]";
-        java.util.regex.Pattern p = java.util.regex.Pattern.compile(pattern);
-        java.util.regex.Matcher m = p.matcher(json);
-        if (m.find()) {
-            return m.group(1) + "," + m.group(2);
-        }
-        return null;
     }
 
     public Point mapToScreen(int mapX, int mapY) {
