@@ -117,18 +117,32 @@ public class MapPanel extends JPanel {
     }
 
     private void loadMapBackground() {
+        System.out.println("[DEBUG] Entering loadMapBackground()");
         try {
             File mapFile = new File("src/resources/img/start1.png");
+            System.out.println("[DEBUG] Checking for map background at: " + mapFile.getAbsolutePath());
+            if (!mapFile.exists()) {
+                System.err.println("[ERROR] Map background not found at " + mapFile.getAbsolutePath());
+                // Try absolute path fallback (edit this path if needed)
+                mapFile = new File("C:/Users/taylo/Documents/projects/Roma Game/src/resources/img/start1.png");
+                System.out.println("[DEBUG] Fallback absolute path: " + mapFile.getAbsolutePath());
+            }
             if (mapFile.exists()) {
                 mapBackground = ImageIO.read(mapFile);
-                mapLoaded = true;
-                System.out.println("Loaded map background from: " + mapFile.getPath());
+                if (mapBackground != null) {
+                    mapLoaded = true;
+                    System.out.println("[DEBUG] Loaded map background from: " + mapFile.getPath());
+                    System.out.println("[DEBUG] mapBackground loaded: " + mapBackground.getWidth() + "x" + mapBackground.getHeight());
+                } else {
+                    System.err.println("[ERROR] mapBackground is null after ImageIO.read!");
+                    createGradientBackground();
+                }
             } else {
-                System.err.println("ERROR: Map background not found at src/resources/img/start1.png");
+                System.err.println("[ERROR] Map background not found at either relative or absolute path.");
                 createGradientBackground();
             }
         } catch (IOException e) {
-            System.err.println("Could not load map background image: " + e.getMessage());
+            System.err.println("[ERROR] Could not load map background image: " + e.getMessage());
             createGradientBackground();
         }
     }
@@ -247,52 +261,7 @@ public class MapPanel extends JPanel {
     }
 
     private void updateProvinceColorMap() {
-        if (provinceMask == null) return;
-        int w = provinceMask.getWidth(), h = provinceMask.getHeight();
-        provinceColorMap = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-        
-        for (int y = 0; y < h; y++) {
-            for (int x = 0; x < w; x++) {
-                int argb = provinceMask.getRGB(x, y);
-                int r = (argb >> 16) & 0xFF;
-                int g = (argb >> 8) & 0xFF;
-                int b = argb & 0xFF;
-                
-                // Skip black pixels (ocean)
-                if (r == 0 && g == 0 && b == 0) {
-                    provinceColorMap.setRGB(x, y, 0x00000000);
-                    continue;
-                }
-                
-                String colorKey = String.format("%d,%d,%d", r, g, b);
-                String provinceId = colorKeyToProvinceId.get(colorKey);
-                
-                if (provinceId != null) {
-                    String owner = provinceIdToOwner.get(provinceId);
-                    if (owner != null && !owner.startsWith("Unknown") && !owner.startsWith("Color_")) {
-                        // Use owner color from the province data
-                        String colorStr = nationToColor.get(owner);
-                        if (colorStr != null) {
-                            String[] rgb = colorStr.split(",");
-                            int ownerR = Integer.parseInt(rgb[0]);
-                            int ownerG = Integer.parseInt(rgb[1]);
-                            int ownerB = Integer.parseInt(rgb[2]);
-                            int ownerArgb = (0xFF << 24) | (ownerR << 16) | (ownerG << 8) | ownerB;
-                            provinceColorMap.setRGB(x, y, ownerArgb);
-                        } else {
-                            // Use the original color if no nation color is found
-                            provinceColorMap.setRGB(x, y, argb);
-                        }
-                    } else {
-                        // Use the original color for unknown/color provinces
-                        provinceColorMap.setRGB(x, y, argb);
-                    }
-                } else {
-                    // No province mapping found, use original color
-                    provinceColorMap.setRGB(x, y, argb);
-                }
-            }
-        }
+        // No-op: do not recolor provinces, just use the background image
     }
 
     private void updateBorderOverlay() {
