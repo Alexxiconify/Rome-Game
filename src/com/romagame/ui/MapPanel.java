@@ -90,7 +90,7 @@ public class MapPanel extends JPanel {
         this.camera = new Camera();
         this.renderer = new MapRenderer();
         
-        setupPanel()
+        setupPanel();
         System.out.println("[DEBUG] Loaded " + colorToProvinceId.size() + " province mappings, " + nationList.size() + " nations");
         setupMouseListeners();
         startEdgeScrollTimer();
