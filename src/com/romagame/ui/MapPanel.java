@@ -862,28 +862,15 @@ public class MapPanel extends JPanel {
         int mapWidth = mapBackground.getWidth();
         int mapHeight = mapBackground.getHeight();
         
-        int panelW = getWidth() > 0 ? getWidth() : 1600;
-        int panelH = getHeight() > 0 ? getHeight() : 900;
-        
         // Center of the map
         int mapCenterX = mapWidth / 2;
         int mapCenterY = mapHeight / 2;
         
-        // Apply zoom scaling
-        double scaledX = mapCenterX * zoom;
-        double scaledY = mapCenterY * zoom;
-        
-        offsetX = panelW/2 - (int)scaledX;
-        offsetY = panelH/2 - (int)scaledY;
-        
-        // Cap movement within bounds
-        capMovementWithinBounds(offsetX, offsetY);
+        camera.centerOn(mapCenterX, mapCenterY);
         
         System.out.println("Centering on map center: mapW=" + mapWidth + ", mapH=" + mapHeight + 
-                          ", mapCenterX=" + mapCenterX + ", mapCenterY=" + mapCenterY + 
-                          ", offsetX=" + offsetX + ", offsetY=" + offsetY);
+                          ", mapCenterX=" + mapCenterX + ", mapCenterY=" + mapCenterY);
         
-        invalidateOverlayCache();
         repaint();
     }
     
