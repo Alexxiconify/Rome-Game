@@ -12,7 +12,6 @@ public class GameWindow extends JFrame {
     private MapPanel mapPanel;
     private InfoPanel infoPanel;
     private ControlPanel controlPanel;
-    private JScrollPane mapScrollPane;
     private JTabbedPane mainTabbedPane;
     private SoldiersPanel soldiersPanel;
     private PopulationPanel populationPanel;
@@ -58,20 +57,6 @@ public class GameWindow extends JFrame {
         infoPanel = new InfoPanel(engine);
         controlPanel = new ControlPanel(engine);
         
-        // Create scrollable map panel
-        mapScrollPane = new JScrollPane(mapPanel);
-        // Always show scroll bars to allow scrolling across the entire map
-        mapScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        mapScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        mapScrollPane.getViewport().setBackground(new Color(139, 69, 19));
-        
-        // Set viewport size to be smaller than the map to ensure scrolling is possible
-        mapScrollPane.getViewport().setPreferredSize(new Dimension(1200, 800));
-        
-        // Disable scroll pane mouse wheel handling so MapPanel can handle it
-        mapScrollPane.getVerticalScrollBar().setUnitIncrement(0);
-        mapScrollPane.getHorizontalScrollBar().setUnitIncrement(0);
-        
         // Create tabbed panels for different game aspects
         soldiersPanel = new SoldiersPanel(engine);
         populationPanel = new PopulationPanel(engine);
@@ -100,7 +85,7 @@ public class GameWindow extends JFrame {
         setLayout(new BorderLayout());
         
         // Create main content area with tabs
-        mainTabbedPane.addTab("🗺 Map", new ImageIcon(), mapScrollPane, "Main map view");
+        mainTabbedPane.addTab("🗺 Map", new ImageIcon(), mapPanel, "Main map view");
         mainTabbedPane.addTab("⚔ Soldiers", new ImageIcon(), soldiersPanel, "Military management");
         mainTabbedPane.addTab("👥 Population", new ImageIcon(), populationPanel, "Population management");
         mainTabbedPane.addTab("💰 Trade", new ImageIcon(), tradePanel, "Trade and economy");

@@ -16,8 +16,8 @@ public class Camera {
     private double zoom = 1.0;
     
     // Zoom constraints
-    private static final double MIN_ZOOM = 0.5;
-    private static final double MAX_ZOOM = 5.0;
+    private static final double MIN_ZOOM = 1.0;
+    private static final double MAX_ZOOM = 2.0;
     
     // Map bounds (set when map is loaded)
     private int mapWidth = 0;
@@ -32,8 +32,6 @@ public class Camera {
     private double movementSpeed = 0.1; // For smooth transitions
     
     // Target position for smooth movement
-    private double targetX = 0.0;
-    private double targetY = 0.0;
     private double targetZoom = 1.0;
     
     /**
@@ -100,8 +98,6 @@ public class Camera {
         this.targetZoom = newZoom;
         this.centerX = newCenterX;
         this.centerY = newCenterY;
-        this.targetX = newCenterX;
-        this.targetY = newCenterY;
         
         constrainToBounds();
     }
@@ -113,8 +109,6 @@ public class Camera {
         if (mapWidth > 0 && mapHeight > 0) {
             centerX = mapWidth / 2.0;
             centerY = mapHeight / 2.0;
-            targetX = centerX;
-            targetY = centerY;
             constrainToBounds();
         }
     }
@@ -125,8 +119,6 @@ public class Camera {
     public void centerOn(double mapX, double mapY) {
         centerX = mapX;
         centerY = mapY;
-        targetX = mapX;
-        targetY = mapY;
         constrainToBounds();
     }
     
@@ -136,8 +128,6 @@ public class Camera {
     public void moveBy(double deltaX, double deltaY) {
         centerX += deltaX / zoom;
         centerY += deltaY / zoom;
-        targetX = centerX;
-        targetY = centerY;
         constrainToBounds();
     }
     
@@ -145,11 +135,7 @@ public class Camera {
      * Smoothly move to target position
      */
     public void moveTo(double mapX, double mapY) {
-        targetX = mapX;
-        targetY = mapY;
         if (!smoothMovement) {
-            centerX = targetX;
-            centerY = targetY;
         }
         constrainToBounds();
     }
@@ -160,13 +146,11 @@ public class Camera {
     public void update() {
         if (smoothMovement) {
             // Smooth movement towards target
-            centerX += (targetX - centerX) * movementSpeed;
-            centerY += (targetY - centerY) * movementSpeed;
+            centerX +=  centerX * movementSpeed;
+            centerY +=  centerY * movementSpeed;
             zoom += (targetZoom - zoom) * movementSpeed;
             
             // Stop if very close to target
-            if (Math.abs(targetX - centerX) < 0.1) centerX = targetX;
-            if (Math.abs(targetY - centerY) < 0.1) centerY = targetY;
             if (Math.abs(targetZoom - zoom) < 0.001) zoom = targetZoom;
         }
     }
@@ -183,19 +167,15 @@ public class Camera {
         // Constrain X
         if (centerX < halfViewportWidth) {
             centerX = halfViewportWidth;
-            targetX = centerX;
         } else if (centerX > mapWidth - halfViewportWidth) {
             centerX = mapWidth - halfViewportWidth;
-            targetX = centerX;
         }
         
         // Constrain Y
         if (centerY < halfViewportHeight) {
             centerY = halfViewportHeight;
-            targetY = centerY;
         } else if (centerY > mapHeight - halfViewportHeight) {
             centerY = mapHeight - halfViewportHeight;
-            targetY = centerY;
         }
     }
     
