@@ -60,9 +60,13 @@ public class GameWindow extends JFrame {
         
         // Create scrollable map panel
         mapScrollPane = new JScrollPane(mapPanel);
-        mapScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        mapScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        // Always show scroll bars to allow scrolling across the entire map
+        mapScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        mapScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         mapScrollPane.getViewport().setBackground(new Color(139, 69, 19));
+        
+        // Set viewport size to be smaller than the map to ensure scrolling is possible
+        mapScrollPane.getViewport().setPreferredSize(new Dimension(1200, 800));
         
         // Create tabbed panels for different game aspects
         soldiersPanel = new SoldiersPanel(engine);
@@ -193,23 +197,16 @@ public class GameWindow extends JFrame {
     
     public void centerOnPlayerRegion() {
         Country player = engine.getCountryManager().getPlayerCountry();
-        if (player == null) return;
-        String name = player.getName();
-        int centerX, centerY;
-        // Example mapping, adjust as needed
-        if (name.equalsIgnoreCase("Rome") || name.equalsIgnoreCase("France") || name.equalsIgnoreCase("Germanic") || name.equalsIgnoreCase("Britain") || name.equalsIgnoreCase("Spain")) {
-            // Europe
-            centerX = 600; centerY = 300;
-        } else if (name.equalsIgnoreCase("China") || name.equalsIgnoreCase("Baekje") || name.equalsIgnoreCase("Silla") || name.equalsIgnoreCase("Japan") || name.equalsIgnoreCase("India")) {
-            // Asia
-            centerX = 1200; centerY = 400;
-        } else if (name.equalsIgnoreCase("Maya") || name.equalsIgnoreCase("Aztec") || name.equalsIgnoreCase("Olmec")) {
-            // Central America
-            centerX = 200; centerY = 600;
-        } else {
-            // Default to Europe
-            centerX = 600; centerY = 300;
+        if (player == null) {
+            // No player country selected, center on Europe
+            mapPanel.centerOnEurope();
+            return;
         }
-        mapPanel.centerOnCoordinates(centerX, centerY);
+        
+        String name = player.getName();
+        System.out.println("Centering on player country: " + name);
+        
+        // Use the MapPanel's centerOnNation method which has proper fallback to Europe
+        mapPanel.centerOnNation(name);
     }
 } 
