@@ -71,6 +71,8 @@ public class MapPanel extends JPanel {
     private static final int EDGE_SCROLL_ZONE = 60; // px from edge (restored buffer)
     private static final int EDGE_SCROLL_SPEED = 30; // px per timer tick
 
+    private Map<String, Point> nationToViewpoint = new HashMap<>();
+
     public MapPanel(GameEngine engine) {
         System.out.println("MapPanel constructor called");
         this.engine = engine;
@@ -771,6 +773,13 @@ public class MapPanel extends JPanel {
             return;
         }
         
+        if (nationToViewpoint.containsKey(nationName)) {
+            Point vp = nationToViewpoint.get(nationName);
+            centerOnCoordinates(vp.x, vp.y);
+            System.out.println("Centering on nation " + nationName + " via starting_viewpoint " + vp.x + "," + vp.y);
+            return;
+        }
+        
         // Try to find the nation's provinces and center on the first one
         for (Province province : engine.getWorldMap().getAllProvinces()) {
             if (province.getOwner() != null && province.getOwner().equals(nationName)) {
@@ -910,9 +919,20 @@ public class MapPanel extends JPanel {
                         try {
                             String name = extractJsonValue(entry, "name");
                             String colorStr = extractColorArrayString(entry, "color");
+                            String viewpointStr = extractArrayString(entry, "starting_viewpoint");
                             if (name != null && colorStr != null) {
                                 nationToColor.put(name, colorStr);
                                 nationList.add(name);
+                                if (viewpointStr != null) {
+                                    String[] xy = viewpointStr.split(",");
+                                    if (xy.length == 2) {
+                                        try {
+                                            int vx = Integer.parseInt(xy[0].trim());
+                                            int vy = Integer.parseInt(xy[1].trim());
+                                            nationToViewpoint.put(name, new Point(vx, vy));
+                                        } catch (NumberFormatException ignore) {}
+                                    }
+                                }
                             }
                         } catch (Exception e) {
                             // Skip malformed nation entries
@@ -1026,6 +1046,16 @@ public class MapPanel extends JPanel {
                 Integer.parseInt(m.group(2)),
                 Integer.parseInt(m.group(3))
             };
+        }
+        return null;
+    }
+
+    private String extractArrayString(String json, String key) {
+        String pattern = "\"" + key + "\"\\s*:\\s*\\[\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\]";
+        java.util.regex.Pattern p = java.util.regex.Pattern.compile(pattern);
+        java.util.regex.Matcher m = p.matcher(json);
+        if (m.find()) {
+            return m.group(1) + "," + m.group(2);
         }
         return null;
     }
