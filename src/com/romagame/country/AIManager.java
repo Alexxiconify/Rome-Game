@@ -235,7 +235,7 @@ public class AIManager {
     private void loadConfiguration() {
         try {
             java.io.BufferedReader reader = new java.io.BufferedReader(
-                new java.io.FileReader("src/resources/ai_config.txt"));
+                new java.io.FileReader("src/resources/data/ai_config.txt"));
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
@@ -253,7 +253,7 @@ public class AIManager {
             }
             reader.close();
         } catch (java.io.FileNotFoundException e) {
-            System.err.println("[DEBUG] AI config not found: src/resources/ai_config.txt");
+            System.err.println("[DEBUG] AI config not found: src/resources/data/ai_config.txt");
         } catch (Exception e) {
             System.err.println("[DEBUG] Failed to load AI configuration: " + e.getMessage());
         }

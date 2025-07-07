@@ -557,19 +557,13 @@ public class MapPanel extends JPanel {
         }
     }
 
-    @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
         camera.update();
         camera.setViewportSize(getWidth(), getHeight());
-        if (renderer != null && mapBackground != null) {
-            renderer.render(g2d, camera, getVisibleRect());
-        } else {
-            // System.err.println("[ERROR] mapBackground is null in paintComponent! Rendering fallback color.");
-            g2d.setColor(Color.BLUE);
-            g2d.fillRect(0, 0, getWidth(), getHeight());
-        }
+        renderer.render(g2d, camera, getVisibleRect());
+        // UI overlays and province highlights remain here
         // Highlight hovered province with a soft white transparent glow
         if (hoveredProvinceId != null && provinceMask != null) {
             // Find the color of the hovered province in the mask
@@ -968,7 +962,7 @@ public class MapPanel extends JPanel {
             JOptionPane.INFORMATION_MESSAGE);
     }
 
-    private void loadNationsAndProvinces() {
+    public void loadNationsAndProvinces() {
         try {
             String jsonText = new String(Files.readAllBytes(Paths.get("src/resources/data/nations_and_provinces.json")));
             
