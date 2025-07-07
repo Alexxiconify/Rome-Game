@@ -62,13 +62,13 @@ public class MapPanel extends JPanel {
     private int mapImgWidth, mapImgHeight;
     
     // Performance optimization fields
-    private BufferedImage cachedOceanBackground = null;
-    private int lastOceanBgWidth = -1;
-    private int lastOceanBgHeight = -1;
+    public BufferedImage cachedOceanBackground = null;
+    public int lastOceanBgWidth = -1;
+    public int lastOceanBgHeight = -1;
 
     private Army selectedArmy = null;
     private Province selectedProvince = null; // Track selected province for info display
-    private long lastProvinceClickTime = 0; // For faster response
+    public long lastProvinceClickTime = 0; // For faster response
 
     private Map<String, String> colorKeyToProvinceId = new HashMap<>();
 
