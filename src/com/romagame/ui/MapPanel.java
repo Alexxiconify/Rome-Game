@@ -533,16 +533,8 @@ public class MapPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
-        // Update camera for smooth movement before rendering
         camera.update();
-        // Clear background to prevent artifacts
-        g2d.clearRect(0, 0, getWidth(), getHeight());
-        // Enable anti-aliasing for smoother rendering
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-        // Update camera viewport size
         camera.setViewportSize(getWidth(), getHeight());
-        // Use renderer to draw the map
         if (renderer != null && mapBackground != null) {
             renderer.render(g2d, camera, getVisibleRect());
         } else {
