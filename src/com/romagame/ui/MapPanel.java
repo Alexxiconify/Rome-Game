@@ -71,10 +71,12 @@ public class MapPanel extends JPanel {
     private Map<String, String> colorKeyToProvinceId = new HashMap<>();
 
     public MapPanel(GameEngine engine) {
+        System.out.println("MapPanel constructor called");
         this.engine = engine;
         setupPanel();
-        loadNationsAndProvinces();
+        System.out.println("Calling loadMapBackground()");
         loadMapBackground();
+        System.out.println("Calling loadProvinceMask()");
         loadProvinceMask();
         setupMouseListeners();
     }
@@ -116,26 +118,18 @@ public class MapPanel extends JPanel {
 
     private void loadMapBackground() {
         try {
-            // Use start1.png as the main background
             File mapFile = new File("src/resources/img/start1.png");
-            if (!mapFile.exists()) {
-                // Fallback to previous locations
-                mapFile = new File("src/resources/data/start.png");
-                if (!mapFile.exists()) {
-                    mapFile = new File("src/resources/map_background.png");
-                }
-            }
             if (mapFile.exists()) {
                 mapBackground = ImageIO.read(mapFile);
                 mapLoaded = true;
                 System.out.println("Loaded map background from: " + mapFile.getPath());
             } else {
+                System.err.println("ERROR: Map background not found at src/resources/img/start1.png");
                 createGradientBackground();
-                System.out.println("No map background found, using gradient.");
             }
         } catch (IOException e) {
+            System.err.println("Could not load map background image: " + e.getMessage());
             createGradientBackground();
-            System.out.println("Could not load map background image: " + e.getMessage());
         }
     }
 
@@ -183,9 +177,7 @@ public class MapPanel extends JPanel {
 
     private void loadProvinceMask() {
         try {
-            if (!maskFile.exists()) {
-                maskFile = new File("src/resources/img/province_mask.png");
-            }
+            File maskFile = new File("src/resources/img/province_mask.png");
             if (maskFile.exists()) {
                 provinceMask = ImageIO.read(maskFile);
                 updateProvinceColorMap();
@@ -197,13 +189,13 @@ public class MapPanel extends JPanel {
                 if (provinceMask != null) {
                     System.out.println("Province mask loaded: " + provinceMask.getWidth() + "x" + provinceMask.getHeight());
                 } else {
-                    System.out.println("Province mask is null after loading!");
+                    System.err.println("ERROR: Province mask is null after loading!");
                 }
             } else {
-                System.out.println("Province mask not found in either location");
+                System.err.println("ERROR: Province mask not found at src/resources/img/province_mask.png");
             }
         } catch (IOException e) {
-            System.out.println("Could not load province mask image: " + e.getMessage());
+            System.err.println("Could not load province mask image: " + e.getMessage());
         }
     }
 
@@ -587,6 +579,7 @@ public class MapPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        System.out.println("paintComponent called");
         updateTransform();
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);

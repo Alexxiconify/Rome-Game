@@ -82,9 +82,9 @@ public class InfoPanel extends JPanel {
         StringBuilder sb = new StringBuilder();
         
         // Header section
-        sb.append("╔══════════════════════════════════════════════════════════════╗\n");
+        sb.append("╔═══════════════════════════╗\n");
         sb.append("║                    ").append(country.getName().toUpperCase()).append("                    ║\n");
-        sb.append("╚══════════════════════════════════════════════════════════════╝\n\n");
+        sb.append("╚═══════════════════════════╝\n");
         
         // Basic Information
         sb.append("📅 DATE: ").append(engine.getCurrentDate().getFormattedDate()).append("\n");

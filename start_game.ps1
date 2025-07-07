@@ -1,31 +1,12 @@
 Write-Host "Starting Roma Game..." -ForegroundColor Green
 Write-Host ""
 
-# Compile the game
-Write-Host "Compiling..." -ForegroundColor Yellow
-try {
-    javac -cp "src" src/Main.java
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Compilation failed!" -ForegroundColor Red
-        Read-Host "Press Enter to exit"
-        exit 1
-    }
-} catch {
-    Write-Host "Compilation error: $_" -ForegroundColor Red
-    Read-Host "Press Enter to exit"
-    exit 1
-}
+# Compile all Java files to tmp directory
+if (!(Test-Path tmp)) { New-Item -ItemType Directory -Path tmp }
+javac -cp "src/resources/json-20231013.jar" -d tmp src/Main.java src/com/romagame/map/*.java src/com/romagame/diplomacy/*.java src/com/romagame/ui/*.java src/com/romagame/core/*.java src/com/romagame/country/*.java src/com/romagame/economy/*.java src/com/romagame/military/*.java src/com/romagame/technology/*.java src/com/romagame/colonization/*.java src/com/romagame/events/*.java src/com/romagame/government/*.java src/com/romagame/monuments/*.java src/com/romagame/population/*.java
 
-Write-Host "Compilation successful!" -ForegroundColor Green
-Write-Host ""
-
-# Run the game
-Write-Host "Starting game..." -ForegroundColor Yellow
-try {
-    java -cp "src" Main
-} catch {
-    Write-Host "Game error: $_" -ForegroundColor Red
-}
+# Run the game from tmp directory
+java -cp "tmp;src/resources/json-20231013.jar" Main
 
 Write-Host ""
 Write-Host "Game ended." -ForegroundColor Green
