@@ -92,6 +92,7 @@ public class MapPanel extends JPanel {
         System.out.println("[DEBUG] Loaded " + colorToProvinceId.size() + " province mappings, " + nationList.size() + " nations");
         setupMouseListeners();
         startEdgeScrollTimer();
+        centerOnPlayerNation();
     }
 
     private void setupPanel() {
@@ -1437,5 +1438,19 @@ public class MapPanel extends JPanel {
             if (moved) repaint();
         });
         edgeScrollTimer.start();
+    }
+
+    public void centerOnPlayerNation() {
+        String playerNation = null;
+        if (engine != null && engine.getCountryManager() != null && engine.getCountryManager().getPlayerCountry() != null) {
+            playerNation = engine.getCountryManager().getPlayerCountry().getName();
+        }
+        if (playerNation != null && nationToViewpoint.containsKey(playerNation)) {
+            Point vp = nationToViewpoint.get(playerNation);
+            camera.centerOn(vp.x, vp.y);
+        } else {
+            centerOnEurope(); // fallback
+        }
+        repaint();
     }
 } 
