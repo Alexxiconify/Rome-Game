@@ -21,6 +21,8 @@ import com.romagame.military.Army;
 import com.romagame.military.MilitaryManager;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import com.romagame.ui.Camera;
+import com.romagame.ui.MapRenderer;
 
 /**
  * Optimized MapPanel with modern camera system and performance improvements.
@@ -145,7 +147,7 @@ public class MapPanel extends JPanel {
                     // Update preferred size to match the actual map dimensions
                     setPreferredSize(new Dimension(loadedMapBackground.getWidth(), loadedMapBackground.getHeight()));
                     revalidate(); // Notify layout manager of size change
-                    System.out.println("Loaded map background from: " + mapFile.getPath() + " | Size: " + loadedMapBackground.getWidth() + "x" + loadedMapBackground.getHeight());
+                    System.out.println("[DEBUG] Loaded map background from: " + mapFile.getPath() + " | Size: " + loadedMapBackground.getWidth() + "x" + loadedMapBackground.getHeight());
                     
                     // Set map dimensions in camera
                     camera.setMapDimensions(loadedMapBackground.getWidth(), loadedMapBackground.getHeight());
@@ -153,6 +155,7 @@ public class MapPanel extends JPanel {
                     // Set background in renderer
                     renderer.setMapBackground(loadedMapBackground);
                     this.mapBackground = loadedMapBackground;
+                    System.out.println("[DEBUG] Map background set in renderer and camera");
                 } else {
                     System.err.println("[ERROR] mapBackground is null after ImageIO.read! | Path: " + mapFile.getPath());
                     createGradientBackground();
@@ -472,11 +475,16 @@ public class MapPanel extends JPanel {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         
+        // Update camera viewport size
+        camera.setViewportSize(getWidth(), getHeight());
+        
         // Use renderer to draw the map
-        if (renderer != null) {
+        if (renderer != null && mapBackground != null) {
+            System.out.println("[DEBUG] Rendering map with renderer. Map size: " + mapBackground.getWidth() + "x" + mapBackground.getHeight() + ", Viewport: " + getWidth() + "x" + getHeight());
             renderer.render(g2d, camera, getVisibleRect());
         } else {
             // Fallback if renderer is not available
+            System.out.println("[DEBUG] Using fallback rendering. Renderer: " + (renderer != null) + ", MapBackground: " + (mapBackground != null));
             g2d.setColor(Color.BLUE);
             g2d.fillRect(0, 0, getWidth(), getHeight());
         }
