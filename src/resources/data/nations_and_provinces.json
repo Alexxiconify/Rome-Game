@@ -1,5 +1,90 @@
 {
-  "nations": [],
+  "nations": [
+      {
+        "name": "Ethopia",
+        "color": [
+          20,
+          125,
+          175
+        ],
+        "starting_viewpoint": [
+          2853,
+          978
+        ]
+      },
+      {
+        "name": "Silla",
+        "color": [
+          39,
+          190,
+          58
+        ],
+        "starting_viewpoint": [
+          4007,
+          693
+        ]
+      },
+      {
+        "name": "Saba",
+        "color": [
+          43,
+          89,
+          104
+        ],
+        "starting_viewpoint": [
+          2945,
+          983
+        ]
+      },
+      {
+        "name": "Cholas",
+        "color": [
+          44,
+          86,
+          133
+        ],
+        "starting_viewpoint": [
+          3426,
+          1062
+        ]
+      },
+      {
+        "name": "Oaxaca",
+        "color": [
+          56,
+          119,
+          170
+        ],
+        "starting_viewpoint": [
+          1006,
+          954
+        ]
+      },
+      {
+        "name": "Bernam",
+        "color": [
+          56,
+          137,
+          61
+        ],
+        "starting_viewpoint": [
+          3729,
+          1183
+        ]
+      },
+      {
+        "name": "Kushan",
+        "color": [
+          65,
+          190,
+          187
+        ],
+        "starting_viewpoint": [
+          3113,
+          533
+        ]
+      }
+  ],
   "provinces": [
     {
       "province_id": "province_0001",
