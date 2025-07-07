@@ -678,62 +678,26 @@ public class MapPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
         
-        // Update transform calculations
-        updateTransform();
+        // Enable anti-aliasing for smoother rendering
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         
-        if (mapBackground != null) {
-            Graphics2D g2d = (Graphics2D) g.create();
-            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-            
-            // Apply transform for zoom and pan
-            g2d.translate(currentOffsetX, currentOffsetY);
-            g2d.scale(currentScale, currentScale);
-            
-            // Draw the map background
-            g2d.drawImage(mapBackground, 0, 0, null);
-            
-            // Draw borderless overlay to hide borders between provinces of the same color
-            if (borderlessOverlay != null) {
-                // Create a composite that only shows the borderless overlay where provinces have the same color
-                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
-                g2d.drawImage(borderlessOverlay, 0, 0, null);
-                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
-            }
-            
-            // Draw province highlights if nation is selected
-            if (selectedNation != null && provinceMask != null) {
-                updateCachedNationHighlight(selectedNation, mapImgWidth, mapImgHeight, currentScale, currentOffsetX, currentOffsetY);
-                if (cachedNationHighlight != null) {
-                    g2d.dispose();
-                    g2d = (Graphics2D) g.create();
-                    g2d.drawImage(cachedNationHighlight, 0, 0, null);
-                }
-            }
-            
-            // Draw hover highlight for province under mouse
-            if (hoveredProvinceId != null && provinceMask != null) {
-                updateCachedHoverHighlight(hoveredProvinceId, mapImgWidth, mapImgHeight, currentScale, currentOffsetX, currentOffsetY);
-                if (cachedHoverHighlight != null) {
-                    g2d.dispose();
-                    g2d = (Graphics2D) g.create();
-                    g2d.drawImage(cachedHoverHighlight, 0, 0, null);
-                }
-            }
-            
-            // Draw nation labels
-            drawNationLabels(g2d, currentOffsetX, currentOffsetY, currentScale, mapImgWidth, mapImgHeight);
-            
-            g2d.dispose();
+        // Use renderer to draw the map
+        if (renderer != null) {
+            renderer.render(g2d, camera);
         } else {
-            g.setColor(Color.BLUE);
-            g.fillRect(0, 0, getWidth(), getHeight());
+            // Fallback if renderer is not available
+            g2d.setColor(Color.BLUE);
+            g2d.fillRect(0, 0, getWidth(), getHeight());
         }
         
-        // Draw UI elements (not affected by transform)
-        Graphics2D g2d = (Graphics2D) g.create();
+        // Draw UI elements (labels, info panels, etc.)
         drawUI(g2d);
-        g2d.dispose();
+        
+        // Draw viewing coordinates
+        drawViewingCoordinates(g2d);
     }
 
     private Color getProvinceColor(Province province) {
@@ -857,7 +821,7 @@ public class MapPanel extends JPanel {
         g2d.setStroke(new BasicStroke(1.2f));
         g2d.drawRoundRect(8, 8, 260, panelHeight, 18, 18);
         g2d.setColor(Color.BLACK);
-        g2d.drawString(String.format("Zoom: %.1fx", zoom), 20, 35);
+        g2d.drawString(String.format("Zoom: %.1fx", camera.getZoom()), 20, 35);
         g2d.drawString("Date: " + engine.getCurrentDate().getFormattedDate(), 20, 60);
         g2d.drawString("Speed: " + engine.getGameSpeed().getDisplayName(), 20, 85);
         if (engine.getCountryManager().getPlayerCountry() != null) {
