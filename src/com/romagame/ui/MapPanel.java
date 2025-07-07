@@ -34,6 +34,7 @@ public class MapPanel extends JPanel {
     private boolean isDragging = false;
     private Point lastMousePos;
     private BufferedImage mapBackground;
+    private BufferedImage borderlessOverlay; // Borderless version to hide same-color borders
     private boolean mapLoaded = false;
     private BufferedImage provinceMask;
     private BufferedImage provinceColorMap = null;
@@ -128,12 +129,13 @@ public class MapPanel extends JPanel {
     private void loadMapBackground() {
         System.out.println("[DEBUG] Entering loadMapBackground()");
         try {
-            File mapFile = new File("src/resources/img/start1.png");
+            // Load start.png as the main background (with borders)
+            File mapFile = new File("src/resources/img/start.png");
             System.out.println("[DEBUG] Checking for map background at: " + mapFile.getAbsolutePath());
             if (!mapFile.exists()) {
                 System.err.println("[ERROR] Map background not found at " + mapFile.getAbsolutePath());
                 // Try absolute path fallback (edit this path if needed)
-                mapFile = new File("C:/Users/taylo/Documents/projects/Roma Game/src/resources/img/start1.png");
+                mapFile = new File("C:/Users/taylo/Documents/projects/Roma Game/src/resources/img/start.png");
                 System.out.println("[DEBUG] Fallback absolute path: " + mapFile.getAbsolutePath());
             }
             if (mapFile.exists()) {
@@ -151,6 +153,19 @@ public class MapPanel extends JPanel {
             } else {
                 System.err.println("[ERROR] Map background not found at either relative or absolute path.");
                 createGradientBackground();
+            }
+            
+            // Load start1.png as the borderless overlay
+            File borderlessFile = new File("src/resources/img/start1.png");
+            if (borderlessFile.exists()) {
+                borderlessOverlay = ImageIO.read(borderlessFile);
+                if (borderlessOverlay != null) {
+                    System.out.println("Loaded borderless overlay from: " + borderlessFile.getPath() + " | Size: " + borderlessOverlay.getWidth() + "x" + borderlessOverlay.getHeight());
+                } else {
+                    System.err.println("[ERROR] borderlessOverlay is null after ImageIO.read! | Path: " + borderlessFile.getPath());
+                }
+            } else {
+                System.err.println("[ERROR] Borderless overlay not found at src/resources/img/start1.png");
             }
         } catch (IOException e) {
             System.err.println("[ERROR] Could not load map background image: " + e.getMessage());
