@@ -98,8 +98,7 @@ public class WorldMap {
                         String centroidX = extractJsonValue(entry, "centroid_x");
                         String centroidY = extractJsonValue(entry, "centroid_y");
                         
-                        System.out.println("DEBUG: Province[" + i + "] id=" + provinceId + " owner=" + owner +   " color=[" + rgb[0] + "," + rgb[1] + "," + rgb[2] + "]" + (pixelCount != null ? " px=" + pixelCount : "") + (centroidX != null ? " cx=" + centroidX : "") + (centroidY != null ? " cy=" + centroidY : ""));
-                    }
+                        System.out.println("DEBUG: Province[" + i + "] id=" + provinceId + " owner=" + owner +   " color=[" + rgb[0] + "," + rgb[1] + "," + rgb[2] + "]" + (pixelCount != null ? " px=" + pixelCount : "") + (centroidX != null ? " cx=" + centroidX : "") + (centroidY != null ? " cy=" + centroidY : ""));}
                     
                     createProvince(provinceId, owner, rgb[0], rgb[1], rgb[2]);
                     loadedCount++;
@@ -157,47 +156,6 @@ public class WorldMap {
         return null;
     }
     
-    private void initializeSeaZones() {
-        // Major sea zones based on Q-BAM map
-        seaZones.add(new SeaZone("Mediterranean Sea", "Mediterranean"));
-        seaZones.add(new SeaZone("Adriatic Sea", "Mediterranean"));
-        seaZones.add(new SeaZone("Aegean Sea", "Mediterranean"));
-        seaZones.add(new SeaZone("Black Sea", "Mediterranean"));
-        seaZones.add(new SeaZone("Red Sea", "Indian Ocean"));
-        seaZones.add(new SeaZone("Persian Gulf", "Indian Ocean"));
-        seaZones.add(new SeaZone("Caspian Sea", "Central Asia"));
-        seaZones.add(new SeaZone("North Sea", "Atlantic"));
-        seaZones.add(new SeaZone("English Channel", "Atlantic"));
-        seaZones.add(new SeaZone("Baltic Sea", "Atlantic"));
-        seaZones.add(new SeaZone("Norwegian Sea", "Atlantic"));
-        seaZones.add(new SeaZone("Barents Sea", "Arctic"));
-        seaZones.add(new SeaZone("Arctic Ocean", "Arctic"));
-        seaZones.add(new SeaZone("Atlantic Ocean", "Atlantic"));
-        seaZones.add(new SeaZone("Indian Ocean", "Indian Ocean"));
-        seaZones.add(new SeaZone("Pacific Ocean", "Pacific"));
-        seaZones.add(new SeaZone("Caribbean Sea", "Atlantic"));
-        seaZones.add(new SeaZone("Gulf of Mexico", "Atlantic"));
-        seaZones.add(new SeaZone("Hudson Bay", "Arctic"));
-        seaZones.add(new SeaZone("Labrador Sea", "Atlantic"));
-        seaZones.add(new SeaZone("Greenland Sea", "Arctic"));
-        seaZones.add(new SeaZone("Bering Sea", "Pacific"));
-        seaZones.add(new SeaZone("Sea of Okhotsk", "Pacific"));
-        seaZones.add(new SeaZone("Sea of Japan", "Pacific"));
-        seaZones.add(new SeaZone("Yellow Sea", "Pacific"));
-        seaZones.add(new SeaZone("East China Sea", "Pacific"));
-        seaZones.add(new SeaZone("South China Sea", "Pacific"));
-        seaZones.add(new SeaZone("Philippine Sea", "Pacific"));
-        seaZones.add(new SeaZone("Coral Sea", "Pacific"));
-        seaZones.add(new SeaZone("Tasman Sea", "Pacific"));
-        seaZones.add(new SeaZone("Arabian Sea", "Indian Ocean"));
-        seaZones.add(new SeaZone("Bay of Bengal", "Indian Ocean"));
-        seaZones.add(new SeaZone("Andaman Sea", "Indian Ocean"));
-        seaZones.add(new SeaZone("Java Sea", "Pacific"));
-        seaZones.add(new SeaZone("Celebes Sea", "Pacific"));
-        seaZones.add(new SeaZone("Banda Sea", "Pacific"));
-        seaZones.add(new SeaZone("Arafura Sea", "Pacific"));
-        seaZones.add(new SeaZone("Timor Sea", "Indian Ocean"));
-    }
 
     public void createProvince(String id, String owner, int r, int g, int b) {
         // Use dummy coordinates and type since we're creating from color data
