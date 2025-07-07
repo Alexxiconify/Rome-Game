@@ -131,10 +131,9 @@ public class MapPanel extends JPanel {
                 mapBackground = ImageIO.read(mapFile);
                 if (mapBackground != null) {
                     mapLoaded = true;
-                    System.out.println("[DEBUG] Loaded map background from: " + mapFile.getPath());
-                    System.out.println("[DEBUG] mapBackground loaded: " + mapBackground.getWidth() + "x" + mapBackground.getHeight());
+                    System.out.println("Loaded map background from: " + mapFile.getPath() + " | Size: " + mapBackground.getWidth() + "x" + mapBackground.getHeight());
                 } else {
-                    System.err.println("[ERROR] mapBackground is null after ImageIO.read!");
+                    System.err.println("[ERROR] mapBackground is null after ImageIO.read! | Path: " + mapFile.getPath());
                     createGradientBackground();
                 }
             } else {
@@ -548,164 +547,15 @@ public class MapPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        System.out.println("paintComponent called");
-        updateTransform();
-        Graphics2D g2d = (Graphics2D) g;
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        // 1. Draw enhanced animated ocean background (cached for performance)
-        if (mapLoaded && mapBackground != null) {
-            if (cachedOceanBackground == null || lastOceanBgWidth != getWidth() || lastOceanBgHeight != getHeight()) {
-                cachedOceanBackground = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-                Graphics2D gAnim = cachedOceanBackground.createGraphics();
-                GradientPaint gp = new GradientPaint(0, 0, new Color(64, 128, 255), 0, getHeight(), new Color(32, 64, 128));
-                gAnim.setPaint(gp);
-                gAnim.fillRect(0, 0, getWidth(), getHeight());
-                // Subtle noise/texture
-                gAnim.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.05f));
-                for (int y = 0; y < getHeight(); y += 2) {
-                    for (int x = 0; x < getWidth(); x += 2) {
-                        int v = (int)(Math.random() * 12);
-                        gAnim.setColor(new Color(Math.min(255, 64+v), Math.min(255, 128+v), Math.min(255, 255+v)));
-                        gAnim.fillRect(x, y, 2, 2);
-                    }
-                }
-                gAnim.dispose();
-                lastOceanBgWidth = getWidth();
-                lastOceanBgHeight = getHeight();
-            }
-            g2d.drawImage(cachedOceanBackground, 0, 0, null);
-        }
-        // 1b. Draw ocean mesh/tiles (rectangles) over ocean areas
-        if (provinceMask != null && colorToProvinceId != null) {
-            int tileSize = (int)Math.max(8, Math.round(currentScale * 8));
-            for (int yy = 0; yy < mapImgHeight; yy += tileSize) {
-                for (int xx = 0; xx < mapImgWidth; xx += tileSize) {
-                    int argb = provinceMask.getRGB(xx, yy) | 0xFF000000;
-                    String pid = colorToProvinceId.get(argb);
-                    if (pid == null) continue;
-                    com.romagame.map.Province p = engine.getWorldMap().getProvince(pid);
-                    if (p == null) continue;
-                    String owner = p.getOwner();
-                    if (owner.equals("Ocean") || owner.equals("Uncolonized") || owner.startsWith("Unknown") || owner.startsWith("rgb_") || owner.equals("REMOVE_FROM_MAP") || owner.equals("BORDER")) {
-                        int sx = currentOffsetX + (int)(xx * currentScale);
-                        int sy = currentOffsetY + (int)(yy * currentScale);
-                        g2d.setColor(new Color(70, 130, 200, 90)); // semi-transparent blue
-                        g2d.fillRect(sx, sy, tileSize, tileSize);
-                        g2d.setColor(new Color(40, 90, 160, 60));
-                        g2d.drawRect(sx, sy, tileSize, tileSize);
-                    }
-                }
-            }
-        }
-        // 2. Province fill (from mask)
-        if (provinceColorMap != null) {
-            int drawW = (int)(mapImgWidth * currentScale);
-            int drawH = (int)(mapImgHeight * currentScale);
-            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
-            g2d.drawImage(provinceColorMap, currentOffsetX, currentOffsetY, drawW, drawH, null);
-            // 3. Land shading overlay
-            if (landShading != null) {
-                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.25f));
-                g2d.drawImage(landShading, currentOffsetX, currentOffsetY, drawW, drawH, null);
-                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
-            }
-            // 4. Province borders (cached)
-            updateCachedBorders(mapImgWidth, mapImgHeight, currentScale, currentOffsetX, currentOffsetY);
-            g2d.drawImage(cachedBorders, 0, 0, null);
-            // 5. Highlight all provinces of selected nation (cached)
-            if (selectedNation != null) {
-                updateCachedNationHighlight(selectedNation, mapImgWidth, mapImgHeight, currentScale, currentOffsetX, currentOffsetY);
-                g2d.drawImage(cachedNationHighlight, 0, 0, null);
-            }
-            // 6. Fog of war: dim provinces not owned by player
-            if (engine.getCountryManager().getPlayerCountry() != null) {
-                String player = engine.getCountryManager().getPlayerCountry().getName();
-                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.45f));
-                g2d.setColor(new Color(30, 30, 30));
-                for (int yy = 0; yy < mapImgHeight; yy++) {
-                    for (int xx = 0; xx < mapImgWidth; xx++) {
-                        int argb = provinceMask.getRGB(xx, yy) | 0xFF000000;
-                        String pid = colorToProvinceId.get(argb);
-                        if (pid != null) {
-                            Province p = engine.getWorldMap().getProvince(pid);
-                            if (p != null && !player.equals(p.getOwner())) {
-                                g2d.fillRect(currentOffsetX + (int)(xx * currentScale), currentOffsetY + (int)(yy * currentScale), (int)Math.ceil(currentScale), (int)Math.ceil(currentScale));
-                            }
-                        }
-                    }
-                }
-                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
-            }
-            // 7. Province highlight with colored glow (hovered, cached)
-            if (hoveredProvinceId != null && provinceMask != null) {
-                updateCachedProvinceHighlight(hoveredProvinceId, mapImgWidth, mapImgHeight, currentScale, currentOffsetX, currentOffsetY);
-                g2d.drawImage(cachedProvinceHighlight, 0, 0, null);
-                // Draw tooltip with drop shadow and rounded background
-                Province hovered = engine.getWorldMap().getProvince(hoveredProvinceId);
-                if (hovered != null) {
-                    String tooltip = "Province: " + hovered.getName() + " | Owner: " + hovered.getOwner();
-                    Font tooltipFont = new Font("Segoe UI", Font.BOLD, 16);
-                    g2d.setFont(tooltipFont);
-                    FontMetrics fm = g2d.getFontMetrics();
-                    int tw = fm.stringWidth(tooltip) + 24;
-                    int th = fm.getHeight() + 12;
-                    int tx = 20, ty = getHeight() - 60;
-                    g2d.setColor(new Color(30, 30, 30, 220));
-                    g2d.fillRoundRect(tx, ty, tw, th, 14, 14);
-                    g2d.setColor(Color.BLACK);
-                    g2d.drawRoundRect(tx, ty, tw, th, 14, 14);
-                    g2d.setColor(Color.WHITE);
-                    g2d.drawString(tooltip, tx + 12, ty + th - 10);
-                }
-            }
-            // 8. Nation labels (draw last, always on top)
-            drawNationLabels(g2d, currentOffsetX, currentOffsetY, currentScale, mapImgWidth, mapImgHeight);
-        }
-        // 9. UI overlays
-        drawUI(g2d);
-
-        // Draw armies as icons
-        MilitaryManager mm = engine.getMilitaryManager();
-        for (Army army : mm.getArmies().values()) {
-            String loc = army.getLocation();
-            if (loc == null || loc.equals("Unknown")) continue;
-            Province province = engine.getWorldMap().getProvince(loc);
-            if (province == null) continue;
-            
-            // Convert province coordinates to map coordinates
-            Point2D.Double mapCoords = DistanceCalculator.latLonToMapCoords(
-                province.getLatitude(), province.getLongitude(), 
-                mapImgWidth, mapImgHeight
-            );
-            
-            // Convert map coordinates to screen coordinates
-            Point screenCoords = DistanceCalculator.mapToScreen(
-                mapCoords, currentScale, currentOffsetX, currentOffsetY
-            );
-            
-            // Draw army icon
-            int iconSize = 20;
-            int x = screenCoords.x - iconSize / 2;
-            int y = screenCoords.y - iconSize / 2;
-            
-            // Draw army icon with different colors based on ownership
-            Country playerCountry = engine.getCountryManager().getPlayerCountry();
-            if (playerCountry != null && army.getCountry().equals(playerCountry.getName())) {
-                g2d.setColor(army == selectedArmy ? Color.YELLOW : Color.GREEN);
-            } else {
-                g2d.setColor(army == selectedArmy ? Color.YELLOW : Color.RED);
-            }
-            
-            g2d.fillOval(x, y, iconSize, iconSize);
-            g2d.setColor(Color.BLACK);
-            g2d.drawOval(x, y, iconSize, iconSize);
-            
-            // Draw army name
-            g2d.setFont(new Font("Arial", Font.BOLD, 10));
-            FontMetrics fm = g2d.getFontMetrics();
-            int textWidth = fm.stringWidth(army.getName());
-            g2d.setColor(Color.WHITE);
-            g2d.drawString(army.getName(), x + (iconSize - textWidth) / 2, y + iconSize + 12);
+        if (mapBackground != null) {
+            // Draw at native size, top-left
+            g.drawImage(mapBackground, 0, 0, null);
+            // Draw a red border for debug
+            g.setColor(Color.RED);
+            g.drawRect(0, 0, mapBackground.getWidth() - 1, mapBackground.getHeight() - 1);
+        } else {
+            g.setColor(Color.BLUE);
+            g.fillRect(0, 0, getWidth(), getHeight());
         }
     }
 
