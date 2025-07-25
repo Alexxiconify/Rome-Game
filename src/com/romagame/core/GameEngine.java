@@ -42,19 +42,24 @@ public class GameEngine {
         gameSpeed = GameSpeed.NORMAL;
         isRunning = false;
         
-        // Initialize all managers
+        // Initialize all managers except DiplomacyManager
         worldMap = new WorldMap();
         economyManager = new EconomyManager();
         militaryManager = new MilitaryManager();
-        diplomacyManager = new DiplomacyManager(countryManager);
         technologyManager = new TechnologyManager();
         colonizationManager = new ColonizationManager(worldMap);
         populationManager = new PopulationManager();
         eventManager = new EventManager();
         historicalNationSpawner = new HistoricalNationSpawner(worldMap);
         
-        // Initialize country manager with AI support
-        countryManager = new CountryManager(worldMap, diplomacyManager, militaryManager, economyManager);
+        // Initialize country manager without DiplomacyManager
+        countryManager = new CountryManager(worldMap, null, militaryManager, economyManager);
+        
+        // Now initialize DiplomacyManager with countryManager
+        diplomacyManager = new DiplomacyManager(countryManager);
+        
+        // Set DiplomacyManager in CountryManager
+        countryManager.setDiplomacyManager(diplomacyManager);
         
         // Setup initial game state
         setupInitialGameState();

@@ -12,6 +12,7 @@ public class AIManager {
     private Map<String, AIPersonality> aiPersonalities;
     private Map<String, Boolean> enabledNations;
     private Random random;
+    private DiplomacyManager diplomacyManager;
     
     public enum AIPersonality {
         AGGRESSIVE, DEFENSIVE, TRADER, BUILDER, BALANCED
@@ -25,6 +26,7 @@ public class AIManager {
         this.aiPersonalities = new HashMap<>();
         this.enabledNations = new HashMap<>();
         this.random = new Random();
+        this.diplomacyManager = diplomacyManager;
         initializePersonalities();
         loadConfiguration();
     }
@@ -230,6 +232,10 @@ public class AIManager {
     
     public void setPersonality(String countryName, AIPersonality personality) {
         aiPersonalities.put(countryName, personality);
+    }
+    
+    public void setDiplomacyManager(DiplomacyManager diplomacyManager) {
+        this.diplomacyManager = diplomacyManager;
     }
     
     private void loadConfiguration() {
