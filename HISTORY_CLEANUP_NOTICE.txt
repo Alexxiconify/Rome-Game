@@ -1,0 +1,4 @@
+﻿HISTORY CLEANUP NOTICE
+Date: 2026-05-18 17:16:52Z
+Backup branch: backup-before-filter-20260518165923
+Removed paths: target, build, venv, node_modules, .idea, .gradle, browser_data, cache, out, dist, logs, __pycache__
