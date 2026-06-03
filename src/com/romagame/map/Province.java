@@ -26,7 +26,6 @@ public class Province {
     private List<String> tradeGoods;
     private List<Location> locations;
     private Map<PopType, Integer> pops;
-    private int population; // Deprecated, use pops instead
     private List<BuildingSlot> buildingSlots;
     private Map<String, Integer> goods;
     
@@ -71,28 +70,31 @@ public class Province {
     
     private String determineCulture(String owner) {
         return switch (owner) {
-            case "France", "Castile", "Portugal" -> "Latin";
-            case "England", "Brandenburg", "Sweden", "Denmark" -> "Germanic";
-            case "Muscovy" -> "Slavic";
-            case "Ottomans", "Mamluks", "Tunisia", "Morocco" -> "Arabic";
-            case "Ming", "Japan" -> "Chinese";
-            case "Delhi" -> "Indian";
-            case "Persia" -> "Persian";
+            case "Roman Empire" -> "Roman";
+            case "Parthia" -> "Persian";
+            case "Armenia", "Iberia", "Albania", "Lazica", "Colchis" -> "Caucasian";
+            case "Dacia", "Sarmatia" -> "Dacian";
+            case "Quadi", "Marcomanni", "Suebi", "Alemanni", "Chatti", "Cherusci", "Hermunduri", "Frisians" -> "Germanic";
+            case "Britons", "Caledonians", "Hibernians", "Picts", "Scoti" -> "Celtic";
+            case "Garamantes", "Nubia", "Axum" -> "African";
+            case "Himyar", "Saba", "Hadramaut", "Oman" -> "Arabian";
+            case "Kushan", "Indo-Parthian" -> "Indo-Iranian";
             default -> "Tribal";
         };
     }
     
     private String determineReligion(String owner) {
         return switch (owner) {
-            case "France", "Castile", "Portugal", "England", "Brandenburg", 
-                 "Sweden", "Denmark", "Austria" -> "Catholic";
-            case "Muscovy" -> "Orthodox";
-            case "Ottomans", "Mamluks", "Tunisia", "Morocco" -> "Sunni";
-            case "Ming", "Japan" -> "Confucian";
-            case "Delhi" -> "Hindu";
-            case "Persia" -> "Shia";
-            case "Aztec", "Inca" -> "Pagan";
-            default -> "Animist";
+            case "Roman Empire" -> "Roman Paganism";
+            case "Parthia" -> "Zoroastrianism";
+            case "Armenia", "Iberia", "Albania", "Lazica", "Colchis" -> "Christianity";
+            case "Dacia", "Sarmatia" -> "Pagan";
+            case "Quadi", "Marcomanni", "Suebi", "Alemanni", "Chatti", "Cherusci", "Hermunduri", "Frisians" -> "Germanic Paganism";
+            case "Britons", "Caledonians", "Hibernians", "Picts", "Scoti" -> "Celtic Paganism";
+            case "Garamantes", "Nubia", "Axum" -> "Pagan";
+            case "Himyar", "Saba", "Hadramaut", "Oman" -> "Arabian Paganism";
+            case "Kushan", "Indo-Parthian" -> "Buddhism";
+            default -> "Pagan";
         };
     }
     
@@ -133,11 +135,10 @@ public class Province {
         pops.put(PopType.SLAVES, 1200);
         pops.put(PopType.SERFS, 1500);
         pops.put(PopType.SOLDIERS, 300);
-        updatePopulation();
     }
 
     public void updatePopulation() {
-        this.population = pops.values().stream().mapToInt(Integer::intValue).sum();
+        // Deprecated, no-op
     }
 
     public Map<PopType, Integer> getPops() {
@@ -145,13 +146,12 @@ public class Province {
     }
     public void setPop(PopType type, int value) {
         pops.put(type, value);
-        updatePopulation();
     }
     public int getPop(PopType type) {
         return pops.getOrDefault(type, 0);
     }
     public int getPopulation() {
-        return population;
+        return pops.values().stream().mapToInt(Integer::intValue).sum();
     }
 
     public List<Location> getLocations() {

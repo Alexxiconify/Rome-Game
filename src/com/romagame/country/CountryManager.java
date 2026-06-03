@@ -33,9 +33,10 @@ public class CountryManager {
         }
     }
     
-    public void update() {
+    public void update(int currentYear) {
         // Update all countries
         for (Country country : countries.values()) {
+            country.setGameYear(currentYear);
             country.update();
         }
     }

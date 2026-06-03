@@ -67,7 +67,7 @@ public class GameThread extends Thread {
     
     private void updateGameLogic(long deltaTime) {
         // Update all game systems
-        engine.getCountryManager().update();
+        engine.getCountryManager().update(engine.getCurrentDate().getYear());
         engine.getDiplomacyManager().update();
         engine.getEconomyManager().update();
         engine.getMilitaryManager().update();

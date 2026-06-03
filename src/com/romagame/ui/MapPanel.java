@@ -75,6 +75,7 @@ public class MapPanel extends JPanel {
 
     private Map<String, Point> nationToViewpoint = new HashMap<>();
     private Map<String, Point> provinceIdToCentroid = new HashMap<>();
+    private Map<String, Rectangle> provinceBounds = new HashMap<>();
 
     private static int lastTopLeftX = Integer.MIN_VALUE;
     private static int lastTopLeftY = Integer.MIN_VALUE;
@@ -217,10 +218,6 @@ public class MapPanel extends JPanel {
         try {
             // Load start.png as the main background (with borders)
             File mapFile = new File("src/resources/img/start.png");
-            if (!mapFile.exists()) {
-                // Try absolute path fallback (edit this path if needed)
-                mapFile = new File("C:/Users/taylo/Documents/projects/Roma Game/src/resources/img/start.png");
-            }
             if (mapFile.exists()) {
                 BufferedImage loadedMapBackground = ImageIO.read(mapFile);
                 if (loadedMapBackground != null) {
@@ -283,18 +280,58 @@ public class MapPanel extends JPanel {
             // Load the original province_mask.png for province detection and tooltips
             File maskFile = new File("src/resources/img/province_mask.png");
             if (maskFile.exists()) {
-                BufferedImage provinceMask = ImageIO.read(maskFile);
+                BufferedImage loadedMask = ImageIO.read(maskFile);
                 updateProvinceColorMap();
-                renderer.setProvinceMask(provinceMask);
-                this.provinceMask = provinceMask;
+                renderer.setProvinceMask(loadedMask);
+                this.provinceMask = loadedMask;
+                computeProvinceBoundingBoxes();
                 repaint();
-                if (provinceMask != null) {
-                } else {
-                }
-            } else {
             }
         } catch (IOException e) {
         }
+    }
+    
+    private void computeProvinceBoundingBoxes() {
+        if (provinceMask == null) return;
+        
+        int imgW = provinceMask.getWidth();
+        int imgH = provinceMask.getHeight();
+        
+        Map<String, Integer> minX = new HashMap<>();
+        Map<String, Integer> maxX = new HashMap<>();
+        Map<String, Integer> minY = new HashMap<>();
+        Map<String, Integer> maxY = new HashMap<>();
+        
+        for (int y = 0; y < imgH; y++) {
+            for (int x = 0; x < imgW; x++) {
+                int argb = provinceMask.getRGB(x, y);
+                int r = (argb >> 16) & 0xFF;
+                int g = (argb >> 8) & 0xFF;
+                int b = argb & 0xFF;
+                String colorKey = String.format("%d,%d,%d", r, g, b);
+                String provinceId = colorKeyToProvinceId.get(colorKey);
+                if (provinceId == null) {
+                    provinceId = colorToProvinceId.get(argb);
+                }
+                
+                if (provinceId != null) {
+                    minX.merge(provinceId, x, Math::min);
+                    maxX.merge(provinceId, x, Math::max);
+                    minY.merge(provinceId, y, Math::min);
+                    maxY.merge(provinceId, y, Math::max);
+                }
+            }
+        }
+        
+        provinceBounds.clear();
+        for (String pid : minX.keySet()) {
+            int x = minX.get(pid);
+            int y = minY.get(pid);
+            int w = maxX.get(pid) - x + 1;
+            int h = maxY.get(pid) - y + 1;
+            provinceBounds.put(pid, new Rectangle(x, y, w, h));
+        }
+        System.out.println("[DEBUG] Precomputed bounding boxes for " + provinceBounds.size() + " provinces.");
     }
 
     private void updateProvinceColorMap() {
@@ -494,9 +531,8 @@ public class MapPanel extends JPanel {
         renderer.render(g2d, camera, getVisibleRect());
         // UI overlays and province highlights remain here
         // Highlight hovered province with a soft white transparent glow
+        // Highlight hovered province with a soft white transparent glow
         if (hoveredProvinceId != null && provinceMask != null) {
-            // Find the color of the hovered province in the mask
-            String owner = provinceIdToOwner.get(hoveredProvinceId);
             int highlightAlpha = 70; // Soft glow
             Color glow = new Color(255, 255, 255, highlightAlpha);
             // Find the colorKey for this province
@@ -512,20 +548,32 @@ public class MapPanel extends JPanel {
                 int r = Integer.parseInt(rgb[0]);
                 int gCol = Integer.parseInt(rgb[1]);
                 int b = Integer.parseInt(rgb[2]);
-                // Scan the visible area only for performance
-                Rectangle visible = getVisibleRect();
-                for (int y = visible.y; y < visible.y + visible.height; y++) {
-                    for (int x = visible.x; x < visible.x + visible.width; x++) {
-                        int argb = provinceMask.getRGB(x, y);
-                        int pr = (argb >> 16) & 0xFF;
-                        int pg = (argb >> 8) & 0xFF;
-                        int pb = argb & 0xFF;
-                        if (pr == r && pg == gCol && pb == b) {
-                            // Convert map pixel to screen coordinates
-                            Point screenPt = camera.mapToScreen(x, y);
-                            // Draw a soft white oval (glow)
-                            g2d.setColor(glow);
-                            g2d.fillOval(screenPt.x - 2, screenPt.y - 2, 5, 5);
+                
+                Rectangle bounds = provinceBounds.get(hoveredProvinceId);
+                if (bounds != null) {
+                    Rectangle visible = getVisibleRect();
+                    Point mapTopLeft = camera.screenToMap(visible.x, visible.y);
+                    Point mapBottomRight = camera.screenToMap(visible.x + visible.width, visible.y + visible.height);
+                    
+                    if (mapTopLeft != null && mapBottomRight != null) {
+                        int mapX0 = Math.max(bounds.x, mapTopLeft.x);
+                        int mapY0 = Math.max(bounds.y, mapTopLeft.y);
+                        int mapX1 = Math.min(bounds.x + bounds.width, mapBottomRight.x);
+                        int mapY1 = Math.min(bounds.y + bounds.height, mapBottomRight.y);
+                        
+                        for (int y = mapY0; y < mapY1; y++) {
+                            for (int x = mapX0; x < mapX1; x++) {
+                                int argb = provinceMask.getRGB(x, y);
+                                int pr = (argb >> 16) & 0xFF;
+                                int pg = (argb >> 8) & 0xFF;
+                                int pb = argb & 0xFF;
+                                if (pr == r && pg == gCol && pb == b) {
+                                    // Convert map pixel to screen coordinates
+                                    Point screenPt = camera.mapToScreen(x, y);
+                                    g2d.setColor(glow);
+                                    g2d.fillOval(screenPt.x - 2, screenPt.y - 2, 5, 5);
+                                }
+                            }
                         }
                     }
                 }
@@ -545,7 +593,6 @@ public class MapPanel extends JPanel {
             }
         }
         drawUI(g2d);
-        drawViewingCoordinates(g2d);
     }
 
     public Color getProvinceColor(Province province) {

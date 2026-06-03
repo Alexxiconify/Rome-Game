@@ -176,7 +176,11 @@ public class DiplomacyManager {
         Map<String, Object> peaceTerms = war.getPeaceTerms();
         String winner = (String) peaceTerms.get("winner");
         String loser = (String) peaceTerms.get("loser");
-        double reparations = (Double) peaceTerms.get("war_reparations");
+        double reparations = 0.0;
+        Object repObj = peaceTerms.get("war_reparations");
+        if (repObj instanceof Number) {
+            reparations = ((Number) repObj).doubleValue();
+        }
         
         System.out.println("War ended: " + war.getAttacker() + " vs " + war.getDefender());
         System.out.println("Winner: " + winner + ", Reparations: " + reparations);

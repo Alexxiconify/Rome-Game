@@ -16,9 +16,9 @@ public class NationSelectionDialog extends JDialog {
     private JTextArea descriptionArea;
     private JButton startButton;
     private JButton cancelButton;
-    private static final String DEFAULT_NATION = "Rome";
+    private static final String DEFAULT_NATION = "Roman Empire";
     private static final String[] PINNED_NATIONS = {
-        "Rome", "Kushan", "Axum", "Saba"
+        "Roman Empire", "Kushan", "Axum", "Saba"
     };
     private JPanel pinnedPanel;
     
@@ -108,6 +108,7 @@ public class NationSelectionDialog extends JDialog {
         buttonPanel.add(cancelButton);
         
         contentPanel.add(buttonPanel, BorderLayout.SOUTH);
+        contentPanel.add(buttonPanel, BorderLayout.SOUTH);
         add(contentPanel, BorderLayout.CENTER);
     }
     
@@ -141,8 +142,6 @@ public class NationSelectionDialog extends JDialog {
     
     private void populateCountries() {
         List<String> selectableCountries = new ArrayList<>();
-        List<String> addedNations = new ArrayList<>();
-        List<String> filteredNations = new ArrayList<>();
         
         try {
             // Use engine.getAllCountries() or WorldMap for selectable nations

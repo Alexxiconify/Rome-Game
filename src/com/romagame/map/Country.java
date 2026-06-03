@@ -37,6 +37,15 @@ public class Country {
     private List<GovernmentReform> implementedReforms;
     private List<String> researchedTechnologies;
     private List<String> researchingTechnologies;
+    private int gameYear = 117;
+    private boolean isBankrupt = false;
+    
+    private static final Map<String, Law> HISTORICAL_LAWS_BY_NAME = new HashMap<>();
+    static {
+        for (Law law : Law.createHistoricalLaws()) {
+            HISTORICAL_LAWS_BY_NAME.put(law.getName(), law);
+        }
+    }
 
     // Group-based mechanics (static for all countries)
     public static final Map<NationType, List<String>> GROUP_IDEAS = new HashMap<>();
@@ -357,12 +366,9 @@ public class Country {
         // Add nation-specific starting laws
         List<String> startingLaws = GROUP_LAWS.getOrDefault(nationType, new ArrayList<>());
         for (String lawName : startingLaws) {
-            // Find and enact the law
-            for (Law law : Law.createHistoricalLaws()) {
-                if (law.getName().equals(lawName)) {
-                    enactedLaws.add(law);
-                    break;
-                }
+            Law law = HISTORICAL_LAWS_BY_NAME.get(lawName);
+            if (law != null) {
+                enactedLaws.add(law);
             }
         }
     }
@@ -564,14 +570,19 @@ public class Country {
         treasury += income - expenses;
         if (treasury < 0) {
             treasury = 0;
-            stability -= 0.1; // Bankruptcy penalty
+            if (!isBankrupt) {
+                isBankrupt = true;
+                stability = Math.max(-3.0, stability - 0.1);
+            }
+        } else {
+            isBankrupt = false;
         }
     }
     
     private void updateStability() {
         // Natural stability drift
         if (stability < 0) stability += 0.01;
-        if (stability > 3) stability = 3;
+        stability = Math.max(-3.0, Math.min(3.0, stability));
     }
     
     private void updateLawEnactment() {
@@ -735,8 +746,11 @@ public class Country {
     }
     
     public int getGameYear() {
-        // For now, return a default year - this should be connected to the game engine
-        return 117; // Default to 117 AD for the Roman Empire scenario
+        return gameYear;
+    }
+    
+    public void setGameYear(int year) {
+        this.gameYear = year;
     }
 
     public Ruler getRuler() { return ruler; }
