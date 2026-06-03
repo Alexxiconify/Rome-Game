@@ -13,6 +13,7 @@ public class GameThread extends Thread {
     private long lastUpdateTime;
     
     // Game update intervals (in milliseconds)
+    private static final long SLOW_SPEED_INTERVAL = 2000;   // 2 seconds
     private static final long NORMAL_SPEED_INTERVAL = 1000; // 1 second
     private static final long FAST_SPEED_INTERVAL = 500;    // 0.5 seconds
     private static final long VERY_FAST_INTERVAL = 250;     // 0.25 seconds
@@ -83,15 +84,15 @@ public class GameThread extends Thread {
         // Update game date
         engine.getCurrentDate().advance();
         
-        // Trigger UI update events (will be handled on EDT)
-        if (engine.getUIUpdateCallback() != null) {
-            javax.swing.SwingUtilities.invokeLater(() -> 
-                engine.getUIUpdateCallback().accept(engine));
+        // Trigger UI update events
+        if (engine.getUIUpdateManager() != null) {
+            engine.getUIUpdateManager().scheduleUpdate();
         }
     }
     
     private long getUpdateInterval() {
         return switch (gameSpeed.get()) {
+            case 0 -> SLOW_SPEED_INTERVAL;
             case 1 -> NORMAL_SPEED_INTERVAL;
             case 2 -> FAST_SPEED_INTERVAL;
             case 3 -> VERY_FAST_INTERVAL;
@@ -108,7 +109,7 @@ public class GameThread extends Thread {
     }
     
     public void setGameSpeed(int speed) {
-        gameSpeed.set(Math.max(1, Math.min(3, speed)));
+        gameSpeed.set(Math.max(0, Math.min(3, speed)));
     }
     
     public int getGameSpeed() {
@@ -125,11 +126,9 @@ public class GameThread extends Thread {
     }
     
     public double getAverageFPS() {
-        if (frameTimeIndex == 0) return 0.0;
-        
         long totalTime = 0;
         int count = 0;
-        for (int i = 0; i < frameTimeIndex; i++) {
+        for (int i = 0; i < frameTimes.length; i++) {
             if (frameTimes[i] > 0) {
                 totalTime += frameTimes[i];
                 count++;

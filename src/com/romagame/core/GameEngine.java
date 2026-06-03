@@ -11,7 +11,6 @@ import com.romagame.colonization.ColonizationManager;
 import com.romagame.population.PopulationManager;
 import com.romagame.events.EventManager;
 import java.util.List;
-import java.util.function.Consumer;
 import com.romagame.ui.UIUpdateManager;
 
 public class GameEngine {
@@ -31,9 +30,9 @@ public class GameEngine {
     private boolean isRunning;
     private GameThread gameThread;
     private UIUpdateManager uiUpdateManager;
-    private Consumer<GameEngine> uiUpdateCallback;
     
     public GameEngine() {
+        uiUpdateManager = new UIUpdateManager(this);
         initializeGame();
     }
     
@@ -76,16 +75,9 @@ public class GameEngine {
         countryManager.setPlayerCountry(countryName);
     }
     
-    public void setUIUpdateCallback(Consumer<GameEngine> callback) {
-        this.uiUpdateCallback = callback;
-    }
-    
     public void start() {
         if (!isRunning) {
             isRunning = true;
-            
-            // Initialize UI update manager
-            uiUpdateManager = new UIUpdateManager(this);
             
             // Create and start game thread
             gameThread = new GameThread(this);
@@ -97,27 +89,30 @@ public class GameEngine {
         if (gameThread != null) {
             gameThread.pause();
         }
-        isRunning = false;
     }
     
     public void resume() {
         if (gameThread != null) {
             gameThread.resumeGame();
         }
-        isRunning = true;
     }
     
     public void setGameSpeed(GameSpeed speed) {
         this.gameSpeed = speed;
         if (gameThread != null) {
-            int threadSpeed = switch (speed) {
-                case PAUSED -> 0;
-                case SLOW -> 1;
-                case NORMAL -> 1;
-                case FAST -> 2;
-                case VERY_FAST -> 3;
-            };
-            gameThread.setGameSpeed(threadSpeed);
+            if (speed == GameSpeed.PAUSED) {
+                gameThread.pause();
+            } else {
+                gameThread.resumeGame();
+                int threadSpeed = switch (speed) {
+                    case SLOW -> 0;
+                    case NORMAL -> 1;
+                    case FAST -> 2;
+                    case VERY_FAST -> 3;
+                    default -> 1;
+                };
+                gameThread.setGameSpeed(threadSpeed);
+            }
         }
     }
     
@@ -159,7 +154,9 @@ public class GameEngine {
     public GameDate getCurrentDate() { return currentDate; }
     public GameSpeed getGameSpeed() { return gameSpeed; }
     public boolean isRunning() { return isRunning; }
-    public Consumer<GameEngine> getUIUpdateCallback() { return uiUpdateCallback; }
+    public boolean isActuallyRunning() {
+        return isRunning && gameThread != null && !gameThread.isPaused();
+    }
     
     // Convenience methods for country access
     public List<Country> getAllCountries() {

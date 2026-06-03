@@ -3,8 +3,6 @@ package com.romagame.country;
 import com.romagame.map.Country;
 import com.romagame.map.Country.NationType;
 import com.romagame.diplomacy.DiplomacyManager;
-import com.romagame.military.MilitaryManager;
-import com.romagame.economy.EconomyManager;
 import java.util.*;
 import java.util.Random;
 
@@ -22,7 +20,7 @@ public class AIManager {
         BUILD_MILITARY, IMPROVE_ECONOMY, DIPLOMATIC_ACTION, EXPAND_TERRITORY, MAINTAIN_STABILITY
     }
     
-    public AIManager(DiplomacyManager diplomacyManager, MilitaryManager militaryManager, EconomyManager economyManager) {
+    public AIManager(DiplomacyManager diplomacyManager) {
         this.aiPersonalities = new HashMap<>();
         this.enabledNations = new HashMap<>();
         this.random = new Random();

@@ -22,7 +22,7 @@ public class CountryManager {
         this.worldMap = worldMap;
         this.countries = new HashMap<>();
         this.playerCountry = "France"; // Default player country
-        this.aiManager = new AIManager(diplomacyManager, militaryManager, economyManager);
+        this.aiManager = new AIManager(diplomacyManager);
         this.diplomacyManager = diplomacyManager;
     }
     

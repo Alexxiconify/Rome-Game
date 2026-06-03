@@ -127,8 +127,10 @@ public class GameWindow extends JFrame {
     }
     
     private void setupGameEngineCallback() {
-        // Set up the UI update callback for the game engine
-        engine.setUIUpdateCallback(engineInstance -> updateUI());
+        // Set up the UI update manager with the game window reference
+        if (engine.getUIUpdateManager() != null) {
+            engine.getUIUpdateManager().setGameWindow(this);
+        }
     }
     
     public void updateUI() {
@@ -152,11 +154,11 @@ public class GameWindow extends JFrame {
     private void cycleGameSpeed() {
         GameSpeed current = engine.getGameSpeed();
         GameSpeed next = switch (current) {
-            case PAUSED -> GameSpeed.NORMAL;
+            case PAUSED -> GameSpeed.SLOW;
+            case SLOW -> GameSpeed.NORMAL;
             case NORMAL -> GameSpeed.FAST;
             case FAST -> GameSpeed.VERY_FAST;
             case VERY_FAST -> GameSpeed.PAUSED;
-            case SLOW -> GameSpeed.NORMAL;
         };
         engine.setGameSpeed(next);
         updateSpeedLabel();
