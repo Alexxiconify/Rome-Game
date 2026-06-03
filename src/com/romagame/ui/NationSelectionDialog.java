@@ -18,7 +18,7 @@ public class NationSelectionDialog extends JDialog {
     private JButton cancelButton;
     private static final String DEFAULT_NATION = "Roman Empire";
     private static final String[] PINNED_NATIONS = {
-        "Roman Empire", "Kushan", "Axum", "Saba"
+        DEFAULT_NATION, "Kushan", "Axum", "Saba"
     };
     private JPanel pinnedPanel;
     
@@ -107,7 +107,6 @@ public class NationSelectionDialog extends JDialog {
         buttonPanel.add(startButton);
         buttonPanel.add(cancelButton);
         
-        contentPanel.add(buttonPanel, BorderLayout.SOUTH);
         contentPanel.add(buttonPanel, BorderLayout.SOUTH);
         add(contentPanel, BorderLayout.CENTER);
     }

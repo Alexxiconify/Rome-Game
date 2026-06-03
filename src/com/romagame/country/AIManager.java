@@ -10,7 +10,6 @@ public class AIManager {
     private Map<String, AIPersonality> aiPersonalities;
     private Map<String, Boolean> enabledNations;
     private Random random;
-    private DiplomacyManager diplomacyManager;
     
     public enum AIPersonality {
         AGGRESSIVE, DEFENSIVE, TRADER, BUILDER, BALANCED
@@ -24,7 +23,6 @@ public class AIManager {
         this.aiPersonalities = new HashMap<>();
         this.enabledNations = new HashMap<>();
         this.random = new Random();
-        this.diplomacyManager = diplomacyManager;
         initializePersonalities();
         loadConfiguration();
     }
@@ -233,13 +231,12 @@ public class AIManager {
     }
     
     public void setDiplomacyManager(DiplomacyManager diplomacyManager) {
-        this.diplomacyManager = diplomacyManager;
+        // diplomacyManager reserved for future diplomatic AI actions
     }
     
     private void loadConfiguration() {
-        try {
-            java.io.BufferedReader reader = new java.io.BufferedReader(
-                new java.io.FileReader("src/resources/data/ai_config.txt"));
+        try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                new java.io.FileReader("src/resources/data/ai_config.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
@@ -255,7 +252,6 @@ public class AIManager {
                     enabledNations.put(nationName, enabled);
                 }
             }
-            reader.close();
         } catch (java.io.FileNotFoundException e) {
             System.err.println("[DEBUG] AI config not found: src/resources/data/ai_config.txt");
         } catch (Exception e) {
@@ -264,6 +260,6 @@ public class AIManager {
     }
     
     public boolean isNationEnabled(String nationName) {
-        return enabledNations.getOrDefault(nationName, false);
+        return enabledNations.getOrDefault(nationName, true);
     }
-} 
+}

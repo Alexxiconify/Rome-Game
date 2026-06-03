@@ -31,6 +31,7 @@ public class GameThread extends Thread {
         setDaemon(true); // Don't prevent JVM shutdown
     }
     
+    @Override
     public void run() {
         while (running.get()) {
             long currentTime = System.currentTimeMillis();

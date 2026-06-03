@@ -15,15 +15,13 @@ public class CountryManager {
     private Map<String, Country> countries;
     private String playerCountry;
     private AIManager aiManager;
-    private DiplomacyManager diplomacyManager;
     
     public CountryManager(WorldMap worldMap, DiplomacyManager diplomacyManager, 
                         MilitaryManager militaryManager, EconomyManager economyManager) {
         this.worldMap = worldMap;
         this.countries = new HashMap<>();
-        this.playerCountry = "France"; // Default player country
+        this.playerCountry = "Roman Empire"; // Default player country
         this.aiManager = new AIManager(diplomacyManager);
-        this.diplomacyManager = diplomacyManager;
     }
     
     public void initializeCountries() {
@@ -82,7 +80,6 @@ public class CountryManager {
     }
 
     public void setDiplomacyManager(DiplomacyManager diplomacyManager) {
-        this.diplomacyManager = diplomacyManager;
         this.aiManager.setDiplomacyManager(diplomacyManager);
     }
 } 

@@ -177,14 +177,12 @@ public class DiplomacyManager {
         String winner = (String) peaceTerms.get("winner");
         String loser = (String) peaceTerms.get("loser");
         double reparations = 0.0;
-        Object repObj = peaceTerms.get("war_reparations");
-        if (repObj instanceof Number) {
-            reparations = ((Number) repObj).doubleValue();
+        if (peaceTerms.get("war_reparations") instanceof Number number) {
+            reparations = number.doubleValue();
         }
         
-        System.out.println("War ended: " + war.getAttacker() + " vs " + war.getDefender());
-        System.out.println("Winner: " + winner + ", Reparations: " + reparations);
-        System.out.println("Loser: " + loser);
+        System.out.println("War ended: " + war.getAttacker() + " vs " + war.getDefender()
+            + " | Winner: " + winner + ", Loser: " + loser + ", Reparations: " + reparations);
         war.endWar();
     }
     

@@ -14,15 +14,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.awt.event.ActionEvent;
 import com.romagame.military.Army;
 import com.romagame.military.MilitaryManager;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import com.romagame.ui.Camera;
-import com.romagame.ui.MapRenderer;
 import javax.swing.Timer;
 import java.awt.MouseInfo;
 import java.awt.PointerInfo;
@@ -59,7 +55,6 @@ public class MapPanel extends JPanel {
     // Data mappings
     private Map<Integer, String> colorToProvinceId = new HashMap<>();
     private Map<String, Color> countryColors = new HashMap<>();
-    private Map<String, Color> provinceIdToOwnerColor = new HashMap<>();
     private Map<String, String> provinceIdToOwner = new HashMap<>();
     private Map<String, String> nationToColor = new HashMap<>();
     private List<String> nationList = new ArrayList<>();
@@ -254,16 +249,17 @@ public class MapPanel extends JPanel {
     }
 
     private void createGradientBackground() {
-        BufferedImage mapBackground = new BufferedImage(1200, 700, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = mapBackground.createGraphics();
+        BufferedImage bg = new BufferedImage(1200, 700, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = bg.createGraphics();
         GradientPaint gp = new GradientPaint(0, 0, new Color(24, 38, 66), 0, 700, new Color(10, 18, 36));
         g2d.setPaint(gp);
         g2d.fillRect(0, 0, 1200, 700);
         // Optional: add subtle noise/texture overlay for realism
         g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.04f));
+        java.util.Random rng = new java.util.Random();
         for (int y = 0; y < 700; y += 2) {
             for (int x = 0; x < 1200; x += 2) {
-                int v = (int)(Math.random() * 16);
+                int v = rng.nextInt(16);
                 g2d.setColor(new Color(Math.min(255, 24+v), Math.min(255, 38+v), Math.min(255, 66+v)));
                 g2d.fillRect(x, y, 2, 2);
             }
@@ -271,7 +267,8 @@ public class MapPanel extends JPanel {
         g2d.dispose();
         
         // Set in renderer and camera
-        renderer.setMapBackground(mapBackground);
+        renderer.setMapBackground(bg);
+        this.mapBackground = bg;
         camera.setMapDimensions(1200, 700);
     }
 
@@ -288,6 +285,7 @@ public class MapPanel extends JPanel {
                 repaint();
             }
         } catch (IOException e) {
+            // Mask load failed silently; province detection will be unavailable
         }
     }
     
@@ -523,6 +521,7 @@ public class MapPanel extends JPanel {
         }
     }
 
+    @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
@@ -844,7 +843,7 @@ public class MapPanel extends JPanel {
             provinceIds.add(province.getId());
         }
         
-        String selectedProvince = (String) JOptionPane.showInputDialog(
+        String destinationId = (String) JOptionPane.showInputDialog(
             this,
             "Select destination province for " + army.getName() + ":",
             "Move Army",
@@ -854,11 +853,11 @@ public class MapPanel extends JPanel {
             army.getLocation()
         );
         
-        if (selectedProvince != null && !selectedProvince.equals(army.getLocation())) {
-            army.setLocation(selectedProvince);
+        if (destinationId != null && !destinationId.equals(army.getLocation())) {
+            army.setLocation(destinationId);
             repaint();
             JOptionPane.showMessageDialog(this, 
-                army.getName() + " moved to " + selectedProvince + "!",
+                army.getName() + " moved to " + destinationId + "!",
                 "Army Moved",
                 JOptionPane.INFORMATION_MESSAGE);
         }
@@ -1159,13 +1158,7 @@ public class MapPanel extends JPanel {
     // Camera handles bounds checking internally, so this method is no longer needed
     
     public void printMapBoundaries() {
-        if (mapBackground == null) {
-            return;
-        }
-        
-        int mapWidth = mapBackground.getWidth();
-        int mapHeight = mapBackground.getHeight();
-        int panelW = getWidth() > 0 ? getWidth() : 1600;
+        // No-op: boundary info is displayed via drawViewingCoordinates overlay
     }
     
     private void drawViewingCoordinates(Graphics2D g2d) {

@@ -518,6 +518,10 @@ public class Country {
                 ideas.add("Silk Road Trade");
                 ideas.add("Buddhist Influence");
             }
+            default -> {
+                ideas.add("Tribal Unity");
+                ideas.add("Warrior Spirit");
+            }
         }
     }
     
